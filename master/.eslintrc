@@ -13,7 +13,6 @@
   "rules": {
     "prettier/prettier": "error",
     "no-useless-constructor": "off",
-    "no-console": ["error", { "allow": ["debug", "error"] }],
     "no-confusing-arrow": ["error", { "allowParens": false }],
     "no-mixed-operators": [
       "error",
@@ -44,20 +43,7 @@
         "allowExpressions": true
       }
     ],
-    "import/first": ["error", "absolute-first"],
-    "import/newline-after-import": "error",
-    "import/no-extraneous-dependencies": [
-      "error",
-      {
-        "devDependencies": false,
-        "optionalDependencies": false,
-        "peerDependencies": false
-      }
-    ],
-    "import/no-duplicates": "error",
-    "import/no-cycle": "error",
     "quotes": ["error", "single", { "avoidEscape": true }],
-    "import/no-useless-path-segments": "error",
     "no-lonely-if": "error",
     "no-unused-expressions": "error",
     "no-shadow": "error",
@@ -80,6 +66,6 @@
     "@typescript-eslint/no-angle-bracket-type-assertion": "off",
     "@typescript-eslint/no-inferrable-types": "off",
     "require-jsdoc": "off",
-    "valid-jsdoc": "off",
+    "valid-jsdoc": "off"
   }
 }
