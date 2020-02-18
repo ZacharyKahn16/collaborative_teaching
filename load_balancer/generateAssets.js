@@ -15,6 +15,6 @@ sync(
   `${runtime}${instance}${service}\n`, {
     newline: true,
     increment: false,
-    overwrite: true,c 
+    overwrite: true,
   },
 );
