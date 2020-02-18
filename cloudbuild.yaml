@@ -6,7 +6,7 @@ steps:
 
   # Build
   - name: "gcr.io/cloud-builders/npm"
-    args: ["run", "build", "1"]
+    args: ["run", "build"]
     dir: "worker"
     env:
       - 'SERVICE=worker1'
