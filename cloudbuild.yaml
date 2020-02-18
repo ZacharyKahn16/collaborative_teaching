@@ -24,7 +24,7 @@ steps:
   # Build Master 1
   - name: "gcr.io/cloud-builders/npm"
     args: ["run", "build"]
-    dir: "worker"
+    dir: "master"
     env:
       - "SERVICE_NAME=master1"
 
