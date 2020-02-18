@@ -1,7 +1,7 @@
 steps:
   # Deploy Databases
   - name: "ubuntu"
-    args: ['sudo', './database.bash']
+    args: ['./database.bash']
 
 
 #  # Install Worker dependencies
