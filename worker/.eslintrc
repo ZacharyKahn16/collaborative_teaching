@@ -9,7 +9,7 @@
   "globals": {
     "fetchMock": "writable"
   },
-  "plugins": ["@typescript-eslint", "prettier", "import"],
+  "plugins": ["@typescript-eslint", "prettier"],
   "rules": {
     "prettier/prettier": "error",
     "no-useless-constructor": "off",
@@ -31,7 +31,6 @@
     "arrow-body-style": ["error", "always"],
     "no-var": "error",
     "prefer-const": "error",
-    "no-restricted-globals": ["off", "isNaN", "isFinite"],
     "object-curly-newline": ["error", { "consistent": true }],
     "curly": ["error", "all"],
     "no-underscore-dangle": ["error", { "allowAfterThis": true, "allowAfterSuper": true }],
@@ -39,16 +38,6 @@
     "@typescript-eslint/no-unused-vars": ["off"],
     "prefer-template": "error",
     "no-useless-concat": "error",
-    "spaced-comment": [
-      "error",
-      "always",
-      {
-        "block": {
-          "balanced": true
-        },
-        "markers": ["/"]
-      }
-    ],
     "@typescript-eslint/explicit-function-return-type": [
       "error",
       {
@@ -79,7 +68,6 @@
     "no-fallthrough": "error",
     "no-await-in-loop": "error",
     "no-use-before-define": "error",
-    "no-multiple-empty-lines": "error",
     "no-nested-ternary": "error",
     "sort-imports": [
       "error",
@@ -93,7 +81,5 @@
     "@typescript-eslint/no-inferrable-types": "off",
     "require-jsdoc": "off",
     "valid-jsdoc": "off",
-    "@typescript-eslint/no-explicit-any": "error",
-    "@typescript-eslint/no-empty-function": "off"
   }
 }
