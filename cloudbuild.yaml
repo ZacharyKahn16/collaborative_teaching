@@ -1,0 +1,18 @@
+steps:
+  # Install
+  - name: "gcr.io/cloud-builders/npm"
+    args: ["ci"]
+    dir: "worker"
+
+  # Build
+  - name: "gcr.io/cloud-builders/npm"
+    args: ["run", "build", "1"]
+    dir: "worker"
+    env:
+      - 'SERVICE=worker1'
+
+  # Deploy
+  - name: "gcr.io/cloud-builders/gcloud"
+    args: ["app", "deploy"]
+    dir: "worker/build"
+timeout: "1000s"
