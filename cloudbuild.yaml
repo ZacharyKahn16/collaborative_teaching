@@ -1,6 +1,6 @@
 steps:
   # Deploy Databases
-  - name: "gcr.io/cloud-builders/gcloud"
+  - name: 'ubuntu'
     args: ['./database.bash']
 
 
