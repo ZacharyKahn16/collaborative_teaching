@@ -1,6 +1,6 @@
 {
-  "name": "worker",
-  "description": "Worker Node code",
+  "name": "load_balancer",
+  "description": "Load Balancer Node code",
   "version": "0.0.1",
   "private": true,
   "main": "app.js",

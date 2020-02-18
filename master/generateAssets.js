@@ -12,7 +12,8 @@ const service = `service: ${process.env.SERVICE_NAME || 'default'}`;
 
 sync(
   'build/app.yaml',
-  `${runtime}${instance}${service}\n`, {
+  `${runtime}${instance}${service}\n`,
+  {
     newline: true,
     increment: false,
     overwrite: true,
