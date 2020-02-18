@@ -1,27 +1,30 @@
 import express from 'express';
-import bodyParser from 'body-parser';
 import cors from 'cors';
 import morgan from 'morgan';
-import asyncHandler from 'express-async-handler';
 
 const app = express();
 
 app.use(cors());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
 app.use(morgan('short'));
 
+import { createServer } from 'http';
+const server = createServer(app);
+import io from 'socket.io';
 
-app.use(
-  '/',
-  asyncHandler(async (req, res, next) => {
-    res.send('Hello World');
-  }),
-);
+const ioServer = io(server);
 
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-  console.debug(`Server started at http://localhost:${PORT}`);
+app.get('/', function(req, res) {
+  res.sendFile(`${__dirname}/index.html`);
 });
 
-export default app;
+ioServer.on('connection', function(socket) {
+  console.log('a user connected');
+  socket.on('disconnect', function() {
+    console.log('user disconnected');
+  });
+});
+
+const PORT = process.env.PORT || 3001;
+server.listen(PORT, () => {
+  console.debug(`Server started at http://localhost:${PORT}`);
+});
