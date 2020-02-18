@@ -3,7 +3,7 @@ steps:
   - name: "gcr.io/cloud-builders/npm"
     args: ["ci"]
     dir: "worker"
-      -
+
   # Install Master dependencies
   - name: "gcr.io/cloud-builders/npm"
     args: ["ci"]
@@ -14,26 +14,24 @@ steps:
     args: ["ci"]
     dir: "load_balancer"
 
-
   # Build Worker 1
   - name: "gcr.io/cloud-builders/npm"
     args: ["run", "build"]
     dir: "worker"
     env:
-      - 'SERVICE_NAME=worker1'
+      - "SERVICE_NAME=worker1"
 
   # Build Master 1
   - name: "gcr.io/cloud-builders/npm"
     args: ["run", "build"]
-    dir: "worker"
+    dir: "master"
     env:
-      - 'SERVICE_NAME=master1'
+      - "SERVICE_NAME=master1"
 
   # Build Load Balancer 1
   - name: "gcr.io/cloud-builders/npm"
     args: ["run", "build"]
     dir: "load_balancer"
-
 
   # Deploy Worker
   - name: "gcr.io/cloud-builders/gcloud"
