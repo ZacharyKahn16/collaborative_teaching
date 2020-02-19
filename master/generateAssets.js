@@ -7,7 +7,7 @@ cp('-R', 'node_modules/', 'build/');
 
 const runtime = 'runtime: nodejs12\n';
 const instance = 'instance_class: B1\n';
-const service = `service: ${process.env.SERVICE_NAME}`;
+const service = `service: ${process.env.SERVICE_NAME}\n`;
 const scaling = 'basic_scaling:\n';
 const max_instance = '  max_instances: 1\n';
 const timeout = '  idle_timeout: 10m\n';

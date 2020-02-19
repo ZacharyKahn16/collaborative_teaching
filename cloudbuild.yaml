@@ -59,11 +59,6 @@ steps:
     dir: "load_balancer/build"
     args: ["app", "deploy"]
 
-  # Deploy Load Balancer 1
-  - name: "gcr.io/cloud-builders/gcloud"
-    dir: "load_balancer/build"
-    args: ["app", "deploy"]
-
   # Install React app dependencies
   - name: "gcr.io/cloud-builders/npm"
     dir: "client"
