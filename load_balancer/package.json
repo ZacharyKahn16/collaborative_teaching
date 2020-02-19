@@ -10,7 +10,7 @@
   },
   "scripts": {
     "start": "node ./app.js",
-    "watch": "nodemon src/app.js",
+    "watch": "nodemon src/app.ts",
     "lint": "eslint --cache src --ext .ts --ext .js",
     "format": "npm run lint -- --fix",
     "build": "rm -rf build && tsc && node generateAssets.js"
