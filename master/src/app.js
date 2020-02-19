@@ -1,17 +1,21 @@
 import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
+import { createServer } from 'http';
+import io from 'socket.io';
+import { listAppInstances, listComputeInstances } from './NetworkInfo';
 
 const app = express();
-
 app.use(cors());
 app.use(morgan('short'));
 
-import { createServer } from 'http';
 const server = createServer(app);
-import io from 'socket.io';
-
 const ioServer = io(server);
+
+setInterval(() => {
+  listComputeInstances();
+  listAppInstances();
+}, 1000);
 
 app.get('/', function(req, res) {
   res.sendFile(`${__dirname}/index.html`);
@@ -19,6 +23,7 @@ app.get('/', function(req, res) {
 
 ioServer.on('connection', function(socket) {
   console.log('a user connected');
+
   socket.on('disconnect', function() {
     console.log('user disconnected');
   });
