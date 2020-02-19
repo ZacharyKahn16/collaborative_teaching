@@ -1,10 +1,6 @@
 steps:
   # Deploy Databases
   - name: 'ubuntu'
-    args: ['./install.sh']
-    dir: 'google-cloud-sdk'
-
-  - name: 'ubuntu'
     args: ['./database.bash']
 
 
