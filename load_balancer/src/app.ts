@@ -1,4 +1,3 @@
-/* tslint:disable */
 import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
@@ -23,16 +22,15 @@ server.listen(PORT, () => {
 });
 
 //TODO: Change this to real master list
-const masterList: any = mockData
+const masterList: any = mockData;
 
 const getNextMaster = (): any => {
   const nextMaster = masterList.shift();
   masterList.push(nextMaster);
-  
+
   return nextMaster;
 };
 
 app.get('/', function(req, res) {
   res.send(getNextMaster());
 });
-
