@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 apt-get update && apt-get upgrade -y
-apt install -y curl
+apt install -y curl gnupg gnupg1 gnupg2
 
 echo -e "Add key"
 apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 6A030B21BA07F4FB
