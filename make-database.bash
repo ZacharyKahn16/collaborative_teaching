@@ -19,7 +19,7 @@ gcloud beta compute --project=collaborative-teaching instances create db-1 \
         --scopes=https://www.googleapis.com/auth/cloud-platform --tags=database-server \
         --image=ubuntu-minimal-1910-eoan-v20200129 --image-project=ubuntu-os-cloud --boot-disk-size=10GB \
         --boot-disk-type=pd-standard --boot-disk-device-name=db-1 --reservation-affinity=any \
-        --metadata-from-file startup-script=./make-database.bash
+        --metadata-from-file startup-script=./database-startup.bash
 
 # echo -e "Update Firewall Rules"
 # gcloud compute --project=collaborative-teaching firewall-rules create default-allow-https --direction=INGRESS --priority=1000 --network=default --action=ALLOW --rules=tcp:443 --source-ranges=0.0.0.0/0 --target-tags=https-server
