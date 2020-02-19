@@ -21,6 +21,6 @@ gcloud beta compute --project=collaborative-teaching instances create db-1 \
         --boot-disk-type=pd-standard --boot-disk-device-name=db-1 --reservation-affinity=any \
         --metadata-from-file startup-script=./make-database.bash
 
-echo -e "Update Firewall Rules"
-gcloud compute --project=collaborative-teaching firewall-rules create default-allow-https --direction=INGRESS --priority=1000 --network=default --action=ALLOW --rules=tcp:443 --source-ranges=0.0.0.0/0 --target-tags=https-server
-gcloud compute --project=collaborative-teaching firewall-rules create default-allow-ssh --allow=tcp:22
+# echo -e "Update Firewall Rules"
+# gcloud compute --project=collaborative-teaching firewall-rules create default-allow-https --direction=INGRESS --priority=1000 --network=default --action=ALLOW --rules=tcp:443 --source-ranges=0.0.0.0/0 --target-tags=https-server
+# gcloud compute --project=collaborative-teaching firewall-rules create default-allow-ssh --allow=tcp:22
