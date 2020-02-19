@@ -1,37 +1,37 @@
 steps:
   # Deploy Databases
-  - name: 'ubuntu'
-    args: ['./database.bash']
+  - name: "ubuntu"
+    args: ["./make-database.bash"]
 
-#  # Install Master dependencies
-#  - name: "gcr.io/cloud-builders/npm"
-#    args: ["ci"]
-#    dir: "master"
-#
-#  # Install Load Balancer dependencies
-#  - name: "gcr.io/cloud-builders/npm"
-#    args: ["ci"]
-#    dir: "load_balancer"
-#
-#  # Build Master 1
-#  - name: "gcr.io/cloud-builders/npm"
-#    args: ["run", "build"]
-#    dir: "master"
-#    env:
-#      - "SERVICE_NAME=master1"
-#
-#  # Build Load Balancer 1
-#  - name: "gcr.io/cloud-builders/npm"
-#    args: ["run", "build"]
-#    dir: "load_balancer"
-#
-#  # Deploy Master
-#  - name: "gcr.io/cloud-builders/gcloud"
-#    args: ["app", "deploy"]
-#    dir: "master/build"
-#
-#  # Deploy Load Balancer
-#  - name: "gcr.io/cloud-builders/gcloud"
-#    args: ["app", "deploy"]
-#    dir: "load_balancer/build"
+  # Install Master dependencies
+  - name: "gcr.io/cloud-builders/npm"
+    args: ["ci"]
+    dir: "master"
+
+  # Build Master 1
+  - name: "gcr.io/cloud-builders/npm"
+    args: ["run", "build"]
+    dir: "master"
+    env:
+      - "SERVICE_NAME=master1"
+
+  # Deploy Master 1
+  - name: "gcr.io/cloud-builders/gcloud"
+    args: ["app", "deploy"]
+    dir: "master/build"
+
+  # Install Load Balancer dependencies
+  - name: "gcr.io/cloud-builders/npm"
+    args: ["ci"]
+    dir: "load_balancer"
+
+  # Build Load Balancer 1
+  - name: "gcr.io/cloud-builders/npm"
+    args: ["run", "build"]
+    dir: "load_balancer"
+
+  # Deploy Load Balancer 1
+  - name: "gcr.io/cloud-builders/gcloud"
+    args: ["app", "deploy"]
+    dir: "load_balancer/build"
 timeout: "1000s"
