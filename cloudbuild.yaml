@@ -1,43 +1,76 @@
 steps:
+  # Upload Master Code
+  - name: "gcr.io/cloud-builders/gsutil"
+    args: ["cp", "-r", "master", "gs://collaborative-teaching.appspot.com/"]
+
+  # Upload Load Balancer Code
+  - name: "gcr.io/cloud-builders/gsutil"
+    args:
+      ["cp", "-r", "load_balancer", "gs://collaborative-teaching.appspot.com/"]
+
+  # Upload Database Startup Script
+  - name: "gcr.io/cloud-builders/gsutil"
+    args:
+      [
+        "cp",
+        "database-startup.bash",
+        "gs://collaborative-teaching.appspot.com/",
+      ]
+
   # Deploy Databases
-  - name: 'ubuntu'
-    args: ['./database.bash']
+  - name: "ubuntu"
+    args: ["./make-database.bash"]
 
+  # Install Master dependencies
+  - name: "gcr.io/cloud-builders/npm"
+    dir: "master"
+    args: ["ci"]
 
-#  # Install Worker dependencies
-#  - name: "gcr.io/cloud-builders/npm"
-#    args: ["ci"]
-#    dir: "worker"
+  # Build Master 1
+  - name: "gcr.io/cloud-builders/npm"
+    dir: "master"
+    args: ["run", "build"]
+    env:
+      - "SERVICE_NAME=master1"
 
-#  # Install Master dependencies
-#  - name: "gcr.io/cloud-builders/npm"
-#    args: ["ci"]
-#    dir: "master"
-#
-#  # Install Load Balancer dependencies
-#  - name: "gcr.io/cloud-builders/npm"
-#    args: ["ci"]
-#    dir: "load_balancer"
-#
-#  # Build Master 1
-#  - name: "gcr.io/cloud-builders/npm"
-#    args: ["run", "build"]
-#    dir: "master"
-#    env:
-#      - "SERVICE_NAME=master1"
-#
-#  # Build Load Balancer 1
-#  - name: "gcr.io/cloud-builders/npm"
-#    args: ["run", "build"]
-#    dir: "load_balancer"
-#
-#  # Deploy Master
-#  - name: "gcr.io/cloud-builders/gcloud"
-#    args: ["app", "deploy"]
-#    dir: "master/build"
-#
-#  # Deploy Load Balancer
-#  - name: "gcr.io/cloud-builders/gcloud"
-#    args: ["app", "deploy"]
-#    dir: "load_balancer/build"
+  # Deploy Master 1
+  - name: "gcr.io/cloud-builders/gcloud"
+    dir: "master/build"
+    args: ["app", "deploy"]
+
+  # Install Load Balancer dependencies
+  - name: "gcr.io/cloud-builders/npm"
+    dir: "load_balancer"
+    args: ["ci"]
+
+  # Build Load Balancer 1
+  - name: "gcr.io/cloud-builders/npm"
+    dir: "load_balancer"
+    args: ["run", "build"]
+
+  # Deploy Load Balancer 1
+  - name: "gcr.io/cloud-builders/gcloud"
+    dir: "load_balancer/build"
+    args: ["app", "deploy"]
+
+  # Install React app dependencies
+  - name: "gcr.io/cloud-builders/npm"
+    dir: "client"
+    args: ["ci"]
+
+  # Build React app
+  - name: "gcr.io/cloud-builders/npm"
+    dir: "client"
+    args: ["run", "build"]
+
+  # Deploy React app
+  - name: "gcr.io/$PROJECT_ID/firebase"
+    dir: "client/build"
+    args:
+      [
+        "deploy",
+        "--debug",
+        "--token",
+        "1//06Wz6HOOUk265CgYIARAAGAYSNwF-L9IrZCyVKSN4_P45z2IQub1idM4TUTRR_hUnjD2u4KelPHAU83ikSIqj2E63fwHX5UeaOt4",
+      ]
 timeout: "1000s"
