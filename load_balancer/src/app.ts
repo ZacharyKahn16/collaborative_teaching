@@ -3,6 +3,7 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import morgan from 'morgan';
 import asyncHandler from 'express-async-handler';
+import socket from 'socket.io';
 
 const app = express();
 
@@ -11,17 +12,18 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(morgan('short'));
 
+//App setup
+const server = app.listen(3000, () => {
+  console.log('listening to requests on port 4000');
+});
 
-app.use(
-  '/',
-  asyncHandler(async (req, res, next) => {
-    res.send('Hello World');
-  }),
-);
+//Static files
+app.use(express.static('public'));
 
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-  console.debug(`Server started at http://localhost:${PORT}`);
+//Socket Setup
+const io = socket(server);
+io.on('connection', () => {
+  console.log('make socket connection');
 });
 
 export default app;
