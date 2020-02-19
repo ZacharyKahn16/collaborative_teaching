@@ -3,12 +3,6 @@ steps:
   - name: 'ubuntu'
     args: ['./database.bash']
 
-
-#  # Install Worker dependencies
-#  - name: "gcr.io/cloud-builders/npm"
-#    args: ["ci"]
-#    dir: "worker"
-
 #  # Install Master dependencies
 #  - name: "gcr.io/cloud-builders/npm"
 #    args: ["ci"]
@@ -40,4 +34,4 @@ steps:
 #  - name: "gcr.io/cloud-builders/gcloud"
 #    args: ["app", "deploy"]
 #    dir: "load_balancer/build"
-timeout: "1000s"
+timeout: "2000s"
