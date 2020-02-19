@@ -21,7 +21,7 @@ gcloud compute --project=collaborative-teaching firewall-rules create default-al
 
 
 echo -e "Install MongoDB\n"
-gcloud compute --project $PROJECT_ID ssh --zone us-central1-a db-1
+gcloud compute --project $PROJECT_ID ssh db-1 --zone=us-central1-a
 
 apt-get -y install mongodb
 service mongodb stop
