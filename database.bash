@@ -20,6 +20,8 @@ echo -e "Update Firewall\n"
 gcloud compute --project=collaborative-teaching firewall-rules create default-allow-https --direction=INGRESS --priority=1000 --network=default --action=ALLOW --rules=tcp:443 --source-ranges=0.0.0.0/0 --target-tags=https-server
 gcloud compute --project=collaborative-teaching firewall-rules create default-allow-ssh --allow=tcp:22
 
+sleep 5m 00s
+
 echo -e "Install MongoDB\n"
 gcloud compute ssh --project=collaborative-teaching --zone=us-central1-a db-1
 
