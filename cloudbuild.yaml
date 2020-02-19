@@ -3,12 +3,6 @@ steps:
   - name: 'ubuntu'
     args: ['./database.bash']
 
-
-#  # Install Worker dependencies
-#  - name: "gcr.io/cloud-builders/npm"
-#    args: ["ci"]
-#    dir: "worker"
-
 #  # Install Master dependencies
 #  - name: "gcr.io/cloud-builders/npm"
 #    args: ["ci"]
