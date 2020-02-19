@@ -1,50 +1,43 @@
 steps:
-  # Install Worker dependencies
-  - name: "gcr.io/cloud-builders/npm"
-    args: ["ci"]
-    dir: "worker"
+  # Deploy Databases
+  - name: 'ubuntu'
+    args: ['./database.bash']
 
-  # Install Master dependencies
-  - name: "gcr.io/cloud-builders/npm"
-    args: ["ci"]
-    dir: "master"
 
-  # Install Load Balancer dependencies
-  - name: "gcr.io/cloud-builders/npm"
-    args: ["ci"]
-    dir: "load_balancer"
+#  # Install Worker dependencies
+#  - name: "gcr.io/cloud-builders/npm"
+#    args: ["ci"]
+#    dir: "worker"
 
-  # Build Worker 1
-  - name: "gcr.io/cloud-builders/npm"
-    args: ["run", "build"]
-    dir: "worker"
-    env:
-      - "SERVICE_NAME=worker1"
-
-  # Build Master 1
-  - name: "gcr.io/cloud-builders/npm"
-    args: ["run", "build"]
-    dir: "master"
-    env:
-      - "SERVICE_NAME=master1"
-
-  # Build Load Balancer 1
-  - name: "gcr.io/cloud-builders/npm"
-    args: ["run", "build"]
-    dir: "load_balancer"
-
-  # Deploy Worker
-  - name: "gcr.io/cloud-builders/gcloud"
-    args: ["app", "deploy"]
-    dir: "worker/build"
-
-  # Deploy Master
-  - name: "gcr.io/cloud-builders/gcloud"
-    args: ["app", "deploy"]
-    dir: "master/build"
-
-  # Deploy Load Balancer
-  - name: "gcr.io/cloud-builders/gcloud"
-    args: ["app", "deploy"]
-    dir: "load_balancer/build"
+#  # Install Master dependencies
+#  - name: "gcr.io/cloud-builders/npm"
+#    args: ["ci"]
+#    dir: "master"
+#
+#  # Install Load Balancer dependencies
+#  - name: "gcr.io/cloud-builders/npm"
+#    args: ["ci"]
+#    dir: "load_balancer"
+#
+#  # Build Master 1
+#  - name: "gcr.io/cloud-builders/npm"
+#    args: ["run", "build"]
+#    dir: "master"
+#    env:
+#      - "SERVICE_NAME=master1"
+#
+#  # Build Load Balancer 1
+#  - name: "gcr.io/cloud-builders/npm"
+#    args: ["run", "build"]
+#    dir: "load_balancer"
+#
+#  # Deploy Master
+#  - name: "gcr.io/cloud-builders/gcloud"
+#    args: ["app", "deploy"]
+#    dir: "master/build"
+#
+#  # Deploy Load Balancer
+#  - name: "gcr.io/cloud-builders/gcloud"
+#    args: ["app", "deploy"]
+#    dir: "load_balancer/build"
 timeout: "1000s"
