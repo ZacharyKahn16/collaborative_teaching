@@ -1,36 +1,25 @@
 import express from 'express';
+import bodyParser from 'body-parser';
 import cors from 'cors';
 import morgan from 'morgan';
-import { createServer } from 'http';
-
-//Change the mock data to real list of masters queried from the database
-import { mockData } from './mockServerData';
+import asyncHandler from 'express-async-handler';
 
 const app = express();
+
 app.use(cors());
-app.use(morgan('short'));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(morgan('dev'));
 
-const server = createServer(app);
+app.get('/env', (req, res, next) => {
+  return res.send(process.env);
+});
 
-server.on('connection', (socket) => {
-  console.log('New conneection...');
+app.get('/env', (req, res, next) => {
+  return res.send(process.env);
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
+app.listen(PORT, () => {
   console.debug(`Server started at http://localhost:${PORT}`);
-});
-
-//TODO: Change this to real master list
-const masterList: any = mockData;
-
-const getNextMaster = (): any => {
-  const nextMaster = masterList.shift();
-  masterList.push(nextMaster);
-
-  return nextMaster;
-};
-
-app.get('/', function(req, res) {
-  res.send(getNextMaster());
 });
