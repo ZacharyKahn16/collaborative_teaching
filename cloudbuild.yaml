@@ -13,7 +13,8 @@ steps:
     args:
       [
         "cp",
-        "database-startup.bash",
+        "-r",
+        "scripts",
         "gs://collaborative-teaching.appspot.com/",
       ]
 
@@ -32,21 +33,6 @@ steps:
   # Deploy Master 1
   - name: "gcr.io/cloud-builders/gcloud"
     dir: "master/build"
-    args: ["app", "deploy"]
-
-  # Install Load Balancer dependencies
-  - name: "gcr.io/cloud-builders/npm"
-    dir: "load_balancer"
-    args: ["ci"]
-
-  # Build Load Balancer 1
-  - name: "gcr.io/cloud-builders/npm"
-    dir: "load_balancer"
-    args: ["run", "build"]
-
-  # Deploy Load Balancer 1
-  - name: "gcr.io/cloud-builders/gcloud"
-    dir: "load_balancer/build"
     args: ["app", "deploy"]
 
   # Install React app dependencies
@@ -69,8 +55,4 @@ steps:
         "--token",
         "1//06Wz6HOOUk265CgYIARAAGAYSNwF-L9IrZCyVKSN4_P45z2IQub1idM4TUTRR_hUnjD2u4KelPHAU83ikSIqj2E63fwHX5UeaOt4",
       ]
-
-  # Deploy Databases
-  - name: "ubuntu"
-    args: ["./make-database.bash"]
 timeout: "1000s"
