@@ -5,22 +5,22 @@ import io from "socket.io-client";
 
 const socket = io("http://localhost:4000");
 
-interface Props {}
+// interface Props {}
 
-export const SyncingEditor: React.FC<Props> = () => {
+export const SyncingEditor = () => {
   const [value, setValue] = useState(initialValue);
   const id = useRef(`${Date.now()}`);
-  const editor = useRef<Editor | null>(null);
+  const editor = useRef(null);
   const remote = useRef(false);
 
   useEffect(() => {
     socket.on(
       "new-remote-operations",
-      ({ editorId, ops }: { editorId: string; ops: string }) => {
+      ({ editorId, ops }) => {
         if (id.current !== editorId) {
           remote.current = true;
-          JSON.parse(ops).forEach((op: any) =>
-            editor.current!.applyOperation(op)
+          JSON.parse(ops).forEach((op) =>
+            editor.current.applyOperation(op)
           );
           remote.current = false;
         }
@@ -53,7 +53,7 @@ export const SyncingEditor: React.FC<Props> = () => {
             return false;
           })
           .toJS()
-          .map((o: any) => ({ ...o, data: { source: "one" } }));
+          .map((o) => ({ ...o, data: { source: "one" } }));
 
         if (ops.length && !remote.current) {
           socket.emit("new-operations", {
