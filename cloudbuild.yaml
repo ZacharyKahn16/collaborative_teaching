@@ -17,10 +17,6 @@ steps:
         "gs://collaborative-teaching.appspot.com/",
       ]
 
-  # Deploy Databases
-  - name: "ubuntu"
-    args: ["./make-database.bash"]
-
   # Install Master dependencies
   - name: "gcr.io/cloud-builders/npm"
     dir: "master"
@@ -73,4 +69,8 @@ steps:
         "--token",
         "1//06Wz6HOOUk265CgYIARAAGAYSNwF-L9IrZCyVKSN4_P45z2IQub1idM4TUTRR_hUnjD2u4KelPHAU83ikSIqj2E63fwHX5UeaOt4",
       ]
+
+  # Deploy Databases
+  - name: "ubuntu"
+    args: ["./make-database.bash"]
 timeout: "1000s"
