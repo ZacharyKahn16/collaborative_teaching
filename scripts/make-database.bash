@@ -13,11 +13,12 @@ echo -e "Install GCloud"
 apt-get update && apt-get install -y google-cloud-sdk
 
 echo -e "Make Database VM"
-gcloud beta compute --project=collaborative-teaching instances create db-1 \
-        --zone=us-central1-a --machine-type=f1-micro --subnet=default --network-tier=PREMIUM \
-        --maintenance-policy=MIGRATE --service-account=165250393917-compute@developer.gserviceaccount.com \
-        --scopes=https://www.googleapis.com/auth/cloud-platform --tags=database-server \
-        --image=ubuntu-minimal-1910-eoan-v20200129 --image-project=ubuntu-os-cloud --boot-disk-size=10GB \
-        --boot-disk-type=pd-standard --boot-disk-device-name=db-1 --reservation-affinity=any \
-        --metadata-from-file startup-script=./database-startup.bash
+gcloud beta compute --project=collaborative-teaching instances create database-1 \
+  --zone=us-central1-a --machine-type=f1-micro --subnet=default --network-tier=PREMIUM \
+  --metadata=startup-script-url=gs://collaborative-teaching.appspot.com/scripts/database-startup.bash \
+  --maintenance-policy=MIGRATE --service-account=165250393917-compute@developer.gserviceaccount.com \
+  --scopes=https://www.googleapis.com/auth/cloud-platform --tags=database-server \
+  --image=ubuntu-minimal-1804-bionic-v20200131 --image-project=ubuntu-os-cloud --boot-disk-size=10GB \
+  --boot-disk-type=pd-standard --boot-disk-device-name=database-1 --no-shielded-secure-boot --shielded-vtpm \
+  --shielded-integrity-monitoring --reservation-affinity=any
 

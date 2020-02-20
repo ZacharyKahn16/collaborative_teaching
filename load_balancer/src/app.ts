@@ -1,3 +1,4 @@
+import { GCLOUD } from './lib/GCloud';
 import express from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
@@ -11,12 +12,14 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(morgan('dev'));
 
-app.get('/env', (req, res, next) => {
+app.get('/env', (req, res) => {
   return res.send(process.env);
 });
 
-app.get('/env', (req, res, next) => {
-  return res.send(process.env);
+app.get('/instances', (req, res) => {
+  return res.send({
+    instances: GCLOUD.instances,
+  });
 });
 
 const PORT = process.env.PORT || 3000;

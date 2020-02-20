@@ -4,7 +4,7 @@ NAME=$(curl -s "http://metadata.google.internal/computeMetadata/v1/instance/name
 
 # Install dependencies
 apt-get update && apt-get upgrade -y
-apt-get install -yq ca-certificates build-essential supervisor curl gnupg2 nano
+apt-get install -yq ca-certificates build-essential supervisor curl gnupg2 nano vim net-tools
 mkdir /opt/nodejs
 curl https://nodejs.org/dist/v12.16.1/node-v12.16.1-linux-x64.tar.gz | tar xvzf - -C /opt/nodejs --strip-components=1
 ln -s /opt/nodejs/bin/node /usr/bin/node
@@ -15,7 +15,7 @@ gsutil cp -r gs://collaborative-teaching.appspot.com/load_balancer /opt
 
 # Install Dependencies
 cd /opt/load_balancer
-npm ci
+npm install
 npm run build
 cp package.json build/
 cp package-lock.json build/
