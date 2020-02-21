@@ -10,30 +10,7 @@ steps:
 
   # Upload Database Startup Script
   - name: "gcr.io/cloud-builders/gsutil"
-    args:
-      [
-        "cp",
-        "-r",
-        "scripts",
-        "gs://collaborative-teaching.appspot.com/",
-      ]
-
-  # Install Master dependencies
-  - name: "gcr.io/cloud-builders/npm"
-    dir: "master"
-    args: ["ci"]
-
-  # Build Master 1
-  - name: "gcr.io/cloud-builders/npm"
-    dir: "master"
-    args: ["run", "build"]
-    env:
-      - "SERVICE_NAME=master1"
-
-  # Deploy Master 1
-  - name: "gcr.io/cloud-builders/gcloud"
-    dir: "master/build"
-    args: ["app", "deploy"]
+    args: ["cp", "-r", "scripts", "gs://collaborative-teaching.appspot.com/"]
 
   # Install React app dependencies
   - name: "gcr.io/cloud-builders/npm"
