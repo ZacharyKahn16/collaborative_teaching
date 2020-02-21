@@ -42,4 +42,4 @@ supervisorctl reread
 supervisorctl update
 # Application should now be running under supervisor
 
-gcloud compute --project=${PROJECT_ID} instances add-metadata ${NAME} --metadata startup-status=running,startup-on=$(date +%s)
+gcloud compute --project=${PROJECT_ID} instances add-metadata ${NAME} --metadata startup-status=running,startup-on=$(date +%s) --zone=us-central1-a

@@ -39,16 +39,12 @@ class GCloud {
     this.getInstances();
 
     setInterval(() => {
-      this.filterInstances();
-    }, 10 * 1000);
-
-    setInterval(() => {
       this.getInstances();
     }, 60 * 1000);
   }
 
   getInstances() {
-    exec('gcloud compute instances list', { silent: true }, (code, stdout, stderr) => {
+    exec('gcloud compute instances list', { silent: true }, async (code, stdout, stderr) => {
       if (code === 0) {
         const output = stdout
           .trim()
@@ -79,10 +75,16 @@ class GCloud {
             instanceRunning,
           };
 
-          this.allInstances.push(instance);
+          const meta = await this.getMetadata(id);
 
-          this.getMetadata(id, this.allInstances.length - 1);
+          instance.createdOn = meta.created;
+          instance.initializedOn = meta.initialized;
+          instance.instanceServing = meta.serving;
+
+          this.allInstances.push(instance);
         }
+
+        this.filterInstances();
       } else {
         console.error(`Error ${code}: ${stderr}`);
         this.allInstances = [];
@@ -90,33 +92,48 @@ class GCloud {
     });
   }
 
-  async getMetadata(id: string, index: number) {
-    exec(
-      `gcloud compute instances describe ${id} --flatten="metadata[]" --zone=${this.zone}`,
-      { silent: true },
-      (code, stdout, stderr) => {
-        let output = stdout
-          .trim()
-          .split('\n')
-          .slice(3);
-        output.pop();
-
-        for (let i = 0; i < output.length; i++) {
-          const line = output[i];
-
-          if (line.includes('created')) {
-            // @ts-ignore
-            this.allInstances[index].createdOn = Number(output[i + 1].match(/\d+/)[0].trim());
-          } else if (line.includes('startup-on')) {
-            // @ts-ignore
-            this.allInstances[index].initializedOn = Number(output[i + 1].match(/\d+/)[0].trim());
-          } else if (line.includes('startup-status')) {
-            this.allInstances[index].instanceServing =
-              output[i + 1].split('value: ')[1].replace("'", '') === 'running';
+  getMetadata(id: string): Promise<any> {
+    return new Promise((resolve, reject) => {
+      exec(
+        `gcloud compute instances describe ${id} --flatten="metadata[]" --zone=${this.zone}`,
+        { silent: true },
+        (code, stdout, stderr) => {
+          if (code !== 0 || stderr) {
+            reject(stderr ? stderr : 'Error');
           }
-        }
-      },
-    );
+
+          let output = stdout
+            .trim()
+            .split('\n')
+            .slice(3);
+          output.pop();
+
+          const object = {
+            created: -1,
+            initialized: -1,
+            serving: false,
+          };
+
+          for (let i = 0; i < output.length; i++) {
+            const line = output[i];
+
+            if (line.includes('created')) {
+              // @ts-ignore
+              object.created = Number(output[i + 1].match(/\d+/)[0].trim());
+            } else if (line.includes('startup-on')) {
+              // @ts-ignore
+              object.initialized = Number(output[i + 1].match(/\d+/)[0].trim());
+            } else if (line.includes('startup-status')) {
+              object.serving = output[i + 1].split('value: ')[1].replace("'", '') === 'running';
+            }
+          }
+
+          console.log(object);
+
+          resolve(object);
+        },
+      );
+    });
   }
 
   filterInstances(): void {
