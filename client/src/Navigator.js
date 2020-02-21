@@ -23,7 +23,6 @@ import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import SchoolIcon from '@material-ui/icons/School';
 import FileCopyIcon from '@material-ui/icons/FileCopy';
 import AccountBalanceIcon from '@material-ui/icons/AccountBalance';
-// import
 
 const categories = [
     {

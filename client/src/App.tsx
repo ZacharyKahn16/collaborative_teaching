@@ -4,6 +4,7 @@ import Home from "./Home";
 import HomeContent from "./MyFiles";
 import Courses from "./MyCourses";
 import "./Styles/Navigator.css";
+import "./Styles/MyCourses.css";
 import {Router, Route} from "react-router";
 import { BrowserRouter } from 'react-router-dom';
 
