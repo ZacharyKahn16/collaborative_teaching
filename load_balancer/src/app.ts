@@ -1,4 +1,4 @@
-import { GCLOUD } from './lib/GCloud';
+import { makeGCloud, getGCloud } from './lib/GCloud';
 import express from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
@@ -17,12 +17,17 @@ app.get('/env', (req, res) => {
 });
 
 app.get('/instances', (req, res) => {
+  const gcloud = getGCloud();
   return res.send({
-    instances: GCLOUD.instances,
+    all: gcloud.allInstances,
+    db: gcloud.databaseInstances,
+    master: gcloud.masterInstances,
+    lb: gcloud.loadBalancerInstances,
   });
 });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
+  makeGCloud();
   console.debug(`Server started at http://localhost:${PORT}`);
 });
