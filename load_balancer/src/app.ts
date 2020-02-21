@@ -12,14 +12,13 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(morgan('dev'));
 
-app.get('/env', (req, res) => {
-  return res.send(process.env);
-});
-
-app.get('/instances', (req, res) => {
+app.get('/network', (req, res) => {
   const gcloud = getGCloud();
   return res.send({
-    all: gcloud.allInstances,
+    this: {
+      name: gcloud.name,
+      main: gcloud.amIMainBalancer,
+    },
     db: gcloud.databaseInstances,
     master: gcloud.masterInstances,
     lb: gcloud.loadBalancerInstances,
