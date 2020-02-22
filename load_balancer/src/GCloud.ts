@@ -9,9 +9,8 @@ const INSTANCE_TYPE = {
   DATABASE: 'database',
 };
 
-const ONE_MIN = 60 * 1000; // ms
-const TWO_MIN = 2 * 60 * 1000; // ms
-const TIME_TILL_ACTIVE = 7 * 60; // s
+const REFRESH_DATA_INTERVAL = 1.5 * 60 * 1000; // 90 sec (ms)
+const TIME_TILL_ACTIVE = 7 * 60; // 7 min (s)
 
 const NUM_BALANCERS = 2;
 const NUM_MASTERS = 3;
@@ -19,7 +18,7 @@ const MASTER_IDS: number[] = [];
 
 const staticIps = ['35.224.26.195', '35.226.186.203'];
 
-interface ComputeEngineInstance {
+export interface ComputeEngineInstance {
   id: string;
   instanceType: string;
   number: number;
@@ -37,7 +36,7 @@ interface ComputeEngineInstance {
 /**
  * Class to interact with GCloud and keep track of its resources
  */
-class GCloud {
+export class GCloud {
   readonly id = process.env.NAME;
   thisInstance: ComputeEngineInstance | undefined = undefined;
   amIMainBalancer: boolean = false;
@@ -56,11 +55,7 @@ class GCloud {
 
     setInterval(() => {
       this.getInstances();
-    }, ONE_MIN);
-
-    setInterval(() => {
-      this.healthCheck();
-    }, TWO_MIN);
+    }, REFRESH_DATA_INTERVAL);
   }
 
   getInstances() {
@@ -123,8 +118,15 @@ class GCloud {
         `gcloud compute instances describe ${id} --flatten="metadata[]" --zone=${ZONE}`,
         { silent: true },
         (code, stdout, stderr) => {
+          const object = {
+            created: -1,
+            initialized: -1,
+            serving: false,
+          };
+
           if (code !== 0 || stderr) {
-            reject(stderr ? stderr : `Error getting metadata for ${id}`);
+            console.error(stderr ? stderr : `Error getting metadata for ${id}`);
+            resolve(object);
           }
 
           let output = stdout
@@ -132,12 +134,6 @@ class GCloud {
             .split('\n')
             .slice(3);
           output.pop();
-
-          const object = {
-            created: -1,
-            initialized: -1,
-            serving: false,
-          };
 
           for (let i = 0; i < output.length; i++) {
             const line = output[i];
@@ -188,6 +184,8 @@ class GCloud {
       }
 
       this.amIMainBalancer = amIMain;
+
+      this.healthCheck();
     }
   }
 
@@ -296,10 +294,14 @@ class GCloud {
 
 let gcloud: GCloud;
 
-export function makeGCloud() {
+export function makeGCloud(): void {
   gcloud = new GCloud();
 }
 
-export function getGCloud() {
+export function getGCloud(): GCloud {
+  if (gcloud === undefined) {
+    makeGCloud();
+  }
+
   return gcloud;
 }
