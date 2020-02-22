@@ -1,9 +1,9 @@
-import { makeGCloud, getGCloud } from './lib/GCloud';
 import express from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import morgan from 'morgan';
 import asyncHandler from 'express-async-handler';
+import { makeGCloud, getGCloud } from './GCloud';
 
 const app = express();
 
@@ -15,10 +15,7 @@ app.use(morgan('dev'));
 app.get('/network', (req, res) => {
   const gcloud = getGCloud();
   return res.send({
-    this: {
-      name: gcloud.name,
-      main: gcloud.amIMainBalancer,
-    },
+    this: gcloud.thisInstance,
     db: gcloud.databaseInstances,
     master: gcloud.masterInstances,
     lb: gcloud.loadBalancerInstances,

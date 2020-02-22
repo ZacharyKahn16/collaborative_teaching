@@ -1,4 +1,5 @@
 import { exec } from 'shelljs';
+import moment from 'moment';
 
 const ZONE = 'us-central1-a';
 const PROJECT_ID = 'collaborative-teaching';
@@ -8,12 +9,15 @@ const INSTANCE_TYPE = {
   DATABASE: 'database',
 };
 
+const ONE_MIN = 60 * 1000; // ms
+const TWO_MIN = 2 * 60 * 1000; // ms
+const TIME_TILL_ACTIVE = 7 * 60; // s
+
 const NUM_BALANCERS = 2;
 const NUM_MASTERS = 3;
-const ONE_MIN = 60 * 1000;
-const THIRTY_SEC = 30 * 1000;
+const MASTER_IDS: number[] = [];
 
-const staticIps = ['35.208.223.194', '35.208.193.108'];
+const staticIps = ['35.224.26.195', '35.226.186.203'];
 
 interface ComputeEngineInstance {
   id: string;
@@ -34,16 +38,20 @@ interface ComputeEngineInstance {
  * Class to interact with GCloud and keep track of its resources
  */
 class GCloud {
-  readonly name = process.env.NAME;
+  readonly id = process.env.NAME;
+  thisInstance: ComputeEngineInstance | undefined = undefined;
   amIMainBalancer: boolean = false;
 
   allInstances: ComputeEngineInstance[] = [];
-
   databaseInstances: ComputeEngineInstance[] = [];
   masterInstances: ComputeEngineInstance[] = [];
   loadBalancerInstances: ComputeEngineInstance[] = [];
 
   constructor() {
+    for (let i = 0; i < NUM_MASTERS; i++) {
+      MASTER_IDS.push(i + 1);
+    }
+
     this.getInstances();
 
     setInterval(() => {
@@ -51,8 +59,8 @@ class GCloud {
     }, ONE_MIN);
 
     setInterval(() => {
-      this.checkIfMainBalancer();
-    }, THIRTY_SEC);
+      this.healthCheck();
+    }, TWO_MIN);
   }
 
   getInstances() {
@@ -163,53 +171,97 @@ class GCloud {
     this.databaseInstances = this.allInstances.filter((instance) => {
       return instance.instanceType.includes(INSTANCE_TYPE.DATABASE);
     });
-  }
 
-  checkIfMainBalancer(): void {
-    if (this.loadBalancerInstances.length < 1) {
-      return;
-    }
-
-    const thisInstance = this.loadBalancerInstances.filter((instances) => {
-      return instances.id === this.name;
-    })[0];
-
-    const otherInstances = this.loadBalancerInstances.filter((instances) => {
-      return instances.id !== this.name;
+    let thisInstance = this.allInstances.filter((instance) => {
+      return instance.id === this.id;
     });
 
-    let amIMain = true;
+    if (thisInstance.length === 1) {
+      this.thisInstance = thisInstance[0];
 
-    for (const instance of otherInstances) {
-      if (thisInstance.number > instance.number) {
-        amIMain = false;
+      let amIMain = true;
+
+      for (const instance of this.loadBalancerInstances) {
+        if (this.thisInstance.number > instance.number) {
+          amIMain = false;
+        }
       }
-    }
 
-    this.amIMainBalancer = amIMain;
+      this.amIMainBalancer = amIMain;
+    }
   }
 
   healthCheck(): void {
-    
+    this.checkOtherLoadBalancer();
+    this.checkMasters();
   }
 
-  createLoadBalancer(num: number): void {
-    const name = `${INSTANCE_TYPE.BALANCER}-${num}`;
-    const ip = num === 1 ? staticIps[0] : staticIps[1];
+  checkOtherLoadBalancer(): void {
+    if (this.thisInstance !== undefined) {
+      if (this.loadBalancerInstances.length < NUM_BALANCERS) {
+        this.createLoadBalancer();
+      } else {
+        const otherBalancers = this.loadBalancerInstances.filter((instance) => {
+          // @ts-ignore
+          return instance.id !== this.thisInstance.id;
+        });
 
-    const command = `gcloud beta compute --project=${PROJECT_ID} instances create ${name} --zone=${ZONE} --machine-type=f1-micro --subnet=default --network-tier=PREMIUM --maintenance-policy=MIGRATE --service-account=165250393917-compute@developer.gserviceaccount.com --scopes=https://www.googleapis.com/auth/cloud-platform --tags=http-server --image=ubuntu-minimal-1804-bionic-v20200131 --image-project=ubuntu-os-cloud --boot-disk-size=10GB --boot-disk-type=pd-standard --boot-disk-device-name=loadbalancer-1 --no-shielded-secure-boot --shielded-vtpm --shielded-integrity-monitoring --reservation-affinity=any --address=${ip} --metadata=startup-script-url=gs://collaborative-teaching.appspot.com/scripts/startup-loadbalancer.bash,startup-status=initializing,created-on=$(date +%s)`;
-
-    exec(command, { silent: true }, (code, stdout, stderr) => {
-      if (code !== 0 || stderr) {
-        console.error(`Creating Load Balancer failed - ${code}: ${stderr}`);
+        for (const balancer of otherBalancers) {
+          if (!this.isInstanceGood(balancer)) {
+            this.deleteInstance(balancer.id);
+          }
+        }
       }
-    });
+    }
+  }
+
+  checkMasters(): void {
+    if (
+      this.thisInstance !== undefined &&
+      this.loadBalancerInstances.length === NUM_BALANCERS &&
+      !this.amIMainBalancer
+    ) {
+      const mastersAvailNums = this.masterInstances.map((instance) => {
+        return instance.number;
+      });
+
+      const mastersNotAvailNums = MASTER_IDS.filter((num) => {
+        return mastersAvailNums.indexOf(num) < 0;
+      });
+
+      for (const num of mastersNotAvailNums) {
+        this.createMaster(num);
+      }
+
+      for (const instance of this.masterInstances) {
+        if (!this.isInstanceGood(instance)) {
+          this.deleteInstance(instance.id);
+        }
+      }
+    }
+  }
+
+  createLoadBalancer(): void {
+    if (this.thisInstance !== undefined) {
+      const index = staticIps.indexOf(this.thisInstance.publicIp);
+      const nextIndex = index === 0 ? 1 : 0;
+      const nextIp = staticIps[nextIndex];
+      const nextName = `${INSTANCE_TYPE.BALANCER}-${this.thisInstance.number + 1}`;
+
+      const command = `gcloud beta compute --project=${PROJECT_ID} instances create ${nextName} --zone=${ZONE} --machine-type=f1-micro --subnet=default --network-tier=PREMIUM --maintenance-policy=MIGRATE --service-account=165250393917-compute@developer.gserviceaccount.com --scopes=https://www.googleapis.com/auth/cloud-platform --tags=http-server --image=ubuntu-minimal-1804-bionic-v20200131 --image-project=ubuntu-os-cloud --boot-disk-size=10GB --boot-disk-type=pd-standard --boot-disk-device-name=${nextName} --no-shielded-secure-boot --shielded-vtpm --shielded-integrity-monitoring --reservation-affinity=any --address=${nextIp} --metadata=startup-script-url=gs://collaborative-teaching.appspot.com/scripts/startup-loadbalancer.bash,startup-status=initializing,created-on=$(date +%s)`;
+
+      exec(command, { silent: true }, (code, stdout, stderr) => {
+        if (code !== 0 || stderr) {
+          console.error(`Creating Load Balancer failed - ${code}: ${stderr}`);
+        }
+      });
+    }
   }
 
   createMaster(num: number): void {
     const name = `${INSTANCE_TYPE.MASTER}-${num}`;
 
-    const command = `gcloud beta compute --project=${PROJECT_ID} instances create ${name} --zone=${ZONE} --machine-type=f1-micro --subnet=default --network-tier=PREMIUM --maintenance-policy=MIGRATE --service-account=165250393917-compute@developer.gserviceaccount.com --scopes=https://www.googleapis.com/auth/cloud-platform --tags=http-server --image=ubuntu-minimal-1804-bionic-v20200131 --image-project=ubuntu-os-cloud --boot-disk-size=10GB --boot-disk-type=pd-standard --boot-disk-device-name=loadbalancer-1 --no-shielded-secure-boot --shielded-vtpm --shielded-integrity-monitoring --reservation-affinity=any --metadata=startup-script-url=gs://collaborative-teaching.appspot.com/scripts/startup-master.bash,startup-status=initializing,created-on=$(date +%s)`;
+    const command = `gcloud beta compute --project=${PROJECT_ID} instances create ${name} --zone=${ZONE} --machine-type=f1-micro --subnet=default --network-tier=PREMIUM --maintenance-policy=MIGRATE --service-account=165250393917-compute@developer.gserviceaccount.com --scopes=https://www.googleapis.com/auth/cloud-platform --tags=http-server --image=ubuntu-minimal-1804-bionic-v20200131 --image-project=ubuntu-os-cloud --boot-disk-size=10GB --boot-disk-type=pd-standard --boot-disk-device-name=${name} --no-shielded-secure-boot --shielded-vtpm --shielded-integrity-monitoring --reservation-affinity=any --metadata=startup-script-url=gs://collaborative-teaching.appspot.com/scripts/startup-master.bash,startup-status=initializing,created-on=$(date +%s)`;
 
     exec(command, { silent: true }, (code, stdout, stderr) => {
       if (code !== 0 || stderr) {
@@ -226,6 +278,19 @@ class GCloud {
         console.error(`Deleting node failed - ${code}: ${stderr}`);
       }
     });
+  }
+
+  isInstanceGood(instance: ComputeEngineInstance): boolean {
+    if (!instance.createdOn || Number.isNaN(instance.createdOn) || instance.createdOn === -1) {
+      return true;
+    }
+
+    if (instance.instanceRunning && (instance.instanceServing as boolean)) {
+      return true;
+    }
+
+    const now = moment().unix();
+    return now <= instance.createdOn + TIME_TILL_ACTIVE;
   }
 }
 
