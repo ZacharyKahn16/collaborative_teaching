@@ -15,6 +15,10 @@ class MasterTracker {
   }
 
   getNextMaster(): ComputeEngineInstance | null {
+    if (!this.gcloud.amIMainBalancer) {
+      return null;
+    }
+
     this.getMasters();
 
     if (this.masterInstances.length === 0) {

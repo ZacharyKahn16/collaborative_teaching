@@ -10,11 +10,13 @@ const INSTANCE_TYPE = {
 };
 
 const REFRESH_DATA_INTERVAL = 1.5 * 60 * 1000; // 90 sec (ms)
-const TIME_TILL_ACTIVE = 7 * 60; // 7 min (s)
+const TIME_TILL_ACTIVE = 8 * 60; // 7 min (s)
 
 const NUM_BALANCERS = 2;
 const NUM_MASTERS = 3;
+const NUM_DATABASES = 4;
 const MASTER_IDS: number[] = [];
+const DATABASE_IDS: number[] = [];
 
 const staticIps = ['35.224.26.195', '35.226.186.203'];
 
@@ -49,6 +51,10 @@ export class GCloud {
   constructor() {
     for (let i = 0; i < NUM_MASTERS; i++) {
       MASTER_IDS.push(i + 1);
+    }
+
+    for (let i = 0; i < NUM_DATABASES; i++) {
+      DATABASE_IDS.push(i + 1);
     }
 
     this.getInstances();
@@ -239,6 +245,32 @@ export class GCloud {
     }
   }
 
+  checkDatabases(): void {
+    if (
+      this.thisInstance !== undefined &&
+      this.loadBalancerInstances.length === NUM_BALANCERS &&
+      !this.amIMainBalancer
+    ) {
+      const databasesAvailNums = this.databaseInstances.map((instance) => {
+        return instance.number;
+      });
+
+      const databasesNotAvailNums = DATABASE_IDS.filter((num) => {
+        return databasesAvailNums.indexOf(num) < 0;
+      });
+
+      for (const num of databasesNotAvailNums) {
+        this.createDatabase(num);
+      }
+
+      for (const instance of this.databaseInstances) {
+        if (!this.isInstanceGood(instance)) {
+          this.deleteInstance(instance.id);
+        }
+      }
+    }
+  }
+
   createLoadBalancer(): void {
     if (this.thisInstance !== undefined) {
       const index = staticIps.indexOf(this.thisInstance.publicIp);
@@ -264,6 +296,18 @@ export class GCloud {
     exec(command, { silent: true }, (code, stdout, stderr) => {
       if (code !== 0 || stderr) {
         console.error(`Creating Master failed - ${code}: ${stderr}`);
+      }
+    });
+  }
+
+  createDatabase(num: number): void {
+    const name = `${INSTANCE_TYPE.DATABASE}-${num}`;
+
+    const command = `gcloud beta compute --project=${PROJECT_ID} instances create ${name} --zone=${ZONE} --machine-type=f1-micro --subnet=default --network-tier=PREMIUM --maintenance-policy=MIGRATE --service-account=165250393917-compute@developer.gserviceaccount.com --scopes=https://www.googleapis.com/auth/cloud-platform --tags=database-server --image=ubuntu-minimal-1804-bionic-v20200131 --image-project=ubuntu-os-cloud --boot-disk-size=10GB --boot-disk-type=pd-standard --boot-disk-device-name=${name} --no-shielded-secure-boot --shielded-vtpm --shielded-integrity-monitoring --reservation-affinity=any --metadata=startup-script-url=gs://collaborative-teaching.appspot.com/scripts/startup-database.bash,startup-status=initializing,created-on=$(date +%s)`;
+
+    exec(command, { silent: true }, (code, stdout, stderr) => {
+      if (code !== 0 || stderr) {
+        console.error(`Creating Database failed - ${code}: ${stderr}`);
       }
     });
   }
