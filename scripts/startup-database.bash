@@ -4,7 +4,8 @@ PROJECT_ID=$(curl -s "http://metadata.google.internal/computeMetadata/v1/project
 NAME=$(curl -s "http://metadata.google.internal/computeMetadata/v1/instance/name" -H "Metadata-Flavor: Google")
 
 # Install dependencies
-apt-get update
+apt-get update && apt-get upgrade -y
+apt-get install -yq ca-certificates build-essential curl gnupg2 nano vim net-tools
 apt-get install -y mongodb
 
 service mongodb stop
