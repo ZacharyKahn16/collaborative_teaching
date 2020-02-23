@@ -198,6 +198,7 @@ export class GCloud {
   healthCheck(): void {
     this.checkOtherLoadBalancer();
     this.checkMasters();
+    this.checkDatabases();
   }
 
   checkOtherLoadBalancer(): void {
