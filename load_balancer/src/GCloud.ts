@@ -340,7 +340,9 @@ export class GCloud {
 let gcloud: GCloud;
 
 export function makeGCloud(): void {
-  gcloud = new GCloud();
+  if (gcloud === undefined) {
+    gcloud = new GCloud();
+  }
 }
 
 export function getGCloud(): GCloud {

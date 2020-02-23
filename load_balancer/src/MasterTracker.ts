@@ -60,7 +60,9 @@ class MasterTracker {
 let masterTracker: MasterTracker;
 
 export function makeMasterTracker(): void {
-  masterTracker = new MasterTracker();
+  if (masterTracker === undefined) {
+    masterTracker = new MasterTracker();
+  }
 }
 
 export function getMasterTracker(): MasterTracker {
