@@ -12,10 +12,10 @@ ln -s /opt/nodejs/bin/node /usr/bin/node
 ln -s /opt/nodejs/bin/npm /usr/bin/npm
 
 # Get Code
-gsutil cp -r gs://collaborative-teaching.appspot.com/load_balancer /opt
+gsutil cp -r gs://collaborative-teaching.appspot.com/master /opt
 
 # Install Dependencies
-cd /opt/load_balancer
+cd /opt/master
 npm install
 npm run build
 cp package.json build/
@@ -24,12 +24,12 @@ cp -r node_modules/ build/
 
 # Create a nodeapp user. The application will run as this user.
 useradd -m -d /home/nodeapp nodeapp
-chown -R nodeapp:nodeapp /opt/load_balancer
+chown -R nodeapp:nodeapp /opt/master
 
 # Configure supervisor to run the node app.
 cat >/etc/supervisor/conf.d/node-app.conf << EOF
 [program:nodeapp]
-directory=/opt/load_balancer/build
+directory=/opt/master/build
 command=npm start
 autostart=true
 autorestart=true

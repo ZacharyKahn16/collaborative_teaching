@@ -1,6 +1,6 @@
 {
-  "name": "master",
-  "description": "Master Node code",
+  "name": "worker",
+  "description": "Worker Node code",
   "version": "0.0.1",
   "private": true,
   "main": "app.js",
