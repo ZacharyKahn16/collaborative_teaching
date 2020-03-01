@@ -12,6 +12,7 @@ import IconButton from '@material-ui/core/IconButton';
 import { withStyles } from '@material-ui/core/styles';
 import SearchIcon from '@material-ui/icons/Search';
 import RefreshIcon from '@material-ui/icons/Refresh';
+import CourseHeader from "./MyCoursesHeader";
 
 const styles = theme => ({
     paper: {
@@ -36,14 +37,69 @@ const styles = theme => ({
     },
 });
 
+const listOfFiles = [
+    {
+        filename: "book",
+        author: "daniel"
+    },
+    {
+        filename: "book2",
+        author: "john"
+    },
+    {
+        filename: "book3",
+        author: "mike"
+    }
+]
+
 function MyCourses(props) {
     const { classes } = props;
+    const [mobileOpen, setMobileOpen] = React.useState(false);
+
+    const handleDrawerToggle = () => {
+        setMobileOpen(!mobileOpen);
+    };
+
+    function handleSearchOnChange(e) {
+        // if (e.target.value
+        console.log(e.key)
+        if (e.key == "Enter") {
+            console.log(e.target.value)
+        }
+    }
+
 
     return (
-        <Paper className={classes.paper}>
+        <Paper id={"paperID"}>
+            <CourseHeader onDrawerToggle={handleDrawerToggle} setTitle={"Content Bank"} />
             <AppBar className={classes.searchBar} position="static" color="default" elevation={0}>
                 <Toolbar>
-
+                    <Grid container spacing={2} alignItems="center">
+                        <Grid item>
+                            <SearchIcon className={classes.block} color="inherit" />
+                        </Grid>
+                        <Grid item xs>
+                            <TextField
+                                fullWidth
+                                placeholder="Search by author or file name"
+                                InputProps={{
+                                    disableUnderline: true,
+                                    className: classes.searchInput,
+                                }}
+                                onKeyDown={handleSearchOnChange}
+                            />
+                        </Grid>
+                        <Grid item>
+                            {/*<Button variant="contained" color="primary" className={classes.addUser}>*/}
+                            {/*    Add user*/}
+                            {/*</Button>*/}
+                            <Tooltip title="Reload">
+                                <IconButton>
+                                    <RefreshIcon className={classes.block} color="inherit" />
+                                </IconButton>
+                            </Tooltip>
+                        </Grid>
+                    </Grid>
                 </Toolbar>
             </AppBar>
         </Paper>

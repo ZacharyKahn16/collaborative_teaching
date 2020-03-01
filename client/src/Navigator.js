@@ -27,9 +27,9 @@ import AccountBalanceIcon from '@material-ui/icons/AccountBalance';
 const categories = [
     {
         children: [
-            { id: 'My Courses', icon: <SchoolIcon />, active: true, path: '/my-courses' },
-            { id: 'My Files', icon: <FileCopyIcon />, path: '/my-files' },
-            { id: 'Browse Content Bank', icon: <AccountBalanceIcon />, path: '/browse-content' },
+            { id: 'My Courses', icon: <SchoolIcon />, path: '/my-courses', numIndex: 0},
+            { id: 'My Files', icon: <FileCopyIcon />, path: '/my-files', numIndex: 1 },
+            { id: 'Browse Content Bank', icon: <AccountBalanceIcon />, path: '/browse-content', numIndex: 2 },
         ],
     },
     {
@@ -81,7 +81,18 @@ const styles = theme => ({
 
 function Navigator(props) {
     console.log(props)
+    setActiveTab()
     const { classes, ...other } = props;
+
+    function setActiveTab() {
+        categories[0].children.forEach(function(element) {
+            if (window.location.href.includes(element.path)) {
+                element.active = true
+            } else {
+                element.active = false
+            }
+        })
+    }
 
     return (
         <Drawer variant="permanent" {...other}>
@@ -91,7 +102,7 @@ function Navigator(props) {
                 </ListItem>
                 {categories.map(({ id, children }) => (
                     <React.Fragment key={id}>
-                        {children.map(({ id: childId, icon, active, styleid, path }) => (
+                        {children.map(({ id: childId, icon, active, styleid, path, numIndex }) => (
                             <Link
                                 to={path}
                                 classes={{

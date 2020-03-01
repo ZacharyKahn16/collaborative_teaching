@@ -101,11 +101,11 @@ function Header(props) {
                             {/*<Button className={classes.button} variant="outlined" color="inherit" size="small">*/}
                             {/*    Web setup*/}
                             {/*</Button>*/}
-                            <Tooltip title="Add New Course">
-                                <IconButton color="inherit">
-                                    <AddIcon />
-                                </IconButton>
-                            </Tooltip>
+                            {/*<Tooltip title="Add New Course">*/}
+                            {/*    <IconButton color="inherit">*/}
+                            {/*        <AddIcon />*/}
+                            {/*    </IconButton>*/}
+                            {/*</Tooltip>*/}
                         </Grid>
                         <Grid item>
                             <Tooltip title="Help">

@@ -140,15 +140,12 @@ function MyCourses(props) {
                 description: desc
             }
         ]);
-        console.log(myClasses)
     }
 
     function createCourseName(e) {
-        console.log(e.target.value)
         setCourseName(e.target.value)
     }
     function createCourseDescription(e) {
-        console.log(e.target.value)
         setCourseDescription(e.target.value)
     }
 
