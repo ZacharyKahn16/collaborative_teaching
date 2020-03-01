@@ -2,8 +2,8 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import morgan from 'morgan';
-import { makeGCloud, getGCloud } from './GCloud';
-import { makeMasterTracker, getMasterTracker } from './MasterTracker';
+import { GCloud } from './GCloud';
+import { WorkerTracker } from './WorkerTracker';
 
 const app = express();
 
@@ -13,23 +13,23 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(morgan('dev'));
 
 app.get('/instances', (req, res) => {
-  const gcloud = getGCloud();
+  const gcloud = GCloud.getGCloud();
+
   return res.send({
-    thisInstance: {
-      mainBalancer: gcloud.amIMainBalancer,
+    thisMaster: {
+      responder: gcloud.amIResponder,
+      coordinator: !gcloud.amIResponder,
       ...gcloud.thisInstance,
     },
-    db: gcloud.databaseInstances,
-    master: gcloud.masterInstances,
-    lb: gcloud.loadBalancerInstances,
+    fdbs: gcloud.databaseInstances,
+    workers: gcloud.workerInstances,
+    masters: gcloud.masterInstances,
   });
 });
 
-app.get('/master', (req, res) => {
-  const masterTracker = getMasterTracker();
-
+app.get('/worker', (req, res) => {
   return res.send({
-    master: masterTracker.getNextMaster(),
+    worker: WorkerTracker.getWorkerTracker().getNextWorker(),
   });
 });
 
@@ -39,7 +39,7 @@ app.use('/', (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  makeGCloud();
-  makeMasterTracker();
+  GCloud.makeGCloud();
+  WorkerTracker.makeWorkerTracker();
   console.debug(`Server started at http://localhost:${PORT}`);
 });
