@@ -1,6 +1,7 @@
 .courseOptions {
     /*position: absolute;*/
     /*bottom: 0;*/
+    float: right;
 }
 
 #courseCard {
@@ -15,6 +16,10 @@
     height: 75%;
 }
 
+#addNewCard {
+    height: 100%;
+}
+
 .flex-container {
     display: flex;
     flex-wrap: wrap;
@@ -27,3 +32,4 @@
     line-height: 75px;
     font-size: 30px;
 }
+
