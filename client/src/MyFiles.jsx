@@ -14,6 +14,7 @@ import SearchIcon from '@material-ui/icons/Search';
 import RefreshIcon from '@material-ui/icons/Refresh';
 import CourseHeader from "./MyCoursesHeader";
 import PublishIcon from '@material-ui/icons/Publish';
+import FileList from "./FileList";
 
 const styles = theme => ({
     paper: {
@@ -85,9 +86,7 @@ function MyFiles(props) {
                 </Toolbar>
             </AppBar>
             <div className={classes.contentWrapper}>
-                <Typography color="textSecondary" align="center">
-                    No users for this project yet
-                </Typography>
+                <FileList/>
             </div>
         </Paper>
     );
