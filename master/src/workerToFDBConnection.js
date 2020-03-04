@@ -11,7 +11,7 @@ const ObjectID = require('mongodb').ObjectID;
 /**
  * Database collection structure for worker nodes.
  *
- * Defines the structure for inserting, updating, and retrieving docuements from
+ * Defines the structure for inserting, updating, and retrieving documents from
  * the Mongodb database at each worker.
  **/
 class FileDatabase {
@@ -306,13 +306,13 @@ class AccessFDB {
 }
 
 // Export classes.
-module.exports.FileDatabase;
+// module.exports.FileDatabase;
 module.exports.AccessFDB;
 
 // Toy example.
 // This would be called by a real worker.
-const url = 'mongodb://localhost:27017/';
-let master = new AccessFDB(url);
+// const url = 'mongodb://localhost:27017/';
+// let master = new AccessFDB(url);
 
 // // Retrieve a file.
 // master.retrieveFile(123).then(
