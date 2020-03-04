@@ -16,7 +16,7 @@ import CourseHeader from "./MyCoursesHeader";
 
 const styles = theme => ({
     paper: {
-        maxWidth: 936,
+        // maxWidth: 936,
         margin: 'auto',
         overflow: 'hidden',
     },
@@ -70,7 +70,7 @@ function MyCourses(props) {
 
 
     return (
-        <Paper id={"paperID"}>
+        <Paper className={classes.paper}>
             <CourseHeader onDrawerToggle={handleDrawerToggle} setTitle={"Content Bank"} />
             <AppBar className={classes.searchBar} position="static" color="default" elevation={0}>
                 <Toolbar>
@@ -102,6 +102,11 @@ function MyCourses(props) {
                     </Grid>
                 </Toolbar>
             </AppBar>
+            <div className={classes.contentWrapper}>
+                <Typography color="textSecondary" align="center">
+                    No users for this project yet
+                </Typography>
+            </div>
         </Paper>
     );
 }

@@ -12,12 +12,15 @@ import IconButton from '@material-ui/core/IconButton';
 import { withStyles } from '@material-ui/core/styles';
 import SearchIcon from '@material-ui/icons/Search';
 import RefreshIcon from '@material-ui/icons/Refresh';
+import CourseHeader from "./MyCoursesHeader";
+import PublishIcon from '@material-ui/icons/Publish';
 
 const styles = theme => ({
     paper: {
-        maxWidth: 936,
+        // maxWidth: 936,
         margin: 'auto',
         overflow: 'hidden',
+
     },
     searchBar: {
         borderBottom: '1px solid rgba(0, 0, 0, 0.12)',
@@ -38,9 +41,15 @@ const styles = theme => ({
 
 function MyFiles(props) {
     const { classes } = props;
+    const [mobileOpen, setMobileOpen] = React.useState(false);
+
+    const handleDrawerToggle = () => {
+        setMobileOpen(!mobileOpen);
+    };
 
     return (
         <Paper className={classes.paper}>
+            <CourseHeader onDrawerToggle={handleDrawerToggle} setTitle={"My Files"} />
             <AppBar className={classes.searchBar} position="static" color="default" elevation={0}>
                 <Toolbar>
                     <Grid container spacing={2} alignItems="center">
@@ -59,7 +68,12 @@ function MyFiles(props) {
                         </Grid>
                         <Grid item>
                             <Button variant="contained" color="primary" className={classes.addUser}>
-                                Add user
+                                <PublishIcon className={classes.block} color="inherit" />
+                                Add file
+                                <input
+                                    type="file"
+                                    style={{ display: "none" }}
+                                />
                             </Button>
                             <Tooltip title="Reload">
                                 <IconButton>

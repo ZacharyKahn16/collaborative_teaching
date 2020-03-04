@@ -35,7 +35,7 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 
 const styles = theme => ({
     paper: {
-        maxWidth: 936,
+        // maxWidth: 936,
         margin: 'auto',
         overflow: 'hidden',
     },
@@ -150,7 +150,7 @@ function MyCourses(props) {
     }
 
     return (
-        <Paper id={"paperID"}>
+        <Paper className={classes.paper}>
             <CourseHeader onDrawerToggle={handleDrawerToggle} setTitle={"My Courses"} />
             {/*<h1>My Courses</h1>*/}
             <AppBar className={classes.searchBar} position="static" color="default" elevation={0}>
