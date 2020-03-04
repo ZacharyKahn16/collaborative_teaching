@@ -101,23 +101,25 @@ let categories = [
 
 function MyCourses(props) {
     const { classes } = props;
+    const cardStyles = useStyles();
+
     const [mobileOpen, setMobileOpen] = React.useState(false);
     let [myClasses, setMyClasses] = React.useState(categories);
-    const cardStyles = useStyles();
+
     let [courseName, setCourseName] = React.useState("");
     let [courseDescription, setCourseDescription] = React.useState("");
 
-    const [open, setOpen] = React.useState(false);
+    const [openDialogueNewCourse, setOpenDialogueNewCourse] = React.useState(false);
 
-    const handleClickOpen = () => {
-        setOpen(true);
+    const handleClickOpenDialogueNewCourse = () => {
+        setOpenDialogueNewCourse(true);
     };
 
-    const handleCloseCreation = (addedCourse) => {
+    const handleCloseDialogueNewCourse = (addedCourse) => {
         if (addedCourse) {
             addNewCourse(courseName, courseDescription)
         }
-        setOpen(false);
+        setOpenDialogueNewCourse(false);
     };
 
     const handleDrawerToggle = () => {
@@ -149,6 +151,10 @@ function MyCourses(props) {
         setCourseDescription(e.target.value)
     }
 
+    function editCourse(index) {
+        console.log(index)
+    }
+
     return (
         <Paper className={classes.paper}>
             <CourseHeader onDrawerToggle={handleDrawerToggle} setTitle={"My Courses"} />
@@ -170,9 +176,16 @@ function MyCourses(props) {
                                     </CardContent>
                                 </CardActionArea>
                                 <CardActions className={"courseOptions"}>
-                                    <IconButton aria-label="settings" onClick={deleteClass.bind(this, index)} >
-                                        <DeleteIcon />
-                                    </IconButton>
+                                    <Tooltip title={"Edit"} >
+                                        <IconButton aria-label="settings" onClick={() => editCourse(index)}>
+                                            <MoreVertIcon />
+                                        </IconButton>
+                                    </Tooltip>
+                                    <Tooltip title={"Remove"}>
+                                        <IconButton aria-label="settings" onClick={deleteClass.bind(this, index)} >
+                                            <DeleteIcon />
+                                        </IconButton>
+                                    </Tooltip>
                                 </CardActions>
                             </Card>
                             </div>
@@ -186,7 +199,7 @@ function MyCourses(props) {
                                         </Typography>
                                         <IconButton aria-label="settings">
                                             {/*<AddIcon onClick={() => addNewCourse()}/>*/}
-                                            <AddIcon onClick={() => handleClickOpen()}/>
+                                            <AddIcon onClick={() => handleClickOpenDialogueNewCourse()}/>
                                         </IconButton>
                                     </CardContent>
                                 </CardActionArea>
@@ -195,7 +208,7 @@ function MyCourses(props) {
                     </div>
                 </Toolbar>
             </AppBar>
-            <Dialog open={open} onClose={() => handleCloseCreation(false)} aria-labelledby="form-dialog-title">
+            <Dialog open={openDialogueNewCourse} onClose={() => handleCloseDialogueNewCourse(false)} aria-labelledby="form-dialog-title">
                 <DialogTitle id="form-dialog-title">Create New Course</DialogTitle>
                 <DialogContent>
                     <DialogContentText>
@@ -219,10 +232,10 @@ function MyCourses(props) {
                     />
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => handleCloseCreation(false)} color="primary">
+                    <Button onClick={() => handleCloseDialogueNewCourse(false)} color="primary">
                         Cancel
                     </Button>
-                    <Button onClick={() => handleCloseCreation(true)} color="primary">
+                    <Button onClick={() => handleCloseDialogueNewCourse(true)} color="primary">
                         Create Course
                     </Button>
                 </DialogActions>
