@@ -2,8 +2,8 @@ steps:
   # Delete the directories
   - name: "gcr.io/cloud-builders/gsutil"
     args: ["rm", "-r", "gs://collaborative-teaching.appspot.com/master"]
-  - name: "gcr.io/cloud-builders/gsutil"
-    args: ["rm", "-r", "gs://collaborative-teaching.appspot.com/worker"]
+  #  - name: "gcr.io/cloud-builders/gsutil"
+  #    args: ["rm", "-r", "gs://collaborative-teaching.appspot.com/worker"]
   - name: "gcr.io/cloud-builders/gsutil"
     args: ["rm", "-r", "gs://collaborative-teaching.appspot.com/scripts"]
 
