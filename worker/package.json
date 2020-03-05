@@ -1,6 +1,6 @@
 {
-  "name": "master",
-  "description": "Master Node code",
+  "name": "worker",
+  "description": "Worker Node code",
   "version": "0.0.1",
   "private": true,
   "main": "app.js",
@@ -9,14 +9,13 @@
     "npm": "6.x.x"
   },
   "scripts": {
-    "start": "node ./app.js",
-    "watch": "nodemon src/app.ts",
+    "start": "node src/app.js",
+    "watch": "nodemon src/app.js",
     "lint": "eslint --cache src --ext .ts --ext .js",
     "format": "npm run lint -- --fix",
-    "build": "rm -rf build && tsc"
+    "build": "rm -rf build && tsc && node generateAssets.js"
   },
   "dependencies": {
-    "axios": "0.19.2",
     "body-parser": "1.19.0",
     "cookie-parser": "1.4.4",
     "cors": "2.8.5",
@@ -26,10 +25,9 @@
     "moment": "2.24.0",
     "mongodb": "3.5.3",
     "morgan": "1.9.1",
-    "shelljs": "0.8.3"
+    "socket.io": "2.3.0"
   },
   "devDependencies": {
-    "@types/axios": "0.14.0",
     "@types/body-parser": "1.19.0",
     "@types/cookie-parser": "1.4.2",
     "@types/cors": "2.8.6",
@@ -39,6 +37,7 @@
     "@types/morgan": "1.7.37",
     "@types/node": "13.7.2",
     "@types/shelljs": "0.8.6",
+    "@types/socket.io": "2.1.4",
     "@types/validator": "12.0.1",
     "@types/write": "2.0.0",
     "@typescript-eslint/eslint-plugin": "2.20.0",
@@ -48,8 +47,8 @@
     "eslint-config-prettier": "6.10.0",
     "eslint-loader": "3.0.3",
     "eslint-plugin-prettier": "3.1.2",
-    "nodemon": "2.0.2",
     "prettier": "1.19.1",
+    "shelljs": "0.8.3",
     "ts-node": "8.6.2",
     "typescript": "3.7.5",
     "write": "2.0.0"
