@@ -12,10 +12,10 @@ ln -s /opt/nodejs/bin/node /usr/bin/node
 ln -s /opt/nodejs/bin/npm /usr/bin/npm
 
 # Get Code
-gsutil cp -r gs://collaborative-teaching.appspot.com/master /opt
+gsutil cp -r gs://collaborative-teaching.appspot.com/worker /opt
 
 # Install Dependencies
-cd /opt/master
+cd /opt/worker
 npm install
 npm run build
 cp package.json build/
@@ -24,12 +24,12 @@ cp -r node_modules/ build/
 
 # Create a nodeapp user. The application will run as this user.
 useradd -m -d /home/nodeapp nodeapp
-chown -R nodeapp:nodeapp /opt/master
+chown -R nodeapp:nodeapp /opt/worker
 
 # Configure supervisor to run the node app.
 cat >/etc/supervisor/conf.d/node-app.conf << EOF
 [program:nodeapp]
-directory=/opt/master/build
+directory=/opt/worker/build
 command=npm start
 autostart=true
 autorestart=true

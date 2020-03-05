@@ -39,7 +39,7 @@ app.use('/', (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
+  console.debug(`Server started at http://localhost:${PORT}`);
   GCloud.makeGCloud();
   WorkerTracker.makeWorkerTracker();
-  console.debug(`Server started at http://localhost:${PORT}`);
 });
