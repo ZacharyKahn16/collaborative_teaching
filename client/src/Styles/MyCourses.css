@@ -29,3 +29,7 @@
     font-size: 30px;
 }
 
+#courseLink{
+    text-decoration: none;
+    color: black
+}

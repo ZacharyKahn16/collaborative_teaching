@@ -4,26 +4,17 @@ import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
 import Typography from "@material-ui/core/Typography";
 import Paper from "@material-ui/core/Paper";
-import Grid from "@material-ui/core/Grid";
 import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
 import Tooltip from "@material-ui/core/Tooltip";
 import IconButton from "@material-ui/core/IconButton";
 import { withStyles, makeStyles } from "@material-ui/core/styles";
-import SearchIcon from "@material-ui/icons/Search";
-import RefreshIcon from "@material-ui/icons/Refresh";
 import Header from "./Header";
-import CourseHeader from "./MyCoursesHeader";
 import Card from "@material-ui/core/Card";
 import CardActionArea from "@material-ui/core/CardActionArea";
 import CardActions from "@material-ui/core/CardActions";
 import CardContent from "@material-ui/core/CardContent";
-import CardMedia from "@material-ui/core/CardMedia";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
-import SchoolIcon from "@material-ui/icons/School";
-import FileCopyIcon from "@material-ui/icons/FileCopy";
-import AccountBalanceIcon from "@material-ui/icons/AccountBalance";
-import ExitToAppIcon from "@material-ui/icons/ExitToApp";
 import DeleteIcon from "@material-ui/icons/Delete";
 import AddIcon from "@material-ui/icons/Add";
 import Dialog from "@material-ui/core/Dialog";
@@ -31,6 +22,7 @@ import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
 import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
+import {Link} from "react-router-dom";
 
 const styles = theme => ({
   paper: {
@@ -69,32 +61,38 @@ let categories = [
   {
     id: 0,
     course: "CPSC 559",
-    description: "Distributed systems.............."
+    description: "Distributed systems..............",
+    path: "/course-page"
   },
   {
     id: 1,
     course: "CPSC 471",
-    description: "Database management systems.............."
+    description: "Database management systems..............",
+    path: "/course-page"
   },
   {
     id: 2,
     course: "CPSC 565",
-    description: "Emergent Computing.............."
+    description: "Emergent Computing..............",
+    path: "/course-page"
   },
   {
     id: 3,
     course: "CPSC 413",
-    description: "Algorithms.............."
+    description: "Algorithms..............",
+    path: "/course-page"
   },
   {
     id: 4,
     course: "CPSC 405",
-    description: "Entreupernship............."
+    description: "Entreupernship.............",
+    path: "/course-page"
   },
   {
     id: 5,
     course: "SENG 513",
-    description: "Web based systems.............."
+    description: "Web based systems..............",
+    path: "/course-page"
   }
 ];
 
@@ -107,21 +105,35 @@ function MyCourses(props) {
 
   let [courseName, setCourseName] = React.useState("");
   let [courseDescription, setCourseDescription] = React.useState("");
+  let [courseIndex, setCourseIndex] = React.useState(0);
 
-  const [openDialogueNewCourse, setOpenDialogueNewCourse] = React.useState(
-    false
-  );
+  const [openDialogueNewCourse, setOpenDialogueNewCourse] = React.useState(false);
+  const [openEditCourse, setOpenEditCourse] = React.useState(false);
 
   const handleClickOpenDialogueNewCourse = () => {
     setOpenDialogueNewCourse(true);
   };
 
-  const handleCloseDialogueNewCourse = addedCourse => {
+  const handleCloseDialogueNewCourse = (addedCourse) => {
     if (addedCourse) {
       addNewCourse(courseName, courseDescription);
     }
     setOpenDialogueNewCourse(false);
   };
+
+  const handleClickOpenEditCourse = (index, courseName, courseDescription) => {
+    setCourseName(courseName)
+    setCourseDescription(courseDescription)
+    setCourseIndex(index)
+    setOpenEditCourse(true)
+  };
+
+  const handleCloseEditCourse = (editedCourse) => {
+    if (editedCourse) {
+      editCourse()
+    }
+    setOpenEditCourse(false)
+  }
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -152,13 +164,17 @@ function MyCourses(props) {
     setCourseDescription(e.target.value);
   }
 
-  function editCourse(index) {
-    console.log(index);
+  function editCourse() {
+    console.log("test edit");
+    console.log(courseIndex);
+    myClasses[courseIndex].course = courseName
+    myClasses[courseIndex].description = courseDescription
+    setMyClasses(myClasses)
   }
 
   return (
     <Paper className={classes.paper}>
-      <CourseHeader
+      <Header
         onDrawerToggle={handleDrawerToggle}
         setTitle={"My Courses"}
       />
@@ -171,28 +187,30 @@ function MyCourses(props) {
       >
         <Toolbar>
           <div className="flex-container">
-            {myClasses.map(({ id, course, description }, index) => (
+            {myClasses.map(({ id, course, description, path }, index) => (
               <div key={id}>
                 <Card className={cardStyles.root} id={"courseCard"}>
-                  <CardActionArea id={"cardInfo"}>
-                    <CardContent>
-                      <Typography gutterBottom variant="h5" component="h2">
-                        {course}
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        color="textSecondary"
-                        component="p"
-                      >
-                        {description}
-                      </Typography>
-                    </CardContent>
-                  </CardActionArea>
+                  <Link to={path} id={"courseLink"}>
+                    <CardActionArea id={"cardInfo"}>
+                      <CardContent>
+                        <Typography gutterBottom variant="h5" component="h2">
+                          {course}
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          color="textSecondary"
+                          component="p"
+                        >
+                          {description}
+                        </Typography>
+                      </CardContent>
+                    </CardActionArea>
+                  </Link>
                   <CardActions className={"courseOptions"}>
                     <Tooltip title={"Edit"}>
                       <IconButton
                         aria-label="settings"
-                        onClick={() => editCourse(index)}
+                        onClick={() => handleClickOpenEditCourse(index, course, description)}
                       >
                         <MoreVertIcon />
                       </IconButton>
@@ -216,12 +234,14 @@ function MyCourses(props) {
                     <Typography gutterBottom variant="h5" component="h2">
                       Add New Course
                     </Typography>
-                    <IconButton aria-label="settings">
-                      {/*<AddIcon onClick={() => addNewCourse()}/>*/}
-                      <AddIcon
-                        onClick={() => handleClickOpenDialogueNewCourse()}
-                      />
-                    </IconButton>
+                    <Tooltip title={"Click to add course"}>
+                      <IconButton aria-label="settings">
+                        {/*<AddIcon onClick={() => addNewCourse()}/>*/}
+                        <AddIcon
+                          onClick={() => handleClickOpenDialogueNewCourse()}
+                        />
+                      </IconButton>
+                    </Tooltip>
                   </CardContent>
                 </CardActionArea>
               </Card>
@@ -229,15 +249,11 @@ function MyCourses(props) {
           </div>
         </Toolbar>
       </AppBar>
-      <Dialog
-        open={openDialogueNewCourse}
-        onClose={() => handleCloseDialogueNewCourse(false)}
-        aria-labelledby="form-dialog-title"
-      >
+      <Dialog open={openDialogueNewCourse} onClose={() => handleCloseDialogueNewCourse(false)} aria-labelledby="form-dialog-title">
         <DialogTitle id="form-dialog-title">Create New Course</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            To create new course fill in these fields
+            To create new course fill in these fieldss
           </DialogContentText>
           <TextField
             margin="dense"
@@ -268,6 +284,25 @@ function MyCourses(props) {
             color="primary"
           >
             Create Course
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog open={openEditCourse} onClose={() => handleCloseDialogueNewCourse(false)} aria-labelledby="form-dialog-title">
+        <DialogTitle id="form-dialog-title">Edit Your Course</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Make your changes and click save
+          </DialogContentText>
+          <TextField margin="dense" id="newCourseName" label="Course Name" type="text" fullWidth onChange={createCourseName} value={courseName} />
+          <TextField margin="dense" id="newCourseDescription" label="Course Description" type="text" fullWidth onChange={createCourseDescription} value={courseDescription}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => handleCloseEditCourse(false)} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={() => handleCloseEditCourse(true)} color="primary">
+            Save Changes
           </Button>
         </DialogActions>
       </Dialog>

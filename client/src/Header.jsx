@@ -16,6 +16,7 @@ import Toolbar from "@material-ui/core/Toolbar";
 import Tooltip from "@material-ui/core/Tooltip";
 import Typography from "@material-ui/core/Typography";
 import { withStyles } from "@material-ui/core/styles";
+import AddIcon from "@material-ui/icons/Add";
 
 const lightColor = "rgba(255, 255, 255, 0.7)";
 
@@ -43,7 +44,6 @@ const styles = theme => ({
 
 function Header(props) {
   const { classes, onDrawerToggle, setTitle } = props;
-  console.log(setTitle);
   return (
     <React.Fragment>
       <AppBar color="primary" position="sticky" elevation={0}>
@@ -98,14 +98,14 @@ function Header(props) {
               </Typography>
             </Grid>
             <Grid item>
-              <Button
-                className={classes.button}
-                variant="outlined"
-                color="inherit"
-                size="small"
-              >
-                Web setup
-              </Button>
+              {/*<Button className={classes.button} variant="outlined" color="inherit" size="small">*/}
+              {/*    Web setup*/}
+              {/*</Button>*/}
+              {/*<Tooltip title="Add New Course">*/}
+              {/*    <IconButton color="inherit">*/}
+              {/*        <AddIcon />*/}
+              {/*    </IconButton>*/}
+              {/*</Tooltip>*/}
             </Grid>
             <Grid item>
               <Tooltip title="Help">
@@ -124,12 +124,12 @@ function Header(props) {
         position="static"
         elevation={0}
       >
-        <Tabs value={0} textColor="inherit">
-          <Tab textColor="inherit" label="Users" />
-          <Tab textColor="inherit" label="Sign-in method" />
-          <Tab textColor="inherit" label="Templates" />
-          <Tab textColor="inherit" label="Usage" />
-        </Tabs>
+        {/*<Tabs value={0} textColor="inherit">*/}
+        {/*    <Tab textColor="inherit" label="Users" />*/}
+        {/*    <Tab textColor="inherit" label="Sign-in method" />*/}
+        {/*    <Tab textColor="inherit" label="Templates" />*/}
+        {/*    <Tab textColor="inherit" label="Usage" />*/}
+        {/*</Tabs>*/}
       </AppBar>
     </React.Fragment>
   );

@@ -12,7 +12,7 @@ import IconButton from "@material-ui/core/IconButton";
 import { withStyles } from "@material-ui/core/styles";
 import SearchIcon from "@material-ui/icons/Search";
 import RefreshIcon from "@material-ui/icons/Refresh";
-import CourseHeader from "./MyCoursesHeader";
+import Header from "./Header";
 
 const styles = theme => ({
   paper: {
@@ -70,7 +70,7 @@ function MyCourses(props) {
 
   return (
     <Paper className={classes.paper}>
-      <CourseHeader
+      <Header
         onDrawerToggle={handleDrawerToggle}
         setTitle={"Content Bank"}
       />

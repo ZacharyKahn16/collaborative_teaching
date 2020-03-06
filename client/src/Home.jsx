@@ -10,11 +10,11 @@ import Hidden from "@material-ui/core/Hidden";
 import Typography from "@material-ui/core/Typography";
 import Link from "@material-ui/core/Link";
 import Navigator from "./Navigator";
-import Header from "./Header";
 import { Route } from "react-router";
 import Courses from "./MyCourses";
 import HomeContent from "./MyFiles";
 import BrowseContent from "./BrowseContent";
+import ViewCourse from "./CoursePage";
 import { Switch } from "react-router-dom";
 
 function Copyright() {
@@ -202,6 +202,7 @@ function Home(props) {
               <Route path={"/my-courses"} component={Courses} />
               <Route path={"/my-files"} component={HomeContent} />
               <Route path={"/browse-content"} component={BrowseContent} />
+              <Route path={"/course-page"} component={ViewCourse} />
             </Switch>
           </main>
           <footer className={classes.footer}>

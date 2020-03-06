@@ -12,7 +12,7 @@ import IconButton from "@material-ui/core/IconButton";
 import { withStyles } from "@material-ui/core/styles";
 import SearchIcon from "@material-ui/icons/Search";
 import RefreshIcon from "@material-ui/icons/Refresh";
-import CourseHeader from "./MyCoursesHeader";
+import Header from "./Header";
 import PublishIcon from "@material-ui/icons/Publish";
 import FileList from "./FileList";
 
@@ -49,7 +49,7 @@ function MyFiles(props) {
 
   return (
     <Paper className={classes.paper}>
-      <CourseHeader onDrawerToggle={handleDrawerToggle} setTitle={"My Files"} />
+      <Header onDrawerToggle={handleDrawerToggle} setTitle={"My Files"} />
       <AppBar
         className={classes.searchBar}
         position="static"
