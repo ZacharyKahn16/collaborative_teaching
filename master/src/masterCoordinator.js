@@ -3,7 +3,8 @@
  **/
 
 const MongoClient = require('mongodb').MongoClient;
-const Promise = require('promise');
+const { LOGGER } = require('./Logger');
+
 // TODO: Import GCloud class for getting list of all instances.
 
 class MasterCoordinator {
@@ -47,7 +48,7 @@ class MasterCoordinator {
           return dbo.collection(_fileCollectionName);
         },
         function(err) {
-          console.log('ERROR CONNECTING TO DB');
+          LOGGER.error('ERROR CONNECTING TO DB', err);
           throw err;
         },
       )
@@ -56,7 +57,7 @@ class MasterCoordinator {
           return collection.findOne(query);
         },
         function(err) {
-          console.log('ERROR RETRIEVING DATA FROM DB');
+          LOGGER.error('ERROR RETRIEVING DATA FROM DB', err);
           throw err;
         },
       )
@@ -64,8 +65,7 @@ class MasterCoordinator {
         return items;
       })
       .catch(function(err) {
-        console.log('ERROR: Something went wrong with retrieval.');
-        console.log(err);
+        LOGGER.error('Something went wrong with retrieval.', err);
         throw err;
       })
       .finally(function() {
@@ -106,7 +106,7 @@ class MasterCoordinator {
           return dbo.collection(_fileCollectionName);
         },
         function(err) {
-          console.log('ERROR CONNECTING TO DB');
+          LOGGER.error('ERROR CONNECTING TO DB', err);
           throw err;
         },
       )
@@ -116,7 +116,7 @@ class MasterCoordinator {
           return collection.updateOne(query, newUpdate, { upsert: true });
         },
         function(err) {
-          console.log('ERROR UPDATING DOCUMENT.');
+          LOGGER.error('ERROR UPDATING DOCUMENT.', err);
           throw err;
         },
       )
@@ -124,8 +124,7 @@ class MasterCoordinator {
         return resp;
       })
       .catch(function(err) {
-        console.log('ERROR: Something went wrong with update.');
-        console.log(err);
+        LOGGER.error('ERROR: Something went wrong with update.', err);
         throw err;
       })
       .finally(function() {
@@ -155,7 +154,7 @@ class MasterCoordinator {
           return dbo.collection(_fileCollectionName);
         },
         function(err) {
-          console.log('ERROR CONNECTING TO DB');
+          LOGGER.error('ERROR CONNECTING TO DB', err);
           throw err;
         },
       )
@@ -174,7 +173,7 @@ class MasterCoordinator {
             .toArray();
         },
         function(err) {
-          console.log('ERROR RETRIEVING DATA FROM DB');
+          LOGGER.error('ERROR RETRIEVING DATA FROM DB', err);
           throw err;
         },
       )
@@ -182,8 +181,7 @@ class MasterCoordinator {
         return items;
       })
       .catch(function(err) {
-        console.log('ERROR: Something went wrong with retrieval.');
-        console.log(err);
+        LOGGER.error('ERROR: Something went wrong with retrieval.', err);
         throw err;
       })
       .finally(function() {
@@ -214,7 +212,7 @@ class MasterCoordinator {
     return this.getFDBInfo(123).then(
       function(items) {
         for (let i = 0; i < items.length; i++) {
-          console.log(items[i]);
+          LOGGER.log(items[i]);
 
           docId = items[i].docId;
           fileName = items[i].fileName;
@@ -231,7 +229,7 @@ class MasterCoordinator {
         return organizedDocData;
       },
       function(err) {
-        console.log('Error: could not grab data for FDB.');
+        LOGGER.error('Error: could not grab data for FDB.', err);
         throw err;
       },
     );
@@ -281,7 +279,7 @@ class MasterCoordinator {
         };
       },
       function(err) {
-        console.error(err);
+        LOGGER.error(err);
         throw err;
       },
     );
@@ -330,7 +328,7 @@ class MasterCoordinator {
         return { updateInfoPerFile: updateInfoPerFile, updateList: updateList };
       },
       function(err) {
-        console.error(err);
+        LOGGER.error(err);
         throw err;
       },
     );
@@ -357,11 +355,11 @@ class MasterCoordinator {
       .then(function({ updateInfoPerFile, updateList }) {
         // If updateList is empty, all files are consistent.
         if (Object.entries(updateList).length === 0 && updateList.constructor === Object) {
-          console.log('All files consistent already.');
+          LOGGER.log('All files consistent already.');
           // TODO: uncomment this.
           return 0;
         }
-        console.log('Files are inconsistent, fixing this now.');
+        LOGGER.log('Files are inconsistent, fixing this now.');
 
         _updateInfoPerFile = updateInfoPerFile;
         _updateList = updateList;
@@ -369,7 +367,7 @@ class MasterCoordinator {
       })
       .then(
         function(status) {
-          console.log('STATUS: ' + status);
+          LOGGER.log('STATUS: ' + status);
           if (status === 0) {
             return 0;
           }
@@ -377,8 +375,7 @@ class MasterCoordinator {
           // Go through each file and make updates to out of date FDBs
           // TODO: Remove below line. Mock _updateList for now
           _updateList = { 123: [1, 2, 3], 124: [4, 5, 6] };
-          console.log('UPDATE LIST');
-          console.log(_updateInfoPerFile);
+          LOGGER.log('UPDATE LIST', _updateInfoPerFile);
 
           // Loop through each docId in _updateList and for each docId
           // retrieve the correct update date file and
@@ -418,25 +415,24 @@ class MasterCoordinator {
                 // Update all out of sync files.
                 Promise.all(updatePromises).then(
                   (vals) => {
-                    console.log(
+                    LOGGER.log(
                       'SUCCESSFULLY UPDATED ALL INCONSITENT COPIES FOR DOC ' + docId + '.',
                     );
                   },
                   (err) => {
-                    console.error('ERROR WHEN UPDATING INCOSISTENT FILES.');
-                    console.error(err);
+                    LOGGER.error('ERROR WHEN UPDATING INCONSISTENT FILES.', err);
                   },
                 );
               }
             } catch (err) {
-              console.error(err);
+              LOGGER.error(err);
             }
           })();
 
           return 0;
         },
         function(err) {
-          console.error(err);
+          LOGGER.error(err);
           throw err;
         },
       );
@@ -448,10 +444,10 @@ class MasterCoordinator {
 let master = new MasterCoordinator();
 // master.getFDBInfo(123).then(
 //   function(items) {
-//     console.info("The promise was fulfilled with items!", items);
+//     LOGGER.info("The promise was fulfilled with items!", items);
 //   },
 //   function(err) {
-//     console.error(
+//     LOGGER.error(
 //       "*******\nTHE PROMISE WAS REJECTED\n*******\n",
 //       err,
 //       err.stack
@@ -460,10 +456,10 @@ let master = new MasterCoordinator();
 // );
 // master.organizeByDocId().then(
 //   function(items) {
-//     console.info("The promise was fulfilled with items!", items);
+//     LOGGER.info("The promise was fulfilled with items!", items);
 //   },
 //   function(err) {
-//     console.error(
+//     LOGGER.error(
 //       "*******\nTHE PROMISE WAS REJECTED\n*******\n",
 //       err,
 //       err.stack
@@ -473,10 +469,10 @@ let master = new MasterCoordinator();
 
 // master.getCorrectFileInfo().then(
 //   function(items) {
-//     console.info("The promise was fulfilled with items!", items);
+//     LOGGER.info("The promise was fulfilled with items!", items);
 //   },
 //   function(err) {
-//     console.error(
+//     LOGGER.error(
 //       "*******\nTHE PROMISE WAS REJECTED\n*******\n",
 //       err,
 //       err.stack
@@ -486,10 +482,10 @@ let master = new MasterCoordinator();
 
 // master.getUpdatesForEachFile().then(
 //   function(items) {
-//     console.info("The promise was fulfilled with items!", items);
+//     LOGGER.info("The promise was fulfilled with items!", items);
 //   },
 //   function(err) {
-//     console.error(
+//     LOGGER.error(
 //       "*******\nTHE PROMISE WAS REJECTED\n*******\n",
 //       err,
 //       err.stack
@@ -499,19 +495,19 @@ let master = new MasterCoordinator();
 
 master.makeAllFileCopiesConsistent().then(
   function(items) {
-    console.info('The promise was fulfilled with items!', items);
+    LOGGER.info('The promise was fulfilled with items!', items);
   },
   function(err) {
-    console.error('*******\nTHE PROMISE WAS REJECTED\n*******\n', err, err.stack);
+    LOGGER.error('*******\nTHE PROMISE WAS REJECTED\n*******\n', err, err.stack);
   },
 );
 
 // master.retrieveFile(123, 1223).then(
 //   function(items) {
-//     console.info("The promise was fulfilled with items!", items);
+//     LOGGER.info("The promise was fulfilled with items!", items);
 //   },
 //   function(err) {
-//     console.error(
+//     LOGGER.error(
 //       "*******\nTHE PROMISE WAS REJECTED\n*******\n",
 //       err,
 //       err.stack

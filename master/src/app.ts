@@ -4,6 +4,7 @@ import cors from 'cors';
 import morgan from 'morgan';
 import { GCloud } from './GCloud';
 import { WorkerTracker } from './WorkerTracker';
+import { LOGGER } from './Logger';
 
 const app = express();
 
@@ -39,7 +40,7 @@ app.use('/', (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.debug(`Server started at http://localhost:${PORT}`);
+  LOGGER.debug(`Server started at http://localhost:${PORT}`);
   GCloud.makeGCloud();
   WorkerTracker.makeWorkerTracker();
 });
