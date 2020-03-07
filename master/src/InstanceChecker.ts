@@ -1,30 +1,29 @@
 import io from 'socket.io-client';
 import moment from 'moment';
 import { ComputeEngineInstance, GCloud } from './GCloud';
+import { LOGGER } from './Logger';
 
 class SocketClient {
   private instance: ComputeEngineInstance;
   private socket: SocketIOClient.Socket;
-  public connectedOnce: boolean = false;
   public connected: boolean = false;
   public lastResp: number = moment().unix();
 
   private readonly intervalId: NodeJS.Timeout;
-  private SEND_DB_LIST_INTERVAL = 60 * 1000; // 60 secs (ms)
-  private MAX_WAIT_TIME = 2.5 * 60; // 2 min (s)
+  private SEND_DB_LIST_INTERVAL = 30 * 1000; // 30 secs (ms)
+  private MAX_WAIT_TIME = 2 * 60; // 2 min (s)
+  private SOCKET_PORT = 4001;
 
   constructor(instance: ComputeEngineInstance) {
     this.instance = instance;
-    this.socket = io(`http://${this.instance.publicIp}:3000`);
+    this.socket = io(`http://${this.instance.publicIp}:${this.SOCKET_PORT}`);
 
     this.socket.on('connect', () => {
-      this.connectedOnce = true;
       this.connected = true;
       this.lastResp = moment().unix();
     });
 
     this.socket.on('health-response', () => {
-      this.connectedOnce = true;
       this.connected = true;
       this.lastResp = moment().unix();
     });
@@ -40,15 +39,11 @@ class SocketClient {
   }
 
   updateDatabaseList() {
-    if (this.connectedOnce) {
-      this.socket.emit('database-instances', GCloud.getGCloud().databaseInstances);
-    }
+    this.socket.emit('database-instances', GCloud.getGCloud().databaseInstances);
   }
 
   isSocketGood(): boolean {
-    const now = moment().unix();
-
-    return this.lastResp >= now - this.MAX_WAIT_TIME;
+    return this.connected || this.lastResp >= moment().unix() - this.MAX_WAIT_TIME;
   }
 
   isSameInstance(instance: ComputeEngineInstance): boolean {
@@ -61,18 +56,78 @@ class SocketClient {
 
   destroy() {
     clearInterval(this.intervalId);
-    this.connected = false;
     this.socket.close();
   }
 }
 
+/**
+ * Does a more in depth verification of instances
+ * Sets up socket connections to workers
+ * Sets up queries to databases
+ */
 export class InstanceChecker {
   static instanceChecker: InstanceChecker;
 
   gCloud: GCloud;
+  workerSockets: Map<string, SocketClient>;
+
+  private INSTANCE_CHECK_INTERVAL = 30 * 1000; // 30 secs (ms)
 
   constructor() {
     this.gCloud = GCloud.getGCloud();
+    this.workerSockets = new Map();
+
+    setInterval(() => {
+      this.checkWorkerSockets();
+    }, this.INSTANCE_CHECK_INTERVAL);
+  }
+
+  checkWorkerSockets() {
+    for (const instance of this.gCloud.workerInstances) {
+      const instanceGood = this.gCloud.isInstanceHealthGood(instance);
+      const socketInstance = this.workerSockets.get(instance.id);
+
+      // If instance is not good but there is a socket connection. Kil it
+      if (!instanceGood && socketInstance !== undefined) {
+        socketInstance.destroy();
+        this.workerSockets.delete(instance.id);
+        LOGGER.debug('Instance not good. But there is a socket.');
+        continue;
+      }
+
+      // If instance is not good or not serving, move on
+      if (!instanceGood || instance.instanceServing !== true) {
+        LOGGER.debug('Instance not good, not serving');
+        continue;
+      }
+
+      // The instance must be good and serving here.
+      // If there is no socket connection, make one
+      if (socketInstance === undefined) {
+        this.workerSockets.set(instance.id, new SocketClient(instance));
+        LOGGER.debug('Make socket');
+        continue;
+      }
+
+      // If the socket instance is not the same as this instance
+      // Kill the socket and make a new one
+      if (!socketInstance.isSameInstance(instance)) {
+        socketInstance.destroy();
+        this.workerSockets.delete(instance.id);
+        this.workerSockets.set(instance.id, new SocketClient(instance));
+        LOGGER.debug('Socket is not the same as instance');
+        continue;
+      }
+
+      // If the socket instance isn't receiving data
+      // Delete the instance and start over
+      if (!socketInstance.isSocketGood()) {
+        socketInstance.destroy();
+        this.workerSockets.delete(instance.id);
+        this.gCloud.deleteInstance(instance.id);
+        LOGGER.debug('Socket is not good');
+      }
+    }
   }
 
   static makeInstanceChecker() {

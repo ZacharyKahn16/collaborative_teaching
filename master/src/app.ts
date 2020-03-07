@@ -4,6 +4,7 @@ import cors from 'cors';
 import { GCloud } from './GCloud';
 import { WorkerTracker } from './WorkerTracker';
 import { LOGGER } from './Logger';
+import { InstanceChecker } from './InstanceChecker';
 
 const app = express();
 
@@ -41,4 +42,5 @@ app.listen(PORT, () => {
   LOGGER.debug(`Server started at http://localhost:${PORT}`);
   GCloud.makeGCloud();
   WorkerTracker.makeWorkerTracker();
+  InstanceChecker.makeInstanceChecker();
 });

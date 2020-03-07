@@ -38,6 +38,8 @@ export interface ComputeEngineInstance {
 
 /**
  * Class to interact with GCloud and keep track of its resources
+ * Creates new master, worker and database instances if required
+ * Deletes instances if they are not in a good state
  */
 export class GCloud {
   private static gCloud: GCloud;
