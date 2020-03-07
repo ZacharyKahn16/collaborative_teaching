@@ -1,7 +1,6 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
-import morgan from 'morgan';
 import { GCloud } from './GCloud';
 import { WorkerTracker } from './WorkerTracker';
 import { LOGGER } from './Logger';
@@ -11,7 +10,6 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(morgan('dev'));
 
 app.get('/instances', (req, res) => {
   const gcloud = GCloud.getGCloud();
@@ -38,7 +36,7 @@ app.use('/', (req, res) => {
   return res.status(404).send(`The request '${req.method} ${req.path}' cannot be resolved.`);
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   LOGGER.debug(`Server started at http://localhost:${PORT}`);
   GCloud.makeGCloud();

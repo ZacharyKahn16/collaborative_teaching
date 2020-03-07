@@ -7,3 +7,5 @@ const url = 'mongodb://35.239.68.217:80';
 let accessFDB = fdbConnection; //.AccessFDB
 
 console.log(new accessFDB(url));
+
+const SOCKET_PORT = process.env.PORT || 4001;
