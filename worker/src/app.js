@@ -1,11 +1,18 @@
-let fdbConnection = require('./workerToFDBConnection.js');
+import { AccessFDB } from './workerToFDBConnection.js';
 
 // Hardcoded DB URL
-const url = 'mongodb://35.239.68.217:80';
+const url = 'mongodb://34.68.250.182:80';
 
-// let fileDatabase = fdbConnection.FileDatabase;
-let accessFDB = fdbConnection; //.AccessFDB
+const accessFDB = new AccessFDB(url);
 
-console.log(new accessFDB(url));
+accessFDB.insertFile(1, 'JamesTest', 'Hello', 'CXCXCX', 'BINARY', 5).then(
+  function(resp) {
+    console.log(resp);
+  },
+  function(err) {
+    console.log(err);
+    throw err;
+  },
+);
 
-const SOCKET_PORT = process.env.PORT || 4001;
+console.log('Print');
