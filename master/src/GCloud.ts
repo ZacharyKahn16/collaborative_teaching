@@ -1,6 +1,7 @@
 import { exec } from 'shelljs';
 import moment from 'moment';
 import { LOGGER } from './Logger';
+import { MasterCoordinator } from './masterCoordinator';
 
 const ZONE = 'us-central1-a';
 const PROJECT_ID = 'collaborative-teaching';
@@ -43,6 +44,7 @@ export interface ComputeEngineInstance {
  */
 export class GCloud {
   private static gCloud: GCloud;
+  private masterCoordinator: MasterCoordinator = new MasterCoordinator();
 
   readonly id = process.env.NAME;
   thisInstance: ComputeEngineInstance | undefined = undefined;
@@ -205,6 +207,7 @@ export class GCloud {
     this.checkMasters();
     this.checkWorkers();
     this.checkDatabases();
+    this.checkReplication();
   }
 
   checkMasters(): void {
@@ -293,6 +296,17 @@ export class GCloud {
           LOGGER.error(`Creating ${nextName} failed.`, code, stderr);
         }
       });
+    }
+  }
+
+  checkReplication(): void {
+    if (
+      this.thisInstance !== undefined &&
+      this.masterInstances.length === NUM_MASTERS &&
+      !this.amIResponder
+    ) {
+      this.masterCoordinator.makeAllFileCopiesConsistent(this.databaseInstances).then();
+      // ADD ALL OTHER FUNCTION CALLS HERE;
     }
   }
 
