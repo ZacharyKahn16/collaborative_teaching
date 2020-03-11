@@ -14,13 +14,13 @@ const ObjectID = require('mongodb').ObjectID;
  * Defines the structure for inserting, updating, and retrieving documents from
  * the Mongodb database at each worker.
  **/
-class FileDatabase {
+export class FileDatabase {
   /**
    * Document structure for insertion.
    *
    * @param {Integer}  docId ID of document.
    * @param {String} fileName name of file.
-   * @param {Binary} fileContents TODO (zacharykahn): Do we want to store file in binary?
+   * @param {String} fileContents TODO (zacharykahn): Do we want to store file in binary?
    * @param {String} fileHash Hash of the file.
    * @param {String} fileType Type of file.
    * @param {Integer} ts Timestamp.
@@ -78,7 +78,7 @@ class FileDatabase {
 /**
  * Access a worker to perform updates or queries.
  **/
-class AccessFDB {
+export class AccessFDB {
   /**
    * @class
    * @param {String} url url that FDB is listening on.
@@ -89,6 +89,15 @@ class AccessFDB {
     this.dbName = 'FDB';
     // Name of collection that stores files.
     this.fileCollectionName = 'fileInformation';
+  }
+
+  /**
+   * Retrieve the url this instance is connected to.
+   *
+   * @return {String} URL of this instance
+   **/
+  getUrl() {
+    return this.url;
   }
 
   /**
@@ -143,7 +152,7 @@ class AccessFDB {
    *
    * @param {Integer}  docId ID of document.
    * @param {String} fileName name of file.
-   * @param {Binary} fileContents TODO (zacharykahn): Do we want to store file in binary?
+   * @param {String} fileContents TODO (zacharykahn): Do we want to store file in binary?
    * @param {String} fileHash Hash of the file.
    * @param {String} fileType Type of file.
    * @param {Integer} ts Timestamp.
@@ -304,10 +313,6 @@ class AccessFDB {
       });
   }
 }
-
-// Export classes.
-// module.exports.FileDatabase;
-module.exports.AccessFDB;
 
 // Toy example.
 // This would be called by a real worker.
