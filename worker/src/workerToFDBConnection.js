@@ -92,6 +92,15 @@ export class AccessFDB {
   }
 
   /**
+   * Retrieve the url this instance is connected to.
+   *
+   * @return {String} URL of this instance
+   **/
+  getUrl() {
+    return this.url;
+  }
+
+  /**
    * Retrieve file with given document id.
    *
    * @param {Integer} docId ID of document.

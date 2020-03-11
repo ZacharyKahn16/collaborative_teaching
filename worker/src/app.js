@@ -1,10 +1,15 @@
 import { AccessFDB } from './workerToFDBConnection.js';
-import http from 'http';
-import io from 'socket.io';
 import { LOGGER } from './Logger';
 import { v4 } from 'uuid';
 
-const httpServer = http.createServer();
+import express from 'express';
+import { Server } from 'http';
+import io from 'socket.io';
+import cors from 'cors';
+
+const app = express();
+app.use(cors());
+const httpServer = new Server(app);
 const socketServer = io(httpServer);
 
 // List of all FDBs in system
@@ -19,6 +24,26 @@ const DELETE_FILE = 'Delete File';
 
 // Master events
 const DATABASE_LIST = 'database-instances';
+
+function shuffle(array) {
+  let currentIndex = array.length;
+  let temporaryValue;
+  let randomIndex;
+
+  // While there remain elements to shuffle...
+  while (0 !== currentIndex) {
+    // Pick a remaining element...
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex -= 1;
+
+    // And swap it with the current element.
+    temporaryValue = array[currentIndex];
+    array[currentIndex] = array[randomIndex];
+    array[randomIndex] = temporaryValue;
+  }
+
+  return array;
+}
 
 socketServer.on(CONNECTION_EVENT, function(socket) {
   // TODO: Retrieve list of files from Firebase
@@ -50,33 +75,31 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
     const fileType = req.fileType;
     const timeStamp = Date.now();
 
-    // Pick two random FDBs to store this file
-    for (let i = 0; i < 2; i++) {
-      if (fdbList.length > 2) {
-        const randomIndex = Math.floor(Math.random() * fdbList.length);
-        fdbList[randomIndex]
-          .insertFile(docId, fileName, fileContents, fileHash, fileType, timeStamp)
-          .then(
-            function(resp) {
-              socket.emit('Server Response', {
-                // TODO: Add a client request ID
-                message: resp,
-              });
-            },
-            function(err) {
-              socket.emit('Server Response', {
-                // TODO: Add a client request ID
-                message: `Error inserting file ${err}`,
-              });
-              throw err;
-            },
-          );
-      } else {
-        socket.emit('Server Response', {
-          // TODO: Add a request ID
-          message: 'Not enough active FDBs',
-        });
+    if (fdbList.length > 0) {
+      const replicasToMake = Math.floor(fdbList.length / 3 + 1);
+      shuffle(fdbList);
+      for (let i = 0; i < replicasToMake; i++) {
+        fdbList[i].insertFile(docId, fileName, fileContents, fileHash, fileType, timeStamp).then(
+          function(resp) {
+            socket.emit('Server Response', {
+              // TODO: Add a client request ID
+              message: resp,
+            });
+          },
+          function(err) {
+            socket.emit('Server Response', {
+              // TODO: Add a client request ID
+              message: `Error inserting file ${err} into server ${fdbList[i].getUrl()}`,
+            });
+            throw err;
+          },
+        );
       }
+    } else {
+      socket.emit('Server Response', {
+        // TODO: Add a request ID
+        message: 'Not enough active FDBs',
+      });
     }
   });
 
@@ -129,11 +152,17 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
 
   // Master Handlers
   socket.on(DATABASE_LIST, function(req) {
+    socket.emit('health-response', 'I am alive');
     fdbList = []; // Reset fdbList
     for (let i = 0; i < req.length; i++) {
       const ipAddress = `mongodb://${req[i]['publicIp']}:80`;
-      const fdbInstance = new AccessFDB(ipAddress);
-      fdbList.push(fdbInstance);
+      const instanceRunning = req[i]['instanceRunning'] === true;
+      const instanceServing = req[i]['instanceServing'] === true;
+
+      if (instanceRunning && instanceServing) {
+        const fdbInstance = new AccessFDB(ipAddress);
+        fdbList.push(fdbInstance);
+      }
     }
   });
 });
