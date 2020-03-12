@@ -62,7 +62,7 @@ let categories = [
     id: 0,
     course: "CPSC 559",
     description: "Distributed systems..............",
-    path: "/course-page"
+    path: "/course-page/CPSC559"
   },
   {
     id: 1,

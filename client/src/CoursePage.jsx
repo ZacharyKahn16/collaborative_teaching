@@ -60,7 +60,7 @@ function MyCourses(props) {
 
     function handleSearchOnChange(e) {
         console.log(e.key);
-        if (e.key == "Enter") {
+        if (e.key === "Enter") {
             console.log(e.target.value);
         }
     }
@@ -69,7 +69,7 @@ function MyCourses(props) {
         <Paper className={classes.paper}>
             <Header
                 onDrawerToggle={handleDrawerToggle}
-                setTitle={"Content Bank"}
+                setTitle={"List of Classes"}
             />
             <AppBar
                 className={classes.searchBar}
