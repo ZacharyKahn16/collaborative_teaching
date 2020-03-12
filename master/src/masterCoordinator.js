@@ -7,7 +7,7 @@ const { LOGGER } = require('./Logger');
 
 // TODO: Import GCloud class for getting list of all instances.
 
-class MasterCoordinator {
+export class MasterCoordinator {
   /**
    * @class
    **/
@@ -343,7 +343,7 @@ class MasterCoordinator {
    * @returns {Promise} Promise returns 1 if no changes made 0 if changes
    *                    successfully made.
    **/
-  makeAllFileCopiesConsistent() {
+  makeAllFileCopiesConsistent(fdbInstances) {
     // updateInfoPerFile structure: {docId: [fdbIpWithCorrectFile, corretHash, latestTs]}
     let _updateInfoPerFile;
     // updateList structure: {docId: [outOfDateFdbIp ...]}
