@@ -172,7 +172,8 @@ const styles = {
 };
 
 function Home(props) {
-  const { classes } = props;
+  console.log(props)
+  const { classes} = props;
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const dummyLoggedIn = true;
 
@@ -183,11 +184,18 @@ function Home(props) {
   useEffect(() => {
     async function fetchData() {
       // You can await here
-      // const response = await axios('https://jsonplaceholder.typicode.com/users');
-      const response = await axios('https://35.224.26.195:4000');
+      // const response = await axios.get('https://jsonplaceholder.typicode.com/users');
+      // const response = await axios('http://35.224.26.195:4000');
       // const response = await axios('http://35.226.186.203:4000');
       // ...
-      console.log(response.data)
+      // console.log(response.data)
+      axios.get('https://35.224.26.195:4000/')
+          .then(function (response) {
+            console.log(response);
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
     }
     fetchData();
   }, []);
