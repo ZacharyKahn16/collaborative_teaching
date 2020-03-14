@@ -1,6 +1,6 @@
 import io from 'socket.io-client';
 import moment from 'moment';
-import { ComputeEngineInstance, GCloud } from './GCloud';
+import { ComputeEngineInstance, GCloud, NUM_MASTERS } from './GCloud';
 import { LOGGER } from './Logger';
 
 class SocketClient {
@@ -83,6 +83,14 @@ export class InstanceChecker {
   }
 
   checkWorkerSockets() {
+    if (
+      this.gCloud.thisInstance === undefined ||
+      this.gCloud.masterInstances.length !== NUM_MASTERS ||
+      this.gCloud.amIResponder
+    ) {
+      return;
+    }
+
     for (const instance of this.gCloud.workerInstances) {
       const instanceGood = this.gCloud.isInstanceHealthGood(instance);
       const socketInstance = this.workerSockets.get(instance.id);

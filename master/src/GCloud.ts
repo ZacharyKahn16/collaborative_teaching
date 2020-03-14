@@ -14,9 +14,9 @@ const INSTANCE_TYPE = {
 const REFRESH_DATA_INTERVAL = 60 * 1000; // 1 min (ms)
 const TIME_TILL_ACTIVE = 8 * 60; // 7 min (s)
 
-const NUM_MASTERS = 2;
-const NUM_WORKERS = 3;
-const NUM_DATABASES = 4;
+export const NUM_MASTERS = 2;
+export const NUM_WORKERS = 3;
+export const NUM_DATABASES = 4;
 const WORKER_IDS: number[] = [];
 const DATABASE_IDS: number[] = [];
 
@@ -44,7 +44,7 @@ export interface ComputeEngineInstance {
  */
 export class GCloud {
   private static gCloud: GCloud;
-  private masterCoordinator: MasterCoordinator = new MasterCoordinator();
+  // private masterCoordinator: MasterCoordinator = new MasterCoordinator();
 
   readonly id = process.env.NAME;
   thisInstance: ComputeEngineInstance | undefined = undefined;
@@ -300,14 +300,14 @@ export class GCloud {
   }
 
   checkReplication(): void {
-    if (
-      this.thisInstance !== undefined &&
-      this.masterInstances.length === NUM_MASTERS &&
-      !this.amIResponder
-    ) {
-      this.masterCoordinator.makeAllFileCopiesConsistent(this.databaseInstances).then();
-      // ADD ALL OTHER FUNCTION CALLS HERE;
-    }
+    // if (
+    //   this.thisInstance !== undefined &&
+    //   this.masterInstances.length === NUM_MASTERS &&
+    //   !this.amIResponder
+    // ) {
+    //   this.masterCoordinator.makeAllFileCopiesConsistent(this.databaseInstances).then();
+    //   // ADD ALL OTHER FUNCTION CALLS HERE;
+    // }
   }
 
   createWorker(num: number): void {
@@ -384,7 +384,7 @@ export class GCloud {
     }
   }
 
-  static getGCloud() {
+  static getGCloud(): GCloud {
     if (GCloud.gCloud === undefined) {
       GCloud.makeGCloud();
     }

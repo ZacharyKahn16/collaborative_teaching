@@ -1,11 +1,11 @@
 /**
  * Classes for master coordinator.
  **/
+// TODO: Import GCloud class for getting list of all instances.
+import { ComputeEngineInstance, GCloud } from './GCloud';
 
 const MongoClient = require('mongodb').MongoClient;
 const { LOGGER } = require('./Logger');
-
-// TODO: Import GCloud class for getting list of all instances.
 
 export class MasterCoordinator {
   /**
@@ -201,13 +201,39 @@ export class MasterCoordinator {
    *                   of FDBs that have a given file and the hash they contain
    *                   for each file.
    **/
-  organizeByDocId() {
+  organizeByDocId(fdbInstances) {
     // Go through each FDB in network, call getFDBInfo and then store the info.
+    const fdbInstancesCopy = GCloud.getGCloud().databaseInstances;
+    LOGGER.info('GCLOUD INSTANCES IN MASTER COORD from query GCLOUD');
+    LOGGER.info(fdbInstancesCopy);
+
+    LOGGER.info('GCLOUD INSTANCES IN MASTER COORD PASSED IN');
+    LOGGER.info(fdbInstances);
+
     let organizedDocData = {};
     let _id, docId, fileName, fileHash, fileCreationTime;
 
     // TODO: Loop through all fdbs. FDBIP would be different for each node, but for now fix
     let fdbIp = 1001;
+    const _this = this;
+
+    async function goThroughFDBs(fdbIpList) {
+      // fdbIpList should be list of all fdb IPs to pull data from.
+      let fdbArray = fdbIpList.map(async (fbdIp) => {
+        let result = await _this.getFDBInfo(fdbIp);
+        return result;
+      });
+
+      let allFdbInfo = await Promise.all(fdbArray);
+      return allFdbInfo;
+    }
+
+    LOGGER.info('HOPEFULLY ALL FDB INFO');
+    // TODO: NEED TO INSERT JUST IPs here.
+    // TODO: COME BACK.
+    const result = goThroughFDBs();
+    LOGGER.info(result);
+
     // TODO: Loop through all fbds. For now only call this once, don't loop through.
     return this.getFDBInfo(123).then(
       function(items) {
@@ -250,9 +276,9 @@ export class MasterCoordinator {
    *                    objects.
    *
    **/
-  getCorrectFileInfo() {
+  getCorrectFileInfo(fdbInstances) {
     // organizedDocData structure: {docId: [[fdbIp, hash, ts]]}
-    return this.organizeByDocId().then(
+    return this.organizeByDocId(fdbInstances).then(
       function(organizedDocData) {
         let updateInfoPerFile = {};
         // Go through each docId.
@@ -293,8 +319,8 @@ export class MasterCoordinator {
    *
    * @returns {Promise} Promise contains updateInfoPerFile and updateList objects.
    **/
-  getUpdatesForEachFile() {
-    return this.getCorrectFileInfo().then(
+  getUpdatesForEachFile(fdbInstances) {
+    return this.getCorrectFileInfo(fdbInstances).then(
       function({ organizedDocData, updateInfoPerFile }) {
         // organizedDocData structure: {docId: [[fdbIp, hash, ts]]}
         // updateInfoPerFile structure: {docId: [fdbIpWithCorrectFile, corretHash, latestTs]}
@@ -351,7 +377,7 @@ export class MasterCoordinator {
 
     let _this = this;
 
-    return this.getUpdatesForEachFile()
+    return this.getUpdatesForEachFile(fdbInstances)
       .then(function({ updateInfoPerFile, updateList }) {
         // If updateList is empty, all files are consistent.
         if (Object.entries(updateList).length === 0 && updateList.constructor === Object) {
@@ -454,18 +480,14 @@ let master = new MasterCoordinator();
 //     );
 //   }
 // );
-// master.organizeByDocId().then(
-//   function(items) {
-//     LOGGER.info("The promise was fulfilled with items!", items);
-//   },
-//   function(err) {
-//     LOGGER.error(
-//       "*******\nTHE PROMISE WAS REJECTED\n*******\n",
-//       err,
-//       err.stack
-//     );
-//   }
-// );
+master.organizeByDocId().then(
+  function(items) {
+    LOGGER.info('The promise was fulfilled with items!', items);
+  },
+  function(err) {
+    LOGGER.error('*******\nTHE PROMISE WAS REJECTED\n*******\n', err, err.stack);
+  },
+);
 
 // master.getCorrectFileInfo().then(
 //   function(items) {
@@ -493,14 +515,14 @@ let master = new MasterCoordinator();
 //   }
 // );
 
-master.makeAllFileCopiesConsistent().then(
-  function(items) {
-    LOGGER.info('The promise was fulfilled with items!', items);
-  },
-  function(err) {
-    LOGGER.error('*******\nTHE PROMISE WAS REJECTED\n*******\n', err, err.stack);
-  },
-);
+// master.makeAllFileCopiesConsistent().then(
+//   function(items) {
+//     LOGGER.info('The promise was fulfilled with items!', items);
+//   },
+//   function(err) {
+//     LOGGER.error('*******\nTHE PROMISE WAS REJECTED\n*******\n', err, err.stack);
+//   },
+// );
 
 // master.retrieveFile(123, 1223).then(
 //   function(items) {
