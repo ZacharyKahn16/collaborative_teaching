@@ -62,37 +62,37 @@ let categories = [
     id: 0,
     course: "CPSC 559",
     description: "Distributed systems..............",
-    path: "/course-page"
+    path: "/course-page/CPSC559"
   },
   {
     id: 1,
     course: "CPSC 471",
     description: "Database management systems..............",
-    path: "/course-page"
+    path: "/course-page/CPSC471"
   },
   {
     id: 2,
     course: "CPSC 565",
     description: "Emergent Computing..............",
-    path: "/course-page"
+    path: "/course-page/CPSC565"
   },
   {
     id: 3,
     course: "CPSC 413",
     description: "Algorithms..............",
-    path: "/course-page"
+    path: "/course-page/CPSC413"
   },
   {
     id: 4,
     course: "CPSC 405",
     description: "Entreupernship.............",
-    path: "/course-page"
+    path: "/course-page/CPSC405"
   },
   {
     id: 5,
     course: "SENG 513",
     description: "Web based systems..............",
-    path: "/course-page"
+    path: "/course-page/SENG513"
   }
 ];
 
@@ -152,7 +152,8 @@ function MyCourses(props) {
       {
         id: myClasses.length,
         course: name,
-        description: desc
+        description: desc,
+        path: "/course-page/"+name.replace(/ /g,'')
       }
     ]);
   }

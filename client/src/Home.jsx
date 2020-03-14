@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useEffect} from "react";
 import PropTypes from "prop-types";
 import {
   createMuiTheme,
@@ -15,7 +15,9 @@ import Courses from "./MyCourses";
 import HomeContent from "./MyFiles";
 import BrowseContent from "./BrowseContent";
 import ViewCourse from "./CoursePage";
+import LoginPage from "./LoginPage";
 import { Switch } from "react-router-dom";
+import axios from 'axios';
 
 function Copyright() {
   return (
@@ -170,47 +172,71 @@ const styles = {
 };
 
 function Home(props) {
-  const { classes } = props;
+  console.log(props)
+  const { classes} = props;
   const [mobileOpen, setMobileOpen] = React.useState(false);
+  const dummyLoggedIn = true;
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
 
-  return (
-    <ThemeProvider theme={theme}>
-      <div className={classes.root}>
-        <CssBaseline />
-        <nav className={classes.drawer}>
-          <Hidden smUp implementation="js">
-            <Navigator
-              PaperProps={{ style: { width: drawerWidth } }}
-              variant="temporary"
-              open={mobileOpen}
-              onClose={handleDrawerToggle}
-            />
-          </Hidden>
-          <Hidden xsDown implementation="css">
-            <Navigator PaperProps={{ style: { width: drawerWidth } }} />
-          </Hidden>
-        </nav>
-        <div className={classes.app}>
-          {/*<Header onDrawerToggle={handleDrawerToggle} />*/}
+  useEffect(() => {
+    async function fetchData() {
+      // You can await here
+      // const response = await axios.get('https://jsonplaceholder.typicode.com/users');
+      // const response = await axios('http://35.224.26.195:4000');
+      // const response = await axios('http://35.226.186.203:4000');
+      // ...
+      // console.log(response.data)
+      axios.get('https://35.224.26.195:4000/')
+          .then(function (response) {
+            console.log(response);
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
+    }
+    fetchData();
+  }, []);
 
-          <main className={classes.main}>
-            <Switch>
-              <Route path={"/my-courses"} component={Courses} />
-              <Route path={"/my-files"} component={HomeContent} />
-              <Route path={"/browse-content"} component={BrowseContent} />
-              <Route path={"/course-page"} component={ViewCourse} />
-            </Switch>
-          </main>
-          <footer className={classes.footer}>
-            <Copyright />
-          </footer>
-        </div>
-      </div>
-    </ThemeProvider>
+  return (
+      dummyLoggedIn ?
+          <ThemeProvider theme={theme}>
+            <div className={classes.root}>
+              <CssBaseline />
+              <nav className={classes.drawer}>
+                <Hidden smUp implementation="js">
+                  <Navigator
+                      PaperProps={{ style: { width: drawerWidth } }}
+                      variant="temporary"
+                      open={mobileOpen}
+                      onClose={handleDrawerToggle}
+                  />
+                </Hidden>
+                <Hidden xsDown implementation="css">
+                  <Navigator PaperProps={{ style: { width: drawerWidth } }} />
+                </Hidden>
+              </nav>
+              <div className={classes.app}>
+                {/*<Header onDrawerToggle={handleDrawerToggle} />*/}
+
+                <main className={classes.main}>
+                  <Switch>
+                    <Route path={"/my-courses"} component={Courses} />
+                    <Route path={"/my-files"} component={HomeContent} />
+                    <Route path={"/browse-content"} component={BrowseContent} />
+                    <Route path={"/course-page"} component={ViewCourse} />
+                  </Switch>
+                </main>
+                <footer className={classes.footer}>
+                  <Copyright />
+                </footer>
+              </div>
+            </div>
+          </ThemeProvider>
+          :
+          <LoginPage/>
   );
 }
 
