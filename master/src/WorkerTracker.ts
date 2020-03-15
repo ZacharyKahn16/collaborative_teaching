@@ -38,8 +38,7 @@ export class WorkerTracker {
     }
 
     const currentMasterIndex = this.workerInstances.findIndex((instance) => {
-      // @ts-ignore
-      return this.lastWorker.id === instance.id;
+      return this.lastWorker ? this.lastWorker.id === instance.id : -1;
     });
 
     if (currentMasterIndex < 0) {
@@ -48,7 +47,7 @@ export class WorkerTracker {
     }
 
     let nextIndex = currentMasterIndex + 1;
-    if (nextIndex < this.workerInstances.length - 1) {
+    if (nextIndex < this.workerInstances.length) {
       this.lastWorker = this.workerInstances[nextIndex];
       return this.lastWorker;
     }
