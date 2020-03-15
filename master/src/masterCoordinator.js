@@ -480,7 +480,7 @@ let master = new MasterCoordinator();
 //     );
 //   }
 // );
-master.organizeByDocId().then(
+master.organizeByDocId([1, 2, 3]).then(
   function(items) {
     LOGGER.info('The promise was fulfilled with items!', items);
   },
