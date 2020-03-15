@@ -1,7 +1,7 @@
 import { exec } from 'shelljs';
 import moment from 'moment';
 import { LOGGER } from './Logger';
-import { MasterCoordinator } from './masterCoordinator';
+// import { MasterCoordinator } from './masterCoordinator';
 
 const ZONE = 'us-central1-a';
 const PROJECT_ID = 'collaborative-teaching';
