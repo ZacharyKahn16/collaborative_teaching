@@ -13,7 +13,7 @@ const httpServer = new Server(app);
 const socketServer = io(httpServer);
 
 // List of all FDBs in system
-let fdbList = [];
+let fdbList: any = [];
 
 // Client events
 const CONNECTION_EVENT = 'connection';
@@ -25,7 +25,7 @@ const DELETE_FILE = 'Delete File';
 // Master events
 const DATABASE_LIST = 'database-instances';
 
-function shuffle(array) {
+function shuffle(array: any) {
   let currentIndex = array.length;
   let temporaryValue;
   let randomIndex;
@@ -80,13 +80,13 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
       shuffle(fdbList);
       for (let i = 0; i < replicasToMake; i++) {
         fdbList[i].insertFile(docId, fileName, fileContents, fileHash, fileType, timeStamp).then(
-          function(resp) {
+          function(resp: any) {
             socket.emit('Server Response', {
               // TODO: Add a client request ID
               message: resp,
             });
           },
-          function(err) {
+          function(err: any) {
             socket.emit('Server Response', {
               // TODO: Add a client request ID
               message: `Error inserting file ${err} into server ${fdbList[i].getUrl()}`,
