@@ -9,7 +9,7 @@
     "npm": "6.x.x"
   },
   "scripts": {
-    "start": "node src/app.ts",
+    "start": "node ./app.js",
     "watch": "nodemon src/app.ts",
     "lint": "eslint src --ext .ts --ext .js",
     "format": "npm run lint -- --fix",
