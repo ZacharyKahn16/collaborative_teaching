@@ -21,6 +21,7 @@ const RETRIEVE_FILE = 'Retrieve File';
 const INSERT_FILE = 'Insert File';
 const UPDATE_FILE = 'Update File';
 const DELETE_FILE = 'Delete File';
+const SERVER_RESP = 'Server Response';
 
 // Master events
 const DATABASE_LIST = 'database-instances';
@@ -52,13 +53,13 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
   //
   //   accessFDB.retrieveFile(docId).then(
   //     function(resp) {
-  //       socket.emit('Server Response', {
+  //       socket.emit(SERVER_RESP, {
   //         // TODO: Add a client request ID
   //         message: resp,
   //       });
   //     },
   //     function(err) {
-  //       socket.emit('Server Response', {
+  //       socket.emit(SERVER_RESP, {
   //         // TODO: Add a client request ID
   //         message: `Error retrieving file ${err}`,
   //       });
@@ -81,13 +82,13 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
       for (let i = 0; i < replicasToMake; i++) {
         fdbList[i].insertFile(docId, fileName, fileContents, fileHash, fileType, timeStamp).then(
           function(resp: any) {
-            socket.emit('Server Response', {
+            socket.emit(SERVER_RESP, {
               // TODO: Add a client request ID
               message: resp,
             });
           },
           function(err: any) {
-            socket.emit('Server Response', {
+            socket.emit(SERVER_RESP, {
               // TODO: Add a client request ID
               message: `Error inserting file ${err} into server ${fdbList[i].getUrl()}`,
             });
@@ -96,7 +97,7 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
         );
       }
     } else {
-      socket.emit('Server Response', {
+      socket.emit(SERVER_RESP, {
         // TODO: Add a request ID
         message: 'Not enough active FDBs',
       });
@@ -114,13 +115,13 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
   //
   //   accessFDB.updateFile(docId, fileName, fileContents, fileHash, fileType, timeStamp).then(
   //     function(resp) {
-  //       socket.emit('Server Response', {
+  //       socket.emit(SERVER_RESP, {
   //         // TODO: Add a request ID
   //         message: resp,
   //       });
   //     },
   //     function(err) {
-  //       socket.emit('Server Response', {
+  //       socket.emit(SERVER_RESP, {
   //         // TODO: Add a request ID
   //         message: `Error updating file ${err}`,
   //       });
@@ -135,13 +136,13 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
   //
   //   accessFDB.deleteFile(docId).then(
   //     function(resp) {
-  //       socket.emit('Server Response', {
+  //       socket.emit(SERVER_RESP, {
   //         // TODO: Add a client request ID
   //         message: resp,
   //       });
   //     },
   //     function(err) {
-  //       socket.emit('Server Response', {
+  //       socket.emit(SERVER_RESP, {
   //         // TODO: Add a client request ID
   //         message: `Error deleting file ${err}`,
   //       });
