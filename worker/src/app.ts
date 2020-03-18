@@ -117,9 +117,17 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
     // Update MCDB with successful create
     insertedFile(timeStamp, successfulInserts, [], [], fileName)
       .then(function() {
+        socket.emit(SERVER_RESP, {
+          // TODO: Add a request ID
+          message: 'Successfully inserted into MCDB',
+        });
         LOGGER.debug('Successfully inserted in MCDB');
       })
       .catch(function() {
+        socket.emit(SERVER_RESP, {
+          // TODO: Add a request ID
+          message: 'Error inserting into MCDB',
+        });
         LOGGER.debug('Error inserting into the MCDB');
       });
   });
