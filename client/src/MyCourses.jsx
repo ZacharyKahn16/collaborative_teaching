@@ -100,8 +100,8 @@ let categories = [
 ];
 
 function MyCourses(props) {
-  // console.log(props)
-  // const workerInfo = props.myInfo
+  console.log(props)
+  const workerInfo = props.workerInfo
   const { classes } = props;
   const cardStyles = useStyles();
 
@@ -115,14 +115,14 @@ function MyCourses(props) {
   const [openDialogueNewCourse, setOpenDialogueNewCourse] = React.useState(false);
   const [openEditCourse, setOpenEditCourse] = React.useState(false);
 
-  // console.log(workerInfo)
-  // const socket = io("http://"+ workerInfo.publicIp +":4001");
+  console.log(workerInfo)
+  const socket = io("http://"+ workerInfo.publicIp +":4001");
 
   useEffect(() => {
     console.log("test")
-    // socket.on(
-    //     "connect", () => {console.log("connected")}
-    // );
+    socket.on(
+        "connect", () => {console.log("connected")}
+    );
   }, []);
 
   const handleClickOpenDialogueNewCourse = () => {
@@ -193,7 +193,7 @@ function MyCourses(props) {
       <Header
         onDrawerToggle={handleDrawerToggle}
         setTitle={{name:"My Courses"}}
-        setWorkerDis={{name: "test"}}
+        setWorkerDis={{name: workerInfo.id}}
       />
       {/*<h1>My Courses</h1>*/}
       <AppBar

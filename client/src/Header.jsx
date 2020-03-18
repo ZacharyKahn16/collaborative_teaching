@@ -100,7 +100,7 @@ function Header(props) {
               {/*    Web setup*/}
               {/*</Button>*/}
               <Typography color="inherit" >
-                Connected to {"testing"}
+                Connected to {setWorkerDis.name}
               </Typography>
               {/*<Tooltip title="Add New Course">*/}
               {/*    <IconButton color="inherit">*/}

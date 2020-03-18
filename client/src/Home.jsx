@@ -228,19 +228,19 @@ function Home(props) {
   useEffect(() => {
     console.log("test")
 
-    // async function fetchData() {
-    //   // const response = await axios('http://35.224.26.195:4000/worker');
-    //   // console.log(response.data)
-    //   axios.get('http://35.224.26.195:4000/worker')
-    //       .then(function (response) {
-    //         console.log(response);
-    //         setWorker(response.data.worker)
-    //       })
-    //       .catch(function (error) {
-    //         console.log(error);
-    //       });
-    // }
-    // fetchData();
+    async function fetchData() {
+      // const response = await axios('http://35.224.26.195:4000/worker');
+      // console.log(response.data)
+      axios.get('http://35.224.26.195:4000/worker')
+          .then(function (response) {
+            console.log(response);
+            setWorker(response.data.worker)
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
+    }
+    fetchData();
   }, []);
 
   return (
@@ -266,9 +266,9 @@ function Home(props) {
 
                 <main className={classes.main}>
                   <Switch>
-                    <Redirect exact from="/" to="my-courses" />
-                    {/*<Route path={"/my-courses"} render={(props) => <Courses {...props} workerInfo={workerInfo}/>}/>*/}
-                    <Route path={"/my-courses"} component={Courses}/>
+                    {/*<Redirect exact from="/" to="my-courses" />*/}
+                    <Route path={"/my-courses"} render={(props) => <Courses {...props} workerInfo={workerInfo}/>}/>
+                    {/*<Route path={"/my-courses"} component={Courses}/>*/}
                     <Route path={"/my-files"} component={HomeContent} />
                     <Route path={"/browse-content"} component={BrowseContent} />
                     <Route path={"/course-page"} component={ViewCourse} />
