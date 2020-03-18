@@ -72,7 +72,7 @@ function MyCourses(props) {
     <Paper className={classes.paper}>
       <Header
         onDrawerToggle={handleDrawerToggle}
-        setTitle={"Content Bank"}
+        setTitle={{name:"Content Bank"}}
       />
       <AppBar
         className={classes.searchBar}

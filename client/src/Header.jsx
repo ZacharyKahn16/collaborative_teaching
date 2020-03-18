@@ -15,6 +15,7 @@ import Tooltip from "@material-ui/core/Tooltip";
 import Typography from "@material-ui/core/Typography";
 import { withStyles } from "@material-ui/core/styles";
 // import AddIcon from "@material-ui/icons/Add";
+import Button from "@material-ui/core/Button";
 
 const lightColor = "rgba(255, 255, 255, 0.7)";
 
@@ -41,7 +42,7 @@ const styles = theme => ({
 });
 
 function Header(props) {
-  const { classes, onDrawerToggle, setTitle } = props;
+  const { classes, onDrawerToggle, setTitle, setWorkerDis } = props;
   return (
     <React.Fragment>
       <AppBar color="primary" position="sticky" elevation={0}>
@@ -91,14 +92,16 @@ function Header(props) {
           <Grid container alignItems="center" spacing={1}>
             <Grid item xs>
               <Typography color="inherit" variant="h5" component="h1">
-                {/*Authentication*/}
-                {setTitle}
+                {setTitle.name}
               </Typography>
             </Grid>
             <Grid item>
               {/*<Button className={classes.button} variant="outlined" color="inherit" size="small">*/}
               {/*    Web setup*/}
               {/*</Button>*/}
+              <Typography color="inherit" >
+                Connected to {setWorkerDis.name}
+              </Typography>
               {/*<Tooltip title="Add New Course">*/}
               {/*    <IconButton color="inherit">*/}
               {/*        <AddIcon />*/}
@@ -136,7 +139,8 @@ function Header(props) {
 Header.propTypes = {
   classes: PropTypes.object.isRequired,
   onDrawerToggle: PropTypes.func.isRequired,
-  setTitle: PropTypes.object.isRequired
+  setTitle: PropTypes.object.isRequired,
+  setWorkerDis: PropTypes.object.isRequired
 };
 
 export default withStyles(styles)(Header);

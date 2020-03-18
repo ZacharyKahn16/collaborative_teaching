@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useEffect} from "react";
 import PropTypes from "prop-types";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
@@ -23,6 +23,8 @@ import DialogContent from "@material-ui/core/DialogContent";
 import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import {Link} from "react-router-dom";
+import io from "socket.io-client";
+
 
 const styles = theme => ({
   paper: {
@@ -97,6 +99,8 @@ let categories = [
 ];
 
 function MyCourses(props) {
+  // console.log(props)
+  const workerInfo = props.myInfo
   const { classes } = props;
   const cardStyles = useStyles();
 
@@ -109,6 +113,9 @@ function MyCourses(props) {
 
   const [openDialogueNewCourse, setOpenDialogueNewCourse] = React.useState(false);
   const [openEditCourse, setOpenEditCourse] = React.useState(false);
+
+  console.log(workerInfo)
+  const socket = io("http://"+ workerInfo.publicIp +":4001");
 
   const handleClickOpenDialogueNewCourse = () => {
     setOpenDialogueNewCourse(true);
@@ -173,11 +180,31 @@ function MyCourses(props) {
     setMyClasses(myClasses)
   }
 
+  useEffect(() => {
+    socket.on(
+        "connect", () => {console.log("connected")}
+    );
+
+    // socket.emit("Insert File", {
+    //   fileName: "Test-File.txt",
+    //   fileContents: "Hello World 1",
+    //   fileHash: "XXXXXXX",
+    //   fileType: "String"
+    // })
+    //
+    // socket.on(
+    //     "Server Response", function(msg) {
+    //       console.log(msg)
+    //     }
+    // )
+  }, []);
+
   return (
     <Paper className={classes.paper}>
       <Header
         onDrawerToggle={handleDrawerToggle}
-        setTitle={"My Courses"}
+        setTitle={{name:"My Courses"}}
+        setWorkerDis={{name: workerInfo.id}}
       />
       {/*<h1>My Courses</h1>*/}
       <AppBar
@@ -236,12 +263,11 @@ function MyCourses(props) {
                       Add New Course
                     </Typography>
                     <Tooltip title={"Click to add course"}>
-                      <IconButton aria-label="settings">
-                        {/*<AddIcon onClick={() => addNewCourse()}/>*/}
+                      {/*<IconButton aria-label="settings">*/}
                         <AddIcon
                           onClick={() => handleClickOpenDialogueNewCourse()}
                         />
-                      </IconButton>
+                      {/*</IconButton>*/}
                     </Tooltip>
                   </CardContent>
                 </CardActionArea>

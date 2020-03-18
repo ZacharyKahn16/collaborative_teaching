@@ -46,8 +46,14 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-export default function LoginPage() {
+export default function LoginPage(greetings) {
+    console.log(greetings)
     const classes = useStyles();
+
+    function loginBtn() {
+        console.log("clicked")
+    }
+
 
     return (
         <Container component="main" maxWidth="xs">
@@ -87,11 +93,12 @@ export default function LoginPage() {
                         label="Remember me"
                     />
                     <Button
-                        type="submit"
+                        // type="submit"
                         fullWidth
                         variant="contained"
                         color="primary"
                         className={classes.submit}
+                        onClick={() => loginBtn()}
                     >
                         Sign In
                     </Button>

@@ -1,7 +1,7 @@
 import React, {useEffect} from "react";
 import PropTypes from "prop-types";
 import {
-  createMuiTheme,
+  createMuiTheme, makeStyles,
   ThemeProvider,
   withStyles
 } from "@material-ui/core/styles";
@@ -18,6 +18,15 @@ import ViewCourse from "./CoursePage";
 import LoginPage from "./LoginPage";
 import { Switch } from "react-router-dom";
 import axios from 'axios';
+import Avatar from "@material-ui/core/Avatar";
+import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
+import TextField from "@material-ui/core/TextField";
+import FormControlLabel from "@material-ui/core/FormControlLabel";
+import Checkbox from "@material-ui/core/Checkbox";
+import Button from "@material-ui/core/Button";
+import Grid from "@material-ui/core/Grid";
+import Box from "@material-ui/core/Box";
+import Container from "@material-ui/core/Container";
 
 function Copyright() {
   return (
@@ -171,27 +180,62 @@ const styles = {
   }
 };
 
+const useStyles = makeStyles(theme => ({
+  paper: {
+    marginTop: theme.spacing(8),
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+  },
+  avatar: {
+    margin: theme.spacing(1),
+    backgroundColor: theme.palette.secondary.main,
+  },
+  form: {
+    width: '100%', // Fix IE 11 issue.
+    marginTop: theme.spacing(1),
+  },
+  submit: {
+    margin: theme.spacing(3, 0, 2),
+  },
+}));
+
 function Home(props) {
-  console.log(props)
+  // console.log(props)
   const { classes} = props;
   const [mobileOpen, setMobileOpen] = React.useState(false);
-  const dummyLoggedIn = true;
+  const [loginStatus, setLoginStatus] = React.useState(true);
+  let [workerInfo, setWorker] = React.useState("");
+
+  const classesLogin = useStyles();
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
 
+  function loginBtn() {
+    console.log("clicked")
+    setLoginStatus(true)
+    axios.get('http://35.224.26.195:4000/worker')
+        .then(function (response) {
+          console.log(response.data);
+          setWorker(response.data.worker.publicIp)
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+  }
+
   useEffect(() => {
+
     async function fetchData() {
-      // You can await here
-      // const response = await axios.get('https://jsonplaceholder.typicode.com/users');
-      // const response = await axios('http://35.224.26.195:4000');
+      // const response = await axios('http://35.224.26.195:4000/worker');
       // const response = await axios('http://35.226.186.203:4000');
-      // ...
       // console.log(response.data)
-      axios.get('https://35.224.26.195:4000/')
+      axios.get('http://35.224.26.195:4000/worker')
           .then(function (response) {
-            console.log(response);
+            console.log(response.data);
+            setWorker(response.data.worker)
           })
           .catch(function (error) {
             console.log(error);
@@ -201,7 +245,7 @@ function Home(props) {
   }, []);
 
   return (
-      dummyLoggedIn ?
+      loginStatus ?
           <ThemeProvider theme={theme}>
             <div className={classes.root}>
               <CssBaseline />
@@ -223,7 +267,8 @@ function Home(props) {
 
                 <main className={classes.main}>
                   <Switch>
-                    <Route path={"/my-courses"} component={Courses} />
+                    {/*<Route path={"/my-courses"} component={Courses} />*/}
+                    <Route path={"/my-courses"} render={(props) => <Courses {...props} myInfo={workerInfo} />} />
                     <Route path={"/my-files"} component={HomeContent} />
                     <Route path={"/browse-content"} component={BrowseContent} />
                     <Route path={"/course-page"} component={ViewCourse} />
@@ -236,7 +281,56 @@ function Home(props) {
             </div>
           </ThemeProvider>
           :
-          <LoginPage/>
+          // <LoginPage greeting="Welcome to React"/>
+          <Container component="main" maxWidth="xs">
+            <CssBaseline />
+            <div className={classesLogin.paper}>
+              <Avatar className={classesLogin.avatar}>
+                <LockOutlinedIcon />
+              </Avatar>
+              <Typography component="h1" variant="h5">
+                Sign in
+              </Typography>
+              <form className={classesLogin.form} noValidate>
+                <TextField
+                    variant="outlined"
+                    margin="normal"
+                    // required
+                    fullWidth
+                    id="email"
+                    label="Email Address"
+                    name="email"
+                    // autoComplete="email"
+                    autoFocus
+                />
+                <TextField
+                    variant="outlined"
+                    margin="normal"
+                    // required
+                    fullWidth
+                    name="password"
+                    label="Password"
+                    // type="password"
+                    id="password"
+                    autoComplete="current-password"
+                />
+                {/*<FormControlLabel*/}
+                {/*    control={<Checkbox value="remember" color="primary" />}*/}
+                {/*    label="Remember me"*/}
+                {/*/>*/}
+                <Button
+                    // type="submit"
+                    fullWidth
+                    variant="contained"
+                    color="primary"
+                    className={classes.submit}
+                    onClick={() => loginBtn()}
+                >
+                  Sign In
+                </Button>
+              </form>
+            </div>
+          </Container>
   );
 }
 

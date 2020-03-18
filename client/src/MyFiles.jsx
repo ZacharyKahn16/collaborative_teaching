@@ -49,7 +49,7 @@ function MyFiles(props) {
 
   return (
     <Paper className={classes.paper}>
-      <Header onDrawerToggle={handleDrawerToggle} setTitle={"My Files"} />
+      <Header onDrawerToggle={handleDrawerToggle} setTitle={{name:"My Files"}} />
       <AppBar
         className={classes.searchBar}
         position="static"

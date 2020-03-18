@@ -113,6 +113,7 @@ function Navigator(props) {
                     primary: classes.itemPrimary
                   }}
                   className={"linkNoStyle"}
+                  key={numIndex}
                 >
                   <div id={styleid}>
                     <ListItem
