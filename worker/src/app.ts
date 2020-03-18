@@ -110,6 +110,10 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
     }
 
     if (successfulInserts.length <= 0) {
+      socket.emit(SERVER_RESP, {
+        // TODO: Add a request ID
+        message: 'No successful inserts to place into the MCDB',
+      });
       LOGGER.debug('No successful inserts into FDBs');
       return;
     }
