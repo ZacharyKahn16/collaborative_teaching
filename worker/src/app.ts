@@ -76,7 +76,6 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
     const fileHash = req.fileHash;
     const fileType = req.fileType;
     const timeStamp = Date.now();
-    const successfulInserts: string[] = [];
 
     if (fdbList <= 0) {
       socket.emit(SERVER_RESP, {
@@ -86,6 +85,7 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
       return;
     }
 
+    const successfulInserts: string[] = [];
     const replicasToMake = Math.floor(fdbList.length / 3 + 1);
     shuffle(fdbList);
     for (let i = 0; i < replicasToMake; i++) {
@@ -109,16 +109,7 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
       );
     }
 
-    socket.emit(SERVER_RESP, {
-      // TODO: Add a request ID
-      message: successfulInserts,
-      count: successfulInserts.length,
-    });
     if (successfulInserts.length <= 0) {
-      socket.emit(SERVER_RESP, {
-        // TODO: Add a request ID
-        message: 'No successful inserts to place into the MCDB',
-      });
       LOGGER.debug('No successful inserts into FDBs');
       return;
     }
