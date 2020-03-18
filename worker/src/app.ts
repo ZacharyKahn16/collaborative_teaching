@@ -1,6 +1,7 @@
 import { AccessFDB } from './workerToFDBConnection.js';
 import { LOGGER } from './Logger';
 import { v4 } from 'uuid';
+import { insertedFile } from './MCDB';
 
 import express from 'express';
 import { Server } from 'http';
@@ -75,33 +76,52 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
     const fileHash = req.fileHash;
     const fileType = req.fileType;
     const timeStamp = Date.now();
+    const successfulInserts: string[] = [];
 
-    if (fdbList.length > 0) {
-      const replicasToMake = Math.floor(fdbList.length / 3 + 1);
-      shuffle(fdbList);
-      for (let i = 0; i < replicasToMake; i++) {
-        fdbList[i].insertFile(docId, fileName, fileContents, fileHash, fileType, timeStamp).then(
-          function(resp: any) {
-            socket.emit(SERVER_RESP, {
-              // TODO: Add a client request ID
-              message: resp,
-            });
-          },
-          function(err: any) {
-            socket.emit(SERVER_RESP, {
-              // TODO: Add a client request ID
-              message: `Error inserting file ${err} into server ${fdbList[i].getUrl()}`,
-            });
-            throw err;
-          },
-        );
-      }
-    } else {
+    if (fdbList <= 0) {
       socket.emit(SERVER_RESP, {
         // TODO: Add a request ID
         message: 'Not enough active FDBs',
       });
+      return;
     }
+
+    const replicasToMake = Math.floor(fdbList.length / 3 + 1);
+    shuffle(fdbList);
+    for (let i = 0; i < replicasToMake; i++) {
+      const fdbConnection = fdbList[i];
+      fdbConnection.insertFile(docId, fileName, fileContents, fileHash, fileType, timeStamp).then(
+        function(resp: any) {
+          // Write this information to the MCDB to ensure other workers know of this change
+          successfulInserts.push(fdbConnection.getIp());
+          socket.emit(SERVER_RESP, {
+            // TODO: Add a client request ID
+            message: resp,
+          });
+        },
+        function(err: any) {
+          socket.emit(SERVER_RESP, {
+            // TODO: Add a client request ID
+            message: `Error inserting file ${err} into server ${fdbList[i].getUrl()}`,
+          });
+          throw err;
+        },
+      );
+    }
+
+    if (successfulInserts.length <= 0) {
+      LOGGER.debug('No successful inserts into FDBs');
+      return;
+    }
+
+    // Update MCDB with successful create
+    insertedFile(timeStamp, successfulInserts, [], [], fileName)
+      .then(function() {
+        LOGGER.debug('Successfully inserted in MCDB');
+      })
+      .catch(function() {
+        LOGGER.debug('Error inserting into the MCDB');
+      });
   });
 
   // TODO: Retrieve list of files from Firebase
@@ -156,7 +176,7 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
     socket.emit('health-response', 'I am alive');
     fdbList = []; // Reset fdbList
     for (let i = 0; i < req.length; i++) {
-      const ipAddress = `mongodb://${req[i]['publicIp']}:80`;
+      const ipAddress = req[i]['publicIp'];
       const instanceRunning = req[i]['instanceRunning'] === true;
       const instanceServing = req[i]['instanceServing'] === true;
 

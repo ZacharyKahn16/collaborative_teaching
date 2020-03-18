@@ -81,10 +81,11 @@ export class FileDatabase {
 export class AccessFDB {
   /**
    * @class
-   * @param {String} url url that FDB is listening on.
+   * @param {String} ip ip the FDB is listening on.
    **/
-  constructor(url) {
-    this.url = url;
+  constructor(ip) {
+    this.ip = ip;
+    this.url = `mongodb://${ip}:80`;
     // Name of FDB database.
     this.dbName = 'FDB';
     // Name of collection that stores files.
@@ -98,6 +99,15 @@ export class AccessFDB {
    **/
   getUrl() {
     return this.url;
+  }
+
+  /**
+   * Retrieve the ip address this instance is connected to
+   *
+   * @return {String} IP of this instance
+   **/
+  getIp() {
+    return this.ip;
   }
 
   /**
