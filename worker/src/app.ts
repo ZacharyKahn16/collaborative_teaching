@@ -109,6 +109,11 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
       );
     }
 
+    socket.emit(SERVER_RESP, {
+      // TODO: Add a request ID
+      message: successfulInserts,
+      count: successfulInserts.length,
+    });
     if (successfulInserts.length <= 0) {
       socket.emit(SERVER_RESP, {
         // TODO: Add a request ID
