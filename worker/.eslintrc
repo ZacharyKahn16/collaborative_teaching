@@ -41,7 +41,7 @@
     "no-dupe-args": "error",
     "no-duplicate-case": "error",
     "no-fallthrough": "error",
-    "no-await-in-loop": "error",
+    "no-await-in-loop": "off",
     "no-use-before-define": "error",
     "no-nested-ternary": "error",
     "@typescript-eslint/no-angle-bracket-type-assertion": "off",

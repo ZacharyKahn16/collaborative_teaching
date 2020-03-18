@@ -69,7 +69,7 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
   //   );
   // });
 
-  socket.on(INSERT_FILE, function(req) {
+  socket.on(INSERT_FILE, async function(req) {
     const docId = v4();
     const fileName = req.fileName;
     const fileContents = req.fileContents;
@@ -90,26 +90,31 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
     shuffle(fdbList);
     for (let i = 0; i < replicasToMake; i++) {
       const fdbConnection = fdbList[i];
-      fdbConnection.insertFile(docId, fileName, fileContents, fileHash, fileType, timeStamp).then(
-        function(resp: any) {
-          // Write this information to the MCDB to ensure other workers know of this change
-          successfulInserts.push(fdbConnection.getIp());
-          socket.emit(SERVER_RESP, {
-            // TODO: Add a client request ID
-            message: resp,
-          });
-        },
-        function(err: any) {
-          socket.emit(SERVER_RESP, {
-            // TODO: Add a client request ID
-            message: `Error inserting file ${err} into server ${fdbList[i].getUrl()}`,
-          });
-          throw err;
-        },
-      );
+      await fdbConnection
+        .insertFile(docId, fileName, fileContents, fileHash, fileType, timeStamp)
+        .then(
+          function(resp: any) {
+            // Write this information to the MCDB to ensure other workers know of this change
+            successfulInserts.push(fdbConnection.getIp());
+            socket.emit(SERVER_RESP, {
+              // TODO: Add a client request ID
+              message: resp,
+            });
+          },
+          function(err: any) {
+            socket.emit(SERVER_RESP, {
+              // TODO: Add a client request ID
+              message: `Error inserting file ${err} into server ${fdbList[i].getUrl()}`,
+            });
+            throw err;
+          },
+        );
     }
 
     if (successfulInserts.length <= 0) {
+      socket.emit(SERVER_RESP, {
+        message: 'No successful inserts into FDBs',
+      });
       LOGGER.debug('No successful inserts into FDBs');
       return;
     }
@@ -118,15 +123,13 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
     insertedFile(timeStamp, successfulInserts, [], [], fileName)
       .then(function() {
         socket.emit(SERVER_RESP, {
-          // TODO: Add a request ID
           message: 'Successfully inserted into MCDB',
         });
         LOGGER.debug('Successfully inserted in MCDB');
       })
       .catch(function() {
         socket.emit(SERVER_RESP, {
-          // TODO: Add a request ID
-          message: 'Error inserting into MCDB',
+          message: 'Error inserting into the MCDB',
         });
         LOGGER.debug('Error inserting into the MCDB');
       });

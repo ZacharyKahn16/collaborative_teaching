@@ -160,7 +160,7 @@ export class AccessFDB {
   /**
    * Insert new file.
    *
-   * @param {Integer}  docId ID of document.
+   * @param {String}  docId ID of document.
    * @param {String} fileName name of file.
    * @param {String} fileContents TODO (zacharykahn): Do we want to store file in binary?
    * @param {String} fileHash Hash of the file.
