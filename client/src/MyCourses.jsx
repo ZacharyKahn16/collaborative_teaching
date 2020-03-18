@@ -24,6 +24,7 @@ import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import {Link} from "react-router-dom";
 import io from "socket.io-client";
+import axios from "axios";
 
 
 const styles = theme => ({
@@ -100,7 +101,7 @@ let categories = [
 
 function MyCourses(props) {
   // console.log(props)
-  const workerInfo = props.myInfo
+  // const workerInfo = props.myInfo
   const { classes } = props;
   const cardStyles = useStyles();
 
@@ -114,8 +115,15 @@ function MyCourses(props) {
   const [openDialogueNewCourse, setOpenDialogueNewCourse] = React.useState(false);
   const [openEditCourse, setOpenEditCourse] = React.useState(false);
 
-  console.log(workerInfo)
-  const socket = io("http://"+ workerInfo.publicIp +":4001");
+  // console.log(workerInfo)
+  // const socket = io("http://"+ workerInfo.publicIp +":4001");
+
+  useEffect(() => {
+    console.log("test")
+    // socket.on(
+    //     "connect", () => {console.log("connected")}
+    // );
+  }, []);
 
   const handleClickOpenDialogueNewCourse = () => {
     setOpenDialogueNewCourse(true);
@@ -180,31 +188,12 @@ function MyCourses(props) {
     setMyClasses(myClasses)
   }
 
-  useEffect(() => {
-    socket.on(
-        "connect", () => {console.log("connected")}
-    );
-
-    // socket.emit("Insert File", {
-    //   fileName: "Test-File.txt",
-    //   fileContents: "Hello World 1",
-    //   fileHash: "XXXXXXX",
-    //   fileType: "String"
-    // })
-    //
-    // socket.on(
-    //     "Server Response", function(msg) {
-    //       console.log(msg)
-    //     }
-    // )
-  }, []);
-
   return (
     <Paper className={classes.paper}>
       <Header
         onDrawerToggle={handleDrawerToggle}
         setTitle={{name:"My Courses"}}
-        setWorkerDis={{name: workerInfo.id}}
+        setWorkerDis={{name: "test"}}
       />
       {/*<h1>My Courses</h1>*/}
       <AppBar
