@@ -36,6 +36,9 @@ const styles = theme => ({
   },
   contentWrapper: {
     margin: "40px 16px"
+  },
+  addFileButton: {
+    marginRight: "5px"
   }
 });
 
@@ -64,7 +67,7 @@ function MyFiles(props) {
             <Grid item xs>
               <TextField
                 fullWidth
-                placeholder="Search by email address, phone number, or user UID"
+                placeholder="Search by course or file name."
                 InputProps={{
                   disableUnderline: true,
                   className: classes.searchInput
@@ -77,7 +80,7 @@ function MyFiles(props) {
                 color="primary"
                 className={classes.addUser}
               >
-                <PublishIcon className={classes.block} color="inherit" />
+                <PublishIcon className={classes.addFileButton} color="inherit" />
                 Add file
                 <input type="file" style={{ display: "none" }} />
               </Button>
