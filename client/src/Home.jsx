@@ -266,7 +266,7 @@ function Home(props) {
 
                 <main className={classes.main}>
                   <Switch>
-                    {/*<Redirect exact from="/" to="my-courses" />*/}
+                    <Redirect exact from="/" to="my-courses" />
                     <Route path={"/my-courses"} render={(props) => <Courses {...props} workerInfo={workerInfo}/>}/>
                     {/*<Route path={"/my-courses"} component={Courses}/>*/}
                     <Route path={"/my-files"} component={HomeContent} />
