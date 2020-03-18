@@ -16,7 +16,7 @@ import HomeContent from "./MyFiles";
 import BrowseContent from "./BrowseContent";
 import ViewCourse from "./CoursePage";
 import LoginPage from "./LoginPage";
-import { Switch } from "react-router-dom";
+import { Switch, Redirect } from "react-router-dom";
 import axios from 'axios';
 
 function Copyright() {
@@ -223,6 +223,7 @@ function Home(props) {
 
                 <main className={classes.main}>
                   <Switch>
+                    <Redirect exact from="/" to="my-courses" />
                     <Route path={"/my-courses"} component={Courses} />
                     <Route path={"/my-files"} component={HomeContent} />
                     <Route path={"/browse-content"} component={BrowseContent} />
