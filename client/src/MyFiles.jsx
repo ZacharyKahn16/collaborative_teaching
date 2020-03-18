@@ -15,6 +15,9 @@ import RefreshIcon from "@material-ui/icons/Refresh";
 import Header from "./Header";
 import PublishIcon from "@material-ui/icons/Publish";
 import FileList from "./FileList";
+import Modal from "@material-ui/core/Modal";
+import Backdrop from "@material-ui/core/Backdrop";
+import Fade from "@material-ui/core/Fade";
 
 const styles = theme => ({
   paper: {
@@ -36,15 +39,27 @@ const styles = theme => ({
   },
   contentWrapper: {
     margin: "40px 16px"
+  },
+  addFileButton: {
+    marginRight: "5px"
   }
 });
 
 function MyFiles(props) {
   const { classes } = props;
   const [mobileOpen, setMobileOpen] = React.useState(false);
+  const [uploadModalOpen, setUploadModalOpen] = React.useState(false);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
+  };
+
+  const handleOpenUploadModal = () => {
+    setUploadModalOpen(true);
+  };
+
+  const handleCloseUploadModal = () => {
+    setUploadModalOpen(false);
   };
 
   return (
@@ -64,7 +79,7 @@ function MyFiles(props) {
             <Grid item xs>
               <TextField
                 fullWidth
-                placeholder="Search by email address, phone number, or user UID"
+                placeholder="Search by course or file name."
                 InputProps={{
                   disableUnderline: true,
                   className: classes.searchInput
@@ -72,12 +87,8 @@ function MyFiles(props) {
               />
             </Grid>
             <Grid item>
-              <Button
-                variant="contained"
-                color="primary"
-                className={classes.addUser}
-              >
-                <PublishIcon className={classes.block} color="inherit" />
+              <Button variant="contained" color="primary" className={classes.addUser} onClick={handleOpenUploadModal}>
+                <PublishIcon className={classes.addFileButton} color="inherit"/>
                 Add file
                 <input type="file" style={{ display: "none" }} />
               </Button>
@@ -88,6 +99,25 @@ function MyFiles(props) {
               </Tooltip>
             </Grid>
           </Grid>
+          <Modal
+              aria-labelledby="transition-modal-title"
+              aria-describedby="transition-modal-description"
+              className="modal"
+              open={uploadModalOpen}
+              onClose={handleCloseUploadModal}
+              closeAfterTransition
+              BackdropComponent={Backdrop}
+              BackdropProps={{
+                timeout: 500,
+                style: {backgroundColor: 'rgba(0,0,0,0.7)'}
+              }}
+          >
+            <Fade in={uploadModalOpen}>
+              <div>
+                {/*TODO: Conditional card for either editing or deleting*/}
+              </div>
+            </Fade>
+          </Modal>
         </Toolbar>
       </AppBar>
       <div className={classes.contentWrapper}>

@@ -88,7 +88,7 @@ function MyCourses(props) {
             <Grid item xs>
               <TextField
                 fullWidth
-                placeholder="Search by author or file name"
+                placeholder="Search by author, course or file name."
                 InputProps={{
                   disableUnderline: true,
                   className: classes.searchInput

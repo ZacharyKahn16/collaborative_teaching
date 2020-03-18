@@ -16,7 +16,7 @@ import HomeContent from "./MyFiles";
 import BrowseContent from "./BrowseContent";
 import ViewCourse from "./CoursePage";
 import LoginPage from "./LoginPage";
-import { Switch } from "react-router-dom";
+import { Switch, Redirect } from "react-router-dom";
 import axios from 'axios';
 import Avatar from "@material-ui/core/Avatar";
 import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
@@ -267,8 +267,8 @@ function Home(props) {
 
                 <main className={classes.main}>
                   <Switch>
-                    {/*<Route path={"/my-courses"} component={Courses} />*/}
-                    <Route path={"/my-courses"} render={(props) => <Courses {...props} myInfo={workerInfo} />} />
+                    <Redirect exact from="/" to="my-courses" />
+                    <Route path={"/my-courses"} component={Courses} />
                     <Route path={"/my-files"} component={HomeContent} />
                     <Route path={"/browse-content"} component={BrowseContent} />
                     <Route path={"/course-page"} component={ViewCourse} />
