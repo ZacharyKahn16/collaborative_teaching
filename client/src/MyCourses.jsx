@@ -47,6 +47,10 @@ const styles = theme => ({
   },
   contentWrapper: {
     margin: "40px 16px"
+  },
+  root: {
+    width: 250,
+    height: 250
   }
 });
 
@@ -99,232 +103,136 @@ let categories = [
   }
 ];
 
-function MyCourses(props) {
-  console.log(props)
-  const workerInfo = props.workerInfo
-  const { classes } = props;
-  const cardStyles = useStyles();
+class MyCourses extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      mobileOpen: false,
+      myClasses: categories,
+      courseName: "",
+      courseDescription: "",
+      courseIndex: 0,
+      openDialogueNewCourse: false,
+      openEditCourse: false
+    };
+    this.handleClickOpenEditCourse = this.handleClickOpenEditCourse.bind(this);
+    this.handleClickOpenDialogueNewCourse = this.handleClickOpenDialogueNewCourse.bind(this);
+    this.deleteClass = this.deleteClass.bind(this);
+    // this.handleChange = this.handleChange.bind(this);
+    // this.handleSubmit = this.handleSubmit.bind(this);
 
-  const [mobileOpen, setMobileOpen] = React.useState(false);
-  let [myClasses, setMyClasses] = React.useState(categories);
-
-  let [courseName, setCourseName] = React.useState("");
-  let [courseDescription, setCourseDescription] = React.useState("");
-  let [courseIndex, setCourseIndex] = React.useState(0);
-
-  const [openDialogueNewCourse, setOpenDialogueNewCourse] = React.useState(false);
-  const [openEditCourse, setOpenEditCourse] = React.useState(false);
-
-  console.log(workerInfo)
-  const socket = io("http://"+ workerInfo.publicIp +":4001");
-
-  useEffect(() => {
-    console.log("test")
-    socket.on(
-        "connect", () => {console.log("connected")}
-    );
-  }, []);
-
-  const handleClickOpenDialogueNewCourse = () => {
-    setOpenDialogueNewCourse(true);
-  };
-
-  const handleCloseDialogueNewCourse = (addedCourse) => {
-    if (addedCourse) {
-      addNewCourse(courseName, courseDescription);
-    }
-    setOpenDialogueNewCourse(false);
-  };
-
-  const handleClickOpenEditCourse = (index, courseName, courseDescription) => {
-    setCourseName(courseName)
-    setCourseDescription(courseDescription)
-    setCourseIndex(index)
-    setOpenEditCourse(true)
-  };
-
-  const handleCloseEditCourse = (editedCourse) => {
-    if (editedCourse) {
-      editCourse()
-    }
-    setOpenEditCourse(false)
   }
 
-  const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
+  handleDrawerToggle = () => {
+    this.state.mobileOpen = !this.state.mobileOpen;
   };
 
-  function deleteClass(index) {
+  handleClickOpenEditCourse(index, courseName, courseDescription) {
+
+  };
+
+  handleClickOpenDialogueNewCourse() {
+
+  }
+
+  deleteClass(index) {
     console.log(index);
-    console.log(JSON.stringify(myClasses));
-    // setMyClasses(myClasses.splice(index,1))
+  };
+
+
+
+  componentDidMount() {
+    // console.log("testing")
   }
 
-  function addNewCourse(name, desc) {
-    console.log("test add");
-    setMyClasses([
-      ...myClasses,
-      {
-        id: myClasses.length,
-        course: name,
-        description: desc,
-        path: "/course-page/"+name.replace(/ /g,'')
-      }
-    ]);
-  }
 
-  function createCourseName(e) {
-    setCourseName(e.target.value);
-  }
-  function createCourseDescription(e) {
-    setCourseDescription(e.target.value);
-  }
 
-  function editCourse() {
-    console.log("test edit");
-    console.log(courseIndex);
-    myClasses[courseIndex].course = courseName
-    myClasses[courseIndex].description = courseDescription
-    setMyClasses(myClasses)
-  }
+  render() {
+    const { classes, workerInfo } = this.props;
+    console.log(workerInfo)
+    return (
+        <Paper className={classes.paper}>
+          {/*hello*/}
 
-  return (
-    <Paper className={classes.paper}>
-      <Header
-        onDrawerToggle={handleDrawerToggle}
-        setTitle={{name:"My Courses"}}
-        setWorkerDis={{name: workerInfo.id}}
-      />
-      {/*<h1>My Courses</h1>*/}
-      <AppBar
-        className={classes.searchBar}
-        position="static"
-        color="default"
-        elevation={0}
-      >
-        <Toolbar>
-          <div className="flex-container">
-            {myClasses.map(({ id, course, description, path }, index) => (
-              <div key={id}>
-                <Card className={cardStyles.root} id={"courseCard"}>
-                  <Link to={path} id={"courseLink"}>
-                    <CardActionArea id={"cardInfo"}>
+          <Header
+              onDrawerToggle={this.handleDrawerToggle}
+              setTitle={{name: "My Courses"}}
+              setWorkerDis={{name: workerInfo}}
+          />
+          <AppBar
+              className={this.props.classes.searchBar}
+              position="static"
+              color="default"
+              elevation={0}
+          >
+            <Toolbar>
+              <div className={"flex-container"}>
+                {this.state.myClasses.map(({id, course, description, path}, index) => (
+                    <div key={id}>
+                      <Card className={classes.root} id={"courseCard"}>
+                        <Link to={path} id={"courseLink"}>
+                          <CardActionArea id={"cardInfo"}>
+                            <CardContent>
+                              <Typography gutterBottom variant="h5" component="h2">
+                                {course}
+                              </Typography>
+                              <Typography
+                                  variant="body2"
+                                  color="textSecondary"
+                                  component="p"
+                              >
+                                {description}
+                              </Typography>
+                            </CardContent>
+                          </CardActionArea>
+                        </Link>
+                        <CardActions className={"courseOptions"}>
+                          <Tooltip title={"Edit"}>
+                            <IconButton
+                                aria-label={"settings"}
+                                onClick={() => this.handleClickOpenEditCourse(index, course, description)}
+                            >
+                              <MoreVertIcon/>
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title={"Remove"}>
+                            <IconButton
+                                aria-label="settings"
+                                onClick={() => this.deleteClass(index)}
+                            >
+                              <DeleteIcon/>
+                            </IconButton>
+                          </Tooltip>
+                        </CardActions>
+                      </Card>
+                    </div>
+                ))}
+                <div>
+                  <Card className={classes.root} id={"courseCard"}>
+                    <CardActionArea id={"addNewCard"}>
                       <CardContent>
                         <Typography gutterBottom variant="h5" component="h2">
-                          {course}
+                          Add New Course
                         </Typography>
-                        <Typography
-                          variant="body2"
-                          color="textSecondary"
-                          component="p"
-                        >
-                          {description}
-                        </Typography>
+                        <Tooltip title={"Click to add course"}>
+                          {/*<IconButton aria-label="settings">*/}
+                          <AddIcon
+                              onClick={() => this.handleClickOpenDialogueNewCourse()}
+                          />
+                          {/*</IconButton>*/}
+                        </Tooltip>
                       </CardContent>
                     </CardActionArea>
-                  </Link>
-                  <CardActions className={"courseOptions"}>
-                    <Tooltip title={"Edit"}>
-                      <IconButton
-                        aria-label="settings"
-                        onClick={() => handleClickOpenEditCourse(index, course, description)}
-                      >
-                        <MoreVertIcon />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title={"Remove"}>
-                      <IconButton
-                        aria-label="settings"
-                        onClick={deleteClass.bind(this, index)}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </Tooltip>
-                  </CardActions>
-                </Card>
+                  </Card>
+                </div>
               </div>
-            ))}
-            <div>
-              <Card className={cardStyles.root} id={"courseCard"}>
-                <CardActionArea id={"addNewCard"}>
-                  <CardContent>
-                    <Typography gutterBottom variant="h5" component="h2">
-                      Add New Course
-                    </Typography>
-                    <Tooltip title={"Click to add course"}>
-                      {/*<IconButton aria-label="settings">*/}
-                        <AddIcon
-                          onClick={() => handleClickOpenDialogueNewCourse()}
-                        />
-                      {/*</IconButton>*/}
-                    </Tooltip>
-                  </CardContent>
-                </CardActionArea>
-              </Card>
-            </div>
-          </div>
-        </Toolbar>
-      </AppBar>
-      <Dialog open={openDialogueNewCourse} onClose={() => handleCloseDialogueNewCourse(false)} aria-labelledby="form-dialog-title">
-        <DialogTitle id="form-dialog-title">Create New Course</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            To create new course fill in these fieldss
-          </DialogContentText>
-          <TextField
-            margin="dense"
-            id="newCourseName"
-            label="Course Name"
-            type="text"
-            fullWidth
-            onChange={createCourseName}
-          />
-          <TextField
-            margin="dense"
-            id="newCourseDescription"
-            label="Course Description"
-            type="text"
-            fullWidth
-            onChange={createCourseDescription}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={() => handleCloseDialogueNewCourse(false)}
-            color="primary"
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={() => handleCloseDialogueNewCourse(true)}
-            color="primary"
-          >
-            Create Course
-          </Button>
-        </DialogActions>
-      </Dialog>
-      <Dialog open={openEditCourse} onClose={() => handleCloseDialogueNewCourse(false)} aria-labelledby="form-dialog-title">
-        <DialogTitle id="form-dialog-title">Edit Your Course</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Make your changes and click save
-          </DialogContentText>
-          <TextField margin="dense" id="newCourseName" label="Course Name" type="text" fullWidth onChange={createCourseName} value={courseName} />
-          <TextField margin="dense" id="newCourseDescription" label="Course Description" type="text" fullWidth onChange={createCourseDescription} value={courseDescription}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => handleCloseEditCourse(false)} color="primary">
-            Cancel
-          </Button>
-          <Button onClick={() => handleCloseEditCourse(true)} color="primary">
-            Save Changes
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Paper>
-  );
+            </Toolbar>
+          </AppBar>
+        </Paper>
+    )
+  }
 }
+
 
 MyCourses.propTypes = {
   classes: PropTypes.object.isRequired

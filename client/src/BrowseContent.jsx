@@ -52,6 +52,8 @@ const listOfFiles = [
   }
 ];
 
+
+
 function MyCourses(props) {
   const { classes } = props;
   const [mobileOpen, setMobileOpen] = React.useState(false);
@@ -73,6 +75,7 @@ function MyCourses(props) {
       <Header
         onDrawerToggle={handleDrawerToggle}
         setTitle={{name:"Content Bank"}}
+        setWorkerDis={{name: "testing rn"}}
       />
       <AppBar
         className={classes.searchBar}

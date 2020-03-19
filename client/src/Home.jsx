@@ -200,142 +200,101 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-function Home(props) {
-  const { classes} = props;
-  const [mobileOpen, setMobileOpen] = React.useState(false);
-  const [loginStatus, setLoginStatus] = React.useState(true);
-  let [workerInfo, setWorker] = React.useState("");
 
-  const classesLogin = useStyles();
+class Home extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      mobileOpen: false,
+      loginStatus: true,
+      workerInfo: "",
+      isLoaded: false,
+      error: null
+    };
+    // this.handleChange = this.handleChange.bind(this);
+    // this.handleSubmit = this.handleSubmit.bind(this);
+    this.handleDrawerToggle = this.handleDrawerToggle.bind(this);
 
-  const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
-  };
 
-  function loginBtn() {
-    console.log("clicked")
-    setLoginStatus(true)
-    axios.get('http://35.224.26.195:4000/worker')
-        .then(function (response) {
-          console.log(response.data);
-          setWorker(response.data.worker.publicIp)
-        })
-        .catch(function (error) {
-          console.log(error);
-        });
   }
 
-  useEffect(() => {
-    console.log("test")
+  componentDidMount() {
+    axios.get("http://35.224.26.195:4000/worker")
+        .then(
+            (result) => {
+              this.setState({
+                isLoaded: true,
+                workerInfo: result.data.worker.id
+              });
+              console.log(result)
+            },
+            (error) => {
+              this.setState({
+                isLoaded: true,
+                error
+              });
+              console.log(error)
+            }
+        )
+  }
 
-    async function fetchData() {
-      // const response = await axios('http://35.224.26.195:4000/worker');
-      // console.log(response.data)
-      axios.get('http://35.224.26.195:4000/worker')
-          .then(function (response) {
-            console.log(response);
-            setWorker(response.data.worker)
-          })
-          .catch(function (error) {
-            console.log(error);
-          });
+  handleDrawerToggle = () => {
+    this.state.mobileOpen = !this.state.mobileOpen
+  };
+
+
+  render() {
+    const isLoaded = this.state.isLoaded;
+    if (!isLoaded) {
+      return <div>Loading...</div>;
+    } else {
+      console.log(this.state.workerInfo)
+      return (
+          this.state.loginStatus ?
+              <ThemeProvider theme={theme}>
+                <div className={this.props.classes.root}>
+                  <CssBaseline/>
+                  <nav className={this.props.classes.drawer}>
+                    <Hidden smUp implementation="js">
+                      <Navigator
+                          PaperProps={{style: {width: drawerWidth}}}
+                          variant="temporary"
+                          open={this.state.mobileOpen}
+                          onClose={this.handleDrawerToggle}
+                      />
+                    </Hidden>
+                    <Hidden xsDown implementation="css">
+                      <Navigator PaperProps={{style: {width: drawerWidth}}}/>
+                    </Hidden>
+                  </nav>
+                  <div className={this.props.classes.app}>
+                    {/*<Header onDrawerToggle={handleDrawerToggle} />*/}
+
+                    <main className={this.props.classes.main}>
+                      <Switch>
+                        <Redirect exact from="/" to="my-courses"/>
+                        <Route path={"/my-courses"} render={(props) => <Courses {...props} workerInfo={this.state.workerInfo}/>}/>
+                        {/*<Route path={"/my-courses"} component={Courses}/>*/}
+                        <Route path={"/my-files"} component={HomeContent}/>
+                        <Route path={"/browse-content"} component={BrowseContent}/>
+                        <Route path={"/course-page"} component={ViewCourse}/>
+                      </Switch>
+                    </main>
+                    <footer className={this.props.classes.footer}>
+                      <Copyright/>
+                    </footer>
+                  </div>
+                </div>
+              </ThemeProvider>
+              :
+              <LoginPage greeting="Welcome to React"/>
+      )
     }
-    fetchData();
-  }, []);
-
-  return (
-      loginStatus ?
-          <ThemeProvider theme={theme}>
-            <div className={classes.root}>
-              <CssBaseline />
-              <nav className={classes.drawer}>
-                <Hidden smUp implementation="js">
-                  <Navigator
-                      PaperProps={{ style: { width: drawerWidth } }}
-                      variant="temporary"
-                      open={mobileOpen}
-                      onClose={handleDrawerToggle}
-                  />
-                </Hidden>
-                <Hidden xsDown implementation="css">
-                  <Navigator PaperProps={{ style: { width: drawerWidth } }} />
-                </Hidden>
-              </nav>
-              <div className={classes.app}>
-                {/*<Header onDrawerToggle={handleDrawerToggle} />*/}
-
-                <main className={classes.main}>
-                  <Switch>
-                    <Redirect exact from="/" to="my-courses" />
-                    <Route path={"/my-courses"} render={(props) => <Courses {...props} workerInfo={workerInfo}/>}/>
-                    {/*<Route path={"/my-courses"} component={Courses}/>*/}
-                    <Route path={"/my-files"} component={HomeContent} />
-                    <Route path={"/browse-content"} component={BrowseContent} />
-                    <Route path={"/course-page"} component={ViewCourse} />
-                  </Switch>
-                </main>
-                <footer className={classes.footer}>
-                  <Copyright />
-                </footer>
-              </div>
-            </div>
-          </ThemeProvider>
-          :
-          // <LoginPage greeting="Welcome to React"/>
-          <Container component="main" maxWidth="xs">
-            <CssBaseline />
-            <div className={classesLogin.paper}>
-              <Avatar className={classesLogin.avatar}>
-                <LockOutlinedIcon />
-              </Avatar>
-              <Typography component="h1" variant="h5">
-                Sign in
-              </Typography>
-              <form className={classesLogin.form} noValidate>
-                <TextField
-                    variant="outlined"
-                    margin="normal"
-                    // required
-                    fullWidth
-                    id="email"
-                    label="Email Address"
-                    name="email"
-                    // autoComplete="email"
-                    autoFocus
-                />
-                <TextField
-                    variant="outlined"
-                    margin="normal"
-                    // required
-                    fullWidth
-                    name="password"
-                    label="Password"
-                    // type="password"
-                    id="password"
-                    autoComplete="current-password"
-                />
-                {/*<FormControlLabel*/}
-                {/*    control={<Checkbox value="remember" color="primary" />}*/}
-                {/*    label="Remember me"*/}
-                {/*/>*/}
-                <Button
-                    // type="submit"
-                    fullWidth
-                    variant="contained"
-                    color="primary"
-                    className={classes.submit}
-                    onClick={() => loginBtn()}
-                >
-                  Sign In
-                </Button>
-              </form>
-            </div>
-          </Container>
-  );
+  }
 }
 
-Home.propTypes = {
-  classes: PropTypes.object.isRequired
-};
+// Home.propTypes = {
+//   classes: PropTypes.object.isRequired
+// };
 
 export default withStyles(styles)(Home);

@@ -8,12 +8,14 @@ import "./Styles/MyCourses.css";
 import {Route} from "react-router";
 import { BrowserRouter } from 'react-router-dom';
 
-const App = () => {
-  return (
-      <BrowserRouter>
-          <Route exact component={Home}/>
-      </BrowserRouter>
-  );
-};
 
+class App extends React.Component {
+    render() {
+        return (
+            <BrowserRouter>
+                <Route exact component={Home}/>
+            </BrowserRouter>
+        );
+    }
+}
 export default App;
