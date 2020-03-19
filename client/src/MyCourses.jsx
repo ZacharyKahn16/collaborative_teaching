@@ -116,33 +116,108 @@ class MyCourses extends React.Component {
       openEditCourse: false
     };
     this.handleClickOpenEditCourse = this.handleClickOpenEditCourse.bind(this);
+    this.handleCloseEditCourse = this.handleCloseEditCourse.bind(this);
     this.handleClickOpenDialogueNewCourse = this.handleClickOpenDialogueNewCourse.bind(this);
+    this.handleCloseDialogueNewCourse = this.handleCloseDialogueNewCourse.bind(this);
     this.deleteClass = this.deleteClass.bind(this);
+    this.createCourseName = this.createCourseName.bind(this);
+    this.createCourseDescription = this.createCourseDescription.bind(this);
     // this.handleChange = this.handleChange.bind(this);
     // this.handleSubmit = this.handleSubmit.bind(this);
 
   }
 
   handleDrawerToggle = () => {
-    this.state.mobileOpen = !this.state.mobileOpen;
+    // this.state.mobileOpen = !this.state.mobileOpen;
+    this.setState({
+      mobileOpen: !this.state.mobileOpen
+    })
   };
 
   handleClickOpenEditCourse(index, courseName, courseDescription) {
+    this.setState({
+      courseName: courseName,
+      courseDescription: courseDescription,
+      courseIndex: index,
+      openEditCourse: true
+    })
 
   };
 
   handleClickOpenDialogueNewCourse() {
-
+    this.setState({
+      openDialogueNewCourse: true
+    })
   }
 
-  deleteClass(index) {
-    console.log(index);
+  handleCloseEditCourse(editedCourse) {
+    if (editedCourse) {
+      console.log("somerthing")
+      this.editCourse()
+    }
+    this.setState({
+      openEditCourse: false
+    })
+  }
+
+  handleCloseDialogueNewCourse(addedCourse) {
+    if (addedCourse) {
+      this.addNewCourse(this.state.courseName, this.state.courseDescription)
+    }
+    this.setState({
+      openDialogueNewCourse: false
+    })
   };
 
 
+  deleteClass(index) {
+    console.log(index);
+    console.log(this.state.courseIndex)
+  };
+
+  createCourseName(e) {
+    console.log(e)
+    console.log(e.target.value)
+    this.setState({
+      courseName: e.target.value
+    })
+  }
+
+  createCourseDescription(e) {
+    this.setState({
+      courseDescription: e.target.value
+    })
+  }
+
+  editCourse() {
+    console.log("test edit");
+    let temp = this.state.myClasses
+    temp[this.state.courseIndex].course = this.state.courseName
+    temp[this.state.courseIndex].description = this.state.courseDescription
+    this.setState({
+      myClasses: temp
+    })
+  }
+
+  addNewCourse(name, desc) {
+    console.log("test add");
+    console.log(name)
+    let temp = this.state.myClasses
+    temp.push({
+      id: this.state.myClasses.length,
+      course: name,
+      description: desc,
+      path: "/course-page/"+name.replace(/ /g,'')
+    })
+    this.setState({
+      myClasses: temp
+    })
+    console.log(this.state.myClasses)
+  }
+
 
   componentDidMount() {
-    // console.log("testing")
+    // console.log("mounted")
   }
 
 
@@ -228,6 +303,63 @@ class MyCourses extends React.Component {
               </div>
             </Toolbar>
           </AppBar>
+          <Dialog open={this.state.openDialogueNewCourse} onClose={() => this.handleCloseDialogueNewCourse(false)} aria-labelledby="form-dialog-title">
+            <DialogTitle id="form-dialog-title">Create New Course</DialogTitle>
+            <DialogContent>
+              <DialogContentText>
+                To create new course fill in these fieldss
+              </DialogContentText>
+              <TextField
+                  margin="dense"
+                  id="newCourseName"
+                  label="Course Name"
+                  type="text"
+                  fullWidth
+                  onChange={this.createCourseName}
+              />
+              <TextField
+                  margin="dense"
+                  id="newCourseDescription"
+                  label="Course Description"
+                  type="text"
+                  fullWidth
+                  onChange={this.createCourseDescription}
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button
+                  onClick={() => this.handleCloseDialogueNewCourse(false)}
+                  color="primary"
+              >
+                Cancel
+              </Button>
+              <Button
+                  onClick={() => this.handleCloseDialogueNewCourse(true)}
+                  color="primary"
+              >
+                Create Course
+              </Button>
+            </DialogActions>
+          </Dialog>
+          <Dialog open={this.state.openEditCourse} onClose={() => this.handleCloseDialogueNewCourse(false)} aria-labelledby="form-dialog-title">
+            <DialogTitle id="form-dialog-title">Edit Your Course</DialogTitle>
+            <DialogContent>
+              <DialogContentText>
+                Make your changes and click save
+              </DialogContentText>
+              <TextField margin="dense" id="newCourseName" label="Course Name" type="text" fullWidth onChange={this.createCourseName} value={this.state.courseName} />
+              <TextField margin="dense" id="newCourseDescription" label="Course Description" type="text" fullWidth onChange={this.createCourseDescription} value={this.state.courseDescription}
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => this.handleCloseEditCourse(false)} color="primary">
+                Cancel
+              </Button>
+              <Button onClick={() => this.handleCloseEditCourse(true)} color="primary">
+                Save Changes
+              </Button>
+            </DialogActions>
+          </Dialog>
         </Paper>
     )
   }
