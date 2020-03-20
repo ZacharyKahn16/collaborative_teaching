@@ -52,17 +52,23 @@ const listOfFiles = [
   }
 ];
 
+class BrowseContent extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      mobileOpen: false
+    };
 
+    this.handleSearchOnChange = this.handleSearchOnChange.bind(this);
+  }
 
-function MyCourses(props) {
-  const { classes } = props;
-  const [mobileOpen, setMobileOpen] = React.useState(false);
-
-  const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
+  handleDrawerToggle() {
+    this.setState({
+      mobileOpen: !this.state.mobileOpen
+    })
   };
 
-  function handleSearchOnChange(e) {
+  handleSearchOnChange(e) {
     // if (e.target.value
     console.log(e.key);
     if (e.key === "Enter") {
@@ -70,59 +76,62 @@ function MyCourses(props) {
     }
   }
 
-  return (
-    <Paper className={classes.paper}>
-      <Header
-        onDrawerToggle={handleDrawerToggle}
-        setTitle={{name:"Content Bank"}}
-        setWorkerDis={{name: "testing rn"}}
-      />
-      <AppBar
-        className={classes.searchBar}
-        position="static"
-        color="default"
-        elevation={0}
-      >
-        <Toolbar>
-          <Grid container spacing={2} alignItems="center">
-            <Grid item>
-              <SearchIcon className={classes.block} color="inherit" />
-            </Grid>
-            <Grid item xs>
-              <TextField
-                fullWidth
-                placeholder="Search by author, course or file name."
-                InputProps={{
-                  disableUnderline: true,
-                  className: classes.searchInput
-                }}
-                onKeyDown={handleSearchOnChange}
-              />
-            </Grid>
-            <Grid item>
-              {/*<Button variant="contained" color="primary" className={classes.addUser}>*/}
-              {/*    Add user*/}
-              {/*</Button>*/}
-              <Tooltip title="Reload">
-                <IconButton>
-                  <RefreshIcon className={classes.block} color="inherit" />
-                </IconButton>
-              </Tooltip>
-            </Grid>
-          </Grid>
-        </Toolbar>
-      </AppBar>
-      <div className={classes.contentWrapper}>
-        <Typography color="textSecondary" align="center">
-          No users for this project yet
-        </Typography>
-      </div>
-    </Paper>
-  );
+  render() {
+    const { classes, workerInfo } = this.props;
+    return(
+        <Paper className={classes.paper}>
+          <Header
+              onDrawerToggle={this.handleDrawerToggle}
+              setTitle={{name:"Content Bank"}}
+              setWorkerDis={{name: workerInfo}}
+          />
+          <AppBar
+              className={classes.searchBar}
+              position="static"
+              color="default"
+              elevation={0}
+          >
+            <Toolbar>
+              <Grid container spacing={2} alignItems="center">
+                <Grid item>
+                  <SearchIcon className={classes.block} color="inherit" />
+                </Grid>
+                <Grid item xs>
+                  <TextField
+                      fullWidth
+                      placeholder="Search by author, course or file name."
+                      InputProps={{
+                        disableUnderline: true,
+                        className: classes.searchInput
+                      }}
+                      onKeyDown={this.handleSearchOnChange}
+                  />
+                </Grid>
+                <Grid item>
+                  {/*<Button variant="contained" color="primary" className={classes.addUser}>*/}
+                  {/*    Add user*/}
+                  {/*</Button>*/}
+                  <Tooltip title="Reload">
+                    <IconButton>
+                      <RefreshIcon className={classes.block} color="inherit" />
+                    </IconButton>
+                  </Tooltip>
+                </Grid>
+              </Grid>
+            </Toolbar>
+          </AppBar>
+          <div className={classes.contentWrapper}>
+            <Typography color="textSecondary" align="center">
+              No users for this project yet
+            </Typography>
+          </div>
+        </Paper>
+    );
+  }
 }
 
-MyCourses.propTypes = {
+BrowseContent.propTypes = {
   classes: PropTypes.object.isRequired
 };
 
-export default withStyles(styles)(MyCourses);
+export default withStyles(styles)(BrowseContent);

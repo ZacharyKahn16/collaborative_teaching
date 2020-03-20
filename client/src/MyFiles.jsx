@@ -45,87 +45,107 @@ const styles = theme => ({
   }
 });
 
-function MyFiles(props) {
-  const { classes } = props;
-  const [mobileOpen, setMobileOpen] = React.useState(false);
-  const [uploadModalOpen, setUploadModalOpen] = React.useState(false);
+class MyFiles extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      mobileOpen: false,
+      uploadModalOpen: false,
+    };
 
-  const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
+    this.handleOpenUploadModal = this.handleOpenUploadModal.bind(this);
+  }
+
+  handleDrawerToggle() {
+    this.setState({
+      mobileOpen: !this.state.mobileOpen
+    })
   };
 
-  const handleOpenUploadModal = () => {
-    setUploadModalOpen(true);
+  handleOpenUploadModal() {
+    this.setState({
+      uploadModalOpen: true
+    })
   };
 
-  const handleCloseUploadModal = () => {
-    setUploadModalOpen(false);
+  handleCloseUploadModal() {
+    this.setState({
+      uploadModalOpen: false
+    })
   };
 
-  return (
-    <Paper className={classes.paper}>
-      <Header onDrawerToggle={handleDrawerToggle} setTitle={{name:"My Files"}} setWorkerDis={{name: "testing rn"}} />
-      <AppBar
-        className={classes.searchBar}
-        position="static"
-        color="default"
-        elevation={0}
-      >
-        <Toolbar>
-          <Grid container spacing={2} alignItems="center">
-            <Grid item>
-              <SearchIcon className={classes.block} color="inherit" />
-            </Grid>
-            <Grid item xs>
-              <TextField
-                fullWidth
-                placeholder="Search by course or file name."
-                InputProps={{
-                  disableUnderline: true,
-                  className: classes.searchInput
-                }}
-              />
-            </Grid>
-            <Grid item>
-              <Button variant="contained" color="primary" className={classes.addUser} onClick={handleOpenUploadModal}>
-                <PublishIcon className={classes.addFileButton} color="inherit"/>
-                Add file
-                <input type="file" style={{ display: "none" }} />
-              </Button>
-              <Tooltip title="Reload">
-                <IconButton>
-                  <RefreshIcon className={classes.block} color="inherit" />
-                </IconButton>
-              </Tooltip>
-            </Grid>
-          </Grid>
-          <Modal
-              aria-labelledby="transition-modal-title"
-              aria-describedby="transition-modal-description"
-              className="modal"
-              open={uploadModalOpen}
-              onClose={handleCloseUploadModal}
-              closeAfterTransition
-              BackdropComponent={Backdrop}
-              BackdropProps={{
-                timeout: 500,
-                style: {backgroundColor: 'rgba(0,0,0,0.7)'}
-              }}
+  componentDidMount() {
+    // console.log("mounted")
+  }
+  render() {
+    const { classes, workerInfo } = this.props;
+    return(
+        <Paper className={classes.paper}>
+          <Header onDrawerToggle={this.handleDrawerToggle} setTitle={{name:"My Files"}} setWorkerDis={{name: workerInfo}} />
+          <AppBar
+              className={classes.searchBar}
+              position="static"
+              color="default"
+              elevation={0}
           >
-            <Fade in={uploadModalOpen}>
-              <div>
-                {/*TODO: Conditional card for either editing or deleting*/}
-              </div>
-            </Fade>
-          </Modal>
-        </Toolbar>
-      </AppBar>
-      <div className={classes.contentWrapper}>
-        <FileList />
-      </div>
-    </Paper>
-  );
+            <Toolbar>
+              <Grid container spacing={2} alignItems="center">
+                <Grid item>
+                  <SearchIcon className={classes.block} color="inherit" />
+                </Grid>
+                <Grid item xs>
+                  <TextField
+                      fullWidth
+                      placeholder="Search by course or file name."
+                      InputProps={{
+                        disableUnderline: true,
+                        className: classes.searchInput
+                      }}
+                  />
+                </Grid>
+                <Grid item>
+                  <Button variant="contained" color="primary" className={classes.addUser} onClick={this.handleOpenUploadModal}>
+                    <PublishIcon className={classes.addFileButton} color="inherit"/>
+                    Add file
+                    <input type="file" style={{ display: "none" }} />
+                  </Button>
+                  <Tooltip title="Reload">
+                    <IconButton>
+                      <RefreshIcon className={classes.block} color="inherit" />
+                    </IconButton>
+                  </Tooltip>
+                </Grid>
+              </Grid>
+              <Modal
+                  aria-labelledby="transition-modal-title"
+                  aria-describedby="transition-modal-description"
+                  className="modal"
+                  open={this.state.uploadModalOpen}
+                  onClose={this.handleCloseUploadModal}
+                  closeAfterTransition
+                  BackdropComponent={Backdrop}
+                  BackdropProps={{
+                    timeout: 500,
+                    style: {backgroundColor: 'rgba(0,0,0,0.7)'}
+                  }}
+              >
+                <Fade in={this.state.uploadModalOpen}>
+                  <div>
+                    {/*TODO: Conditional card for either editing or deleting*/}
+                  </div>
+                </Fade>
+              </Modal>
+            </Toolbar>
+          </AppBar>
+          <div className={classes.contentWrapper}>
+            <FileList />
+          </div>
+        </Paper>
+    );
+  }
 }
+
+
 
 MyFiles.propTypes = {
   classes: PropTypes.object.isRequired

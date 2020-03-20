@@ -128,7 +128,6 @@ class MyCourses extends React.Component {
   }
 
   handleDrawerToggle = () => {
-    // this.state.mobileOpen = !this.state.mobileOpen;
     this.setState({
       mobileOpen: !this.state.mobileOpen
     })
