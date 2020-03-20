@@ -1,4 +1,5 @@
 // import { addToCollection } from './Firebase';
+// TODO: ask if this imports things correctly.
 import fs from './Firebase';
 import admin from 'firebase-admin';
 

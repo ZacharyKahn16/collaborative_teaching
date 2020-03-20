@@ -110,7 +110,8 @@ export function updateDocument(
 }
 
 /**
- * This method is used to update a specific document in the Firebase Firestore db
+ * This method is used to update a specific document in the Firebase Firestore
+ * db
  * @param collection - The name of the collection where the document to-be-updated is stored
  * @param documentID - The ID of the document being deleted.
  * @returns Promise - Returns a promise that the data will be updated in the specified document
