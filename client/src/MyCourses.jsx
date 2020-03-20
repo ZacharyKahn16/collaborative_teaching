@@ -217,6 +217,7 @@ class MyCourses extends React.Component {
 
   componentDidMount() {
     // console.log("mounted")
+
   }
 
 
@@ -231,7 +232,7 @@ class MyCourses extends React.Component {
           <Header
               onDrawerToggle={this.handleDrawerToggle}
               setTitle={{name: "My Courses"}}
-              setWorkerDis={{name: workerInfo}}
+              setWorkerDis={{name: workerInfo.id}}
           />
           <AppBar
               className={this.props.classes.searchBar}

@@ -27,6 +27,7 @@ import Button from "@material-ui/core/Button";
 import Grid from "@material-ui/core/Grid";
 import Box from "@material-ui/core/Box";
 import Container from "@material-ui/core/Container";
+import io from "socket.io-client";
 
 function Copyright() {
   return (
@@ -224,9 +225,25 @@ class Home extends React.Component {
             (result) => {
               this.setState({
                 isLoaded: true,
-                workerInfo: result.data.worker.id
+                workerInfo: result.data.worker
               });
               console.log(result)
+              const socket = io("http://"+ result.data.worker.publicIp +":4001");
+              socket.on(
+                  "connect", () => {console.log("connected")}
+              );
+              // Send worker a request to write a file into the FDB
+              // socket.emit("Insert File", {
+              //   fileName: "Test-File.txt",
+              //   fileContents: "Hello World 1",
+              //   fileHash: "XXXXXXXX",
+              //   fileType: "String"
+              // });
+              //
+              // // Listen to worker responses here
+              // socket.on("Server Response", function(msg) {
+              //   console.log(msg);
+              // });
             },
             (error) => {
               this.setState({

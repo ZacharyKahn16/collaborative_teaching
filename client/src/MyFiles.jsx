@@ -81,7 +81,7 @@ class MyFiles extends React.Component {
     const { classes, workerInfo } = this.props;
     return(
         <Paper className={classes.paper}>
-          <Header onDrawerToggle={this.handleDrawerToggle} setTitle={{name:"My Files"}} setWorkerDis={{name: workerInfo}} />
+          <Header onDrawerToggle={this.handleDrawerToggle} setTitle={{name:"My Files"}} setWorkerDis={{name: workerInfo.id}} />
           <AppBar
               className={classes.searchBar}
               position="static"

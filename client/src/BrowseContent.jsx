@@ -83,7 +83,7 @@ class BrowseContent extends React.Component {
           <Header
               onDrawerToggle={this.handleDrawerToggle}
               setTitle={{name:"Content Bank"}}
-              setWorkerDis={{name: workerInfo}}
+              setWorkerDis={{name: workerInfo.id}}
           />
           <AppBar
               className={classes.searchBar}
