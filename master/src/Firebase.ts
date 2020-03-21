@@ -68,9 +68,14 @@ export function addToCollection(
   collection: string,
   document: any,
 ): Promise<FirebaseFirestore.DocumentReference> {
-  return getDb()
+  const doc = getDb()
     .collection(collection)
-    .add(document);
+    .doc();
+
+  return doc.set({
+    ...document,
+    docId: doc.id,
+  });
 }
 
 /**

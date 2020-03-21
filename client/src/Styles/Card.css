@@ -1,0 +1,47 @@
+.card-body {
+    padding: 15px;
+    background-color: white;
+}
+
+.upload-box-container {
+    height: 35px;
+    line-height: 35px;
+}
+
+.upload-box-left {
+    padding: 10px;
+    border: 1px solid lightslategrey;
+    border-radius: 10px 0px 0px 10px;
+}
+
+.upload-box-right {
+    font-size: 0.875rem;
+    min-width: 64px;
+    box-sizing: border-box;
+    transition: background-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,border 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+    font-weight: 500;
+    line-height: 1.75;
+    border-radius: 0px 10px 10px 0px;
+    letter-spacing: 0.02857em;
+    text-transform: uppercase;
+}
+
+.browse-btn {
+    height: 42px;
+    border-radius: 0px 10px 10px 0px !important;
+    padding-left: 10px;
+}
+
+.file-name-p {
+    width: 250px;
+    max-width: 250px;
+}
+
+.mr-1 {
+    margin-right: 8px !important;
+}
+
+.display-none {
+    display: none !important;
+}
