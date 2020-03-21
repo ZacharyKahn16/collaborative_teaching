@@ -16,6 +16,7 @@ import HomeContent from "./MyFiles";
 import BrowseContent from "./BrowseContent";
 import ViewCourse from "./CoursePage";
 import LoginPage from "./LoginPage";
+import LoadingScreen from "./LoadingScreen";
 import { Switch, Redirect } from "react-router-dom";
 import axios from 'axios';
 import Avatar from "@material-ui/core/Avatar";
@@ -239,11 +240,18 @@ class Home extends React.Component {
               //   fileHash: "XXXXXXXX",
               //   fileType: "String"
               // });
-              //
-              // // Listen to worker responses here
-              // socket.on("Server Response", function(msg) {
-              //   console.log(msg);
-              // });
+
+              // Retrieving file
+              // socket.emit("Retrieve File", {
+              //   fileName: '04d9a6bb-2167-41ed-8bb8-f00d3dfb42e9' // some id
+              // })
+
+              // Database List
+
+              // Listen to worker responses here
+              socket.on("Server Response", function(msg) {
+                console.log(msg);
+              });
             },
             (error) => {
               this.setState({
@@ -262,8 +270,9 @@ class Home extends React.Component {
 
   render() {
     const isLoaded = this.state.isLoaded;
-    if (!isLoaded) {
-      return <div>Loading...</div>;
+    if (isLoaded != true) {
+      // return <div>Loading...</div>;
+      return <LoadingScreen/>
     } else {
       console.log(this.state.workerInfo)
       return (
@@ -290,13 +299,13 @@ class Home extends React.Component {
                     <main className={this.props.classes.main}>
                       <Switch>
                         <Redirect exact from="/" to="my-courses"/>
-                        <Route path={"/my-courses"} render={(props) => <Courses {...props} workerInfo={this.state.workerInfo}/>}/>
+                        <Route exact path={"/my-courses"} render={(props) => <Courses {...props} workerInfo={this.state.workerInfo}/>}/>
                         {/*<Route path={"/my-courses"} component={Courses}/>*/}
                         <Route path={"/my-files"} render={(props) => <HomeContent {...props} workerInfo={this.state.workerInfo}/>}/>
                         {/*<Route path={"/my-files"} component={HomeContent}/>*/}
                         <Route path={"/browse-content"} render={(props) => <BrowseContent {...props} workerInfo={this.state.workerInfo}/>}/>
                         {/*<Route path={"/browse-content"} component={BrowseContent}/>*/}
-                        <Route path={"/course-page"} component={ViewCourse}/>
+                        <Route path={"/course-page/"} render={(props) => <ViewCourse {...props} workerInfo={"this.state.workerInfo"}/>}/>
                       </Switch>
                     </main>
                     <footer className={this.props.classes.footer}>

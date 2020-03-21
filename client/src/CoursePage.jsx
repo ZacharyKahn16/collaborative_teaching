@@ -13,6 +13,11 @@ import SearchIcon from "@material-ui/icons/Search";
 import RefreshIcon from "@material-ui/icons/Refresh";
 import Header from "./Header";
 import FileList from "./FileList";
+import Button from "@material-ui/core/Button";
+import PublishIcon from "@material-ui/icons/Publish";
+import Modal from "@material-ui/core/Modal";
+import Backdrop from "@material-ui/core/Backdrop";
+import Fade from "@material-ui/core/Fade";
 
 const styles = theme => ({
     paper: {
@@ -51,71 +56,111 @@ const listOfFiles = [
     }
 ];
 
-function MyCourses(props) {
-    const { classes } = props;
-    const [mobileOpen, setMobileOpen] = React.useState(false);
+class CoursePage extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            mobileOpen: false,
+            uploadModalOpen: false,
+        };
 
-    const handleDrawerToggle = () => {
-        setMobileOpen(!mobileOpen);
-    };
-
-    function handleSearchOnChange(e) {
-        console.log(e.key);
-        if (e.key === "Enter") {
-            console.log(e.target.value);
-        }
+        this.handleOpenUploadModal = this.handleOpenUploadModal.bind(this);
     }
 
-    return (
-        <Paper className={classes.paper}>
-            <Header
-                onDrawerToggle={handleDrawerToggle}
-                setTitle={"List of Classes"}
-            />
-            <AppBar
-                className={classes.searchBar}
-                position="static"
-                color="default"
-                elevation={0}
-            >
-                <Toolbar>
-                    <Grid container spacing={2} alignItems="center">
-                        <Grid item>
-                            <SearchIcon className={classes.block} color="inherit" />
+    handleDrawerToggle() {
+        this.setState({
+            mobileOpen: !this.state.mobileOpen
+        })
+    };
+
+    handleOpenUploadModal() {
+        this.setState({
+            uploadModalOpen: true
+        })
+    };
+
+    handleCloseUploadModal() {
+        this.setState({
+            uploadModalOpen: false
+        })
+    };
+
+    componentDidMount() {
+        // console.log("mounted")
+    }
+    render() {
+        const { classes, workerInfo } = this.props;
+        console.log("workerInfo")
+        return(
+            <Paper className={classes.paper}>
+                <Header onDrawerToggle={this.handleDrawerToggle} setTitle={{name:"List of Courses"}} setWorkerDis={{name: "testing"}} />
+                <AppBar
+                    className={classes.searchBar}
+                    position="static"
+                    color="default"
+                    elevation={0}
+                >
+                    <Toolbar>
+                        <Grid container spacing={2} alignItems="center">
+                            <Grid item>
+                                <SearchIcon className={classes.block} color="inherit" />
+                            </Grid>
+                            <Grid item xs>
+                                <TextField
+                                    fullWidth
+                                    placeholder="Search by course or file name."
+                                    InputProps={{
+                                        disableUnderline: true,
+                                        className: classes.searchInput
+                                    }}
+                                />
+                            </Grid>
+                            <Grid item>
+                                <Button variant="contained" color="primary" className={classes.addUser} onClick={this.handleOpenUploadModal}>
+                                    <PublishIcon className={classes.addFileButton} color="inherit"/>
+                                    Add file
+                                    <input type="file" style={{ display: "none" }} />
+                                </Button>
+                                <Tooltip title="Reload">
+                                    <IconButton>
+                                        <RefreshIcon className={classes.block} color="inherit" />
+                                    </IconButton>
+                                </Tooltip>
+                            </Grid>
                         </Grid>
-                        <Grid item xs>
-                            <TextField
-                                fullWidth
-                                placeholder="Search by author or file name"
-                                InputProps={{
-                                    disableUnderline: true,
-                                    className: classes.searchInput
-                                }}
-                                onKeyDown={handleSearchOnChange}
-                            />
-                        </Grid>
-                        <Grid item>
-                            <Tooltip title="Reload">
-                                <IconButton>
-                                    <RefreshIcon className={classes.block} color="inherit" />
-                                </IconButton>
-                            </Tooltip>
-                        </Grid>
-                    </Grid>
-                </Toolbar>
-            </AppBar>
-            <div className={classes.contentWrapper}>
-                {/*<Typography color="textSecondary" align="center">*/}
-                {/*    No users for this project yet*/}
-                {/*</Typography>*/}
-                <FileList />
-            </div>
-        </Paper>
-    );
+                        <Modal
+                            aria-labelledby="transition-modal-title"
+                            aria-describedby="transition-modal-description"
+                            className="modal"
+                            open={this.state.uploadModalOpen}
+                            onClose={this.handleCloseUploadModal}
+                            closeAfterTransition
+                            BackdropComponent={Backdrop}
+                            BackdropProps={{
+                                timeout: 500,
+                                style: {backgroundColor: 'rgba(0,0,0,0.7)'}
+                            }}
+                        >
+                            <Fade in={this.state.uploadModalOpen}>
+                                <div>
+                                    {/*TODO: Conditional card for either editing or deleting*/}
+                                </div>
+                            </Fade>
+                        </Modal>
+                    </Toolbar>
+                </AppBar>
+                <div className={classes.contentWrapper}>
+                    <FileList />
+                </div>
+            </Paper>
+        );
+    }
 }
 
-MyCourses.propTypes = {
+
+
+CoursePage.propTypes = {
     classes: PropTypes.object.isRequired
 };
 
-export default withStyles(styles)(MyCourses);
+export default withStyles(styles)(CoursePage);
