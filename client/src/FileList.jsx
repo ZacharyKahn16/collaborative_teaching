@@ -24,6 +24,11 @@ class FileList extends Component {
       editModalOpen: false,
       deleteModalOpen: false
     };
+
+    this.handleEditModalOpen = this.handleEditModalOpen.bind(this);
+    this.handleDeleteModalOpen = this.handleDeleteModalOpen.bind(this);
+    this.handleModalClose = this.handleModalClose.bind(this);
+
   };
 
   createData = (fileName, fileType, courseName, owner, dateUploaded) => {
