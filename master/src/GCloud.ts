@@ -11,8 +11,8 @@ const INSTANCE_TYPE = {
   DATABASE: 'database',
 };
 
-const REFRESH_DATA_INTERVAL = 2 * 60 * 1000; // 1 min (ms)
-const TIME_TILL_ACTIVE = 8 * 60; // 7 min (s)
+const REFRESH_DATA_INTERVAL = 2.5 * 60 * 1000; // 2.5 min (ms)
+const TIME_TILL_ACTIVE = 8 * 60; // 8 min (s)
 
 export const NUM_MASTERS = 2;
 export const NUM_WORKERS = 3;
