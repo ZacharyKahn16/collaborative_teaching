@@ -11,8 +11,8 @@ const INSTANCE_TYPE = {
   DATABASE: 'database',
 };
 
-const REFRESH_DATA_INTERVAL = 60 * 1000; // 1 min (ms)
-const TIME_TILL_ACTIVE = 8 * 60; // 7 min (s)
+const REFRESH_DATA_INTERVAL = 2.5 * 60 * 1000; // 2.5 min (ms)
+const TIME_TILL_ACTIVE = 8 * 60; // 8 min (s)
 
 export const NUM_MASTERS = 2;
 export const NUM_WORKERS = 3;
@@ -111,9 +111,7 @@ export class GCloud {
             instance.instanceServing = meta.serving;
 
             newInstances.push(instance);
-          } catch (error) {
-            LOGGER.error(error);
-          }
+          } catch (error) {}
         }
 
         if (newInstances.length > 0) {
@@ -167,6 +165,14 @@ export class GCloud {
         },
       );
     });
+  }
+
+  amICoordinator(): boolean {
+    return (
+      this.thisInstance !== undefined &&
+      this.masterInstances.length === NUM_MASTERS &&
+      !this.amIResponder
+    );
   }
 
   filterInstances(): void {
@@ -230,11 +236,7 @@ export class GCloud {
   }
 
   checkWorkers(): void {
-    if (
-      this.thisInstance !== undefined &&
-      this.masterInstances.length === NUM_MASTERS &&
-      !this.amIResponder
-    ) {
+    if (this.amICoordinator()) {
       const mastersAvailNums = this.workerInstances.map((instance) => {
         return instance.number;
       });
@@ -256,11 +258,7 @@ export class GCloud {
   }
 
   checkDatabases(): void {
-    if (
-      this.thisInstance !== undefined &&
-      this.masterInstances.length === NUM_MASTERS &&
-      !this.amIResponder
-    ) {
+    if (this.amICoordinator()) {
       const databasesAvailNums = this.databaseInstances.map((instance) => {
         return instance.number;
       });
@@ -281,24 +279,6 @@ export class GCloud {
     }
   }
 
-  createMaster(): void {
-    if (this.thisInstance !== undefined) {
-      const index = staticIps.indexOf(this.thisInstance.publicIp);
-      const nextIndex = index === 0 ? 1 : 0;
-      const nextIp = staticIps[nextIndex];
-      const nextName = `${INSTANCE_TYPE.MASTER}-${this.thisInstance.number + 1}`;
-      LOGGER.debug(`Creating ${nextName}.`);
-
-      const command = `gcloud beta compute --project=${PROJECT_ID} instances create ${nextName} --zone=${ZONE} --machine-type=g1-small --subnet=default --network-tier=PREMIUM --maintenance-policy=MIGRATE --service-account=165250393917-compute@developer.gserviceaccount.com --scopes=https://www.googleapis.com/auth/cloud-platform --tags=http-server --image=ubuntu-minimal-1804-bionic-v20200220 --image-project=ubuntu-os-cloud --boot-disk-size=10GB --boot-disk-type=pd-standard --boot-disk-device-name=${nextName} --no-shielded-secure-boot --shielded-vtpm --shielded-integrity-monitoring --reservation-affinity=any --address=${nextIp} --metadata=startup-script-url=gs://collaborative-teaching.appspot.com/scripts/startup-master.bash,startup-status=initializing,created-on=$(date +%s)`;
-
-      exec(command, { silent: true }, (code, stdout, stderr) => {
-        if (code !== 0 || (stderr && stderr.includes('ERROR'))) {
-          LOGGER.error(`Creating ${nextName} failed.`, code, stderr);
-        }
-      });
-    }
-  }
-
   checkReplication(): void {
     // if (
     //   this.thisInstance !== undefined &&
@@ -310,36 +290,50 @@ export class GCloud {
     // }
   }
 
+  createMaster(): void {
+    if (this.thisInstance !== undefined) {
+      const index = staticIps.indexOf(this.thisInstance.publicIp);
+      const nextIndex = index === 0 ? 1 : 0;
+      const nextIp = staticIps[nextIndex];
+      const nextName = `${INSTANCE_TYPE.MASTER}-${this.thisInstance.number + 1}`;
+      LOGGER.debug(`${nextName} - creating.`);
+
+      const command = `gcloud beta compute --project=${PROJECT_ID} instances create ${nextName} --zone=${ZONE} --machine-type=g1-small --subnet=default --network-tier=PREMIUM --maintenance-policy=MIGRATE --service-account=165250393917-compute@developer.gserviceaccount.com --scopes=https://www.googleapis.com/auth/cloud-platform --tags=http-server --image=ubuntu-minimal-1804-bionic-v20200220 --image-project=ubuntu-os-cloud --boot-disk-size=10GB --boot-disk-type=pd-standard --boot-disk-device-name=${nextName} --no-shielded-secure-boot --shielded-vtpm --shielded-integrity-monitoring --reservation-affinity=any --address=${nextIp} --metadata=startup-script-url=gs://collaborative-teaching.appspot.com/scripts/startup-master.bash,startup-status=initializing,created-on=$(date +%s)`;
+      exec(command, { silent: true }, (code, stdout, stderr) => {
+        if (code !== 0 || (stderr && stderr.includes('ERROR'))) {
+          LOGGER.error(`${nextName} - creating failed.`, code, stderr);
+        }
+      });
+    }
+  }
+
   createWorker(num: number): void {
     const name = `${INSTANCE_TYPE.WORKER}-${num}`;
-    LOGGER.debug(`Creating ${name}.`);
+    LOGGER.debug(`${name} - creating.`);
 
     const command = `gcloud beta compute --project=${PROJECT_ID} instances create ${name} --zone=${ZONE} --machine-type=g1-small --subnet=default --network-tier=PREMIUM --maintenance-policy=MIGRATE --service-account=165250393917-compute@developer.gserviceaccount.com --scopes=https://www.googleapis.com/auth/cloud-platform --tags=http-server --image=ubuntu-minimal-1804-bionic-v20200220 --image-project=ubuntu-os-cloud --boot-disk-size=10GB --boot-disk-type=pd-standard --boot-disk-device-name=${name} --no-shielded-secure-boot --shielded-vtpm --shielded-integrity-monitoring --reservation-affinity=any --metadata=startup-script-url=gs://collaborative-teaching.appspot.com/scripts/startup-worker.bash,startup-status=initializing,created-on=$(date +%s)`;
-
     exec(command, { silent: true }, (code, stdout, stderr) => {
       if (code !== 0 || (stderr && stderr.includes('ERROR'))) {
-        LOGGER.error(`Creating ${name} failed.`, code, stderr);
+        LOGGER.error(`${name} - creating failed.`, code, stderr);
       }
     });
   }
 
   createDatabase(num: number): void {
     const name = `${INSTANCE_TYPE.DATABASE}-${num}`;
-    LOGGER.debug(`Creating ${name}.`);
+    LOGGER.debug(`${name} - creating.`);
 
     const command = `gcloud beta compute --project=${PROJECT_ID} instances create ${name} --zone=${ZONE} --machine-type=g1-small --subnet=default --network-tier=PREMIUM --maintenance-policy=MIGRATE --service-account=165250393917-compute@developer.gserviceaccount.com --scopes=https://www.googleapis.com/auth/cloud-platform --tags=database-server --image=ubuntu-minimal-1804-bionic-v20200220 --image-project=ubuntu-os-cloud --boot-disk-size=10GB --boot-disk-type=pd-standard --boot-disk-device-name=${name} --no-shielded-secure-boot --shielded-vtpm --shielded-integrity-monitoring --reservation-affinity=any --metadata=startup-script-url=gs://collaborative-teaching.appspot.com/scripts/startup-database.bash,startup-status=initializing,created-on=$(date +%s)`;
-
     exec(command, { silent: true }, (code, stdout, stderr) => {
       if (code !== 0 || (stderr && stderr.includes('ERROR'))) {
-        LOGGER.error(`Creating ${name} failed.`, code, stderr);
+        LOGGER.error(`${name} - creating failed.`, code, stderr);
       }
     });
   }
 
   deleteInstance(id: string): void {
-    LOGGER.debug(`Deleting instance ${id}.`);
+    LOGGER.debug(`${id} - deleting.`);
     const command = `gcloud compute --project=${PROJECT_ID} instances delete ${id} --zone=${ZONE}`;
-
     exec(command, { silent: true }, (code, stdout, stderr) => {
       if (code !== 0 || stderr) {
         LOGGER.error(`Deleting instance ${id} failed.`, code, stderr);
@@ -353,24 +347,24 @@ export class GCloud {
 
     if (!instance.createdOn || Number.isNaN(instance.createdOn) || instance.createdOn === -1) {
       val = true;
-      message = `Instance ${instance.id} health = GOOD. Has been created but not yet initialized.`;
+      message = `${instance.id} - health is GOOD, has been created but not yet initialized.`;
     } else if (instance.instanceRunning && (instance.instanceServing as boolean)) {
       val = true;
-      message = `Instance ${instance.id} health = GOOD. Has been created and is now serving.`;
+      message = `${instance.id} - health is GOOD, has been created and is now serving.`;
     } else {
       val = moment().unix() <= instance.createdOn + TIME_TILL_ACTIVE;
     }
 
     if (message.length === 0) {
       if (val) {
-        message = `Instance ${instance.id} health = GOOD. Has been created but not yet initialized.`;
+        message = `${instance.id} - health is GOOD, has been created but not yet initialized.`;
       } else {
-        message = `Instance ${instance.id} health = BAD. Has been created, should be serving, but is not serving.`;
+        message = `${instance.id} - health i BAD, has been created, should be serving, but is not serving.`;
       }
     }
 
     if (val) {
-      LOGGER.info(message, instance);
+      LOGGER.info(message);
     } else {
       LOGGER.error(message, instance);
     }
