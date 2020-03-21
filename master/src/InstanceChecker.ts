@@ -25,6 +25,7 @@ class SocketClient {
     });
 
     this.socket.on('health-response', () => {
+      LOGGER.debug(`${this.instance.id} - communication good.`);
       this.connected = true;
       this.lastResp = moment().unix();
     });
@@ -82,15 +83,16 @@ class DatabaseClient {
   }
 
   queryMongo() {
-    MongoClient.connect(this.url)
+    MongoClient.connect(this.url, {
+      useUnifiedTopology: true,
+      useNewUrlParser: true,
+    })
       .then((client) => {
         this.lastResp = moment().unix();
-        console.log('Connected successfully to server.', this.instance.id);
+        LOGGER.debug(`${this.instance.id} - communication good.`);
         return client.close();
       })
-      .catch((err) => {
-        LOGGER.error(err.message);
-      });
+      .catch((err) => {});
   }
 
   isDbGood(): boolean {
@@ -136,11 +138,7 @@ export class InstanceChecker {
   }
 
   checkWorkerSockets() {
-    if (
-      this.gCloud.thisInstance === undefined ||
-      this.gCloud.masterInstances.length !== NUM_MASTERS ||
-      this.gCloud.amIResponder
-    ) {
+    if (!this.gCloud.amICoordinator()) {
       return;
     }
 
@@ -152,13 +150,13 @@ export class InstanceChecker {
       if (!instanceGood && socketInstance !== undefined) {
         socketInstance.destroy();
         this.workerSockets.delete(instance.id);
-        LOGGER.debug('Instance not good. But there is a socket.');
+        LOGGER.debug(`${instance.id} - not good, but there is a socket.`);
         continue;
       }
 
       // If instance is not good or not serving, move on
       if (!instanceGood || instance.instanceServing !== true) {
-        LOGGER.debug('Instance not good, not serving.');
+        LOGGER.debug(`${instance.id} - not good, not serving.`);
         continue;
       }
 
@@ -166,7 +164,6 @@ export class InstanceChecker {
       // If there is no socket connection, make one
       if (socketInstance === undefined) {
         this.workerSockets.set(instance.id, new SocketClient(instance));
-        LOGGER.debug('Make socket.');
         continue;
       }
 
@@ -176,7 +173,7 @@ export class InstanceChecker {
         socketInstance.destroy();
         this.workerSockets.delete(instance.id);
         this.workerSockets.set(instance.id, new SocketClient(instance));
-        LOGGER.debug('Socket is not the same as instance. Delete it.');
+        LOGGER.debug(`${instance.id} - socket does not match instance, delete it.`);
         continue;
       }
 
@@ -186,17 +183,13 @@ export class InstanceChecker {
         socketInstance.destroy();
         this.workerSockets.delete(instance.id);
         this.gCloud.deleteInstance(instance.id);
-        LOGGER.debug('Socket is not good. Delete it.');
+        LOGGER.debug(`${instance.id} - socket is not receiving data, delete it.`);
       }
     }
   }
 
   checkDbClients() {
-    if (
-      this.gCloud.thisInstance === undefined ||
-      this.gCloud.masterInstances.length !== NUM_MASTERS ||
-      this.gCloud.amIResponder
-    ) {
+    if (!this.gCloud.amICoordinator()) {
       return;
     }
 
@@ -208,13 +201,13 @@ export class InstanceChecker {
       if (!instanceGood && dbInstance !== undefined) {
         dbInstance.destroy();
         this.workerSockets.delete(instance.id);
-        LOGGER.debug('Instance not good. But there is a DatabaseClient.');
+        LOGGER.debug(`${instance.id} - not good, but there is a database client.`);
         continue;
       }
 
       // If instance is not good or not serving, move on
       if (!instanceGood || instance.instanceServing !== true) {
-        LOGGER.debug('Instance not good, not serving.');
+        LOGGER.debug(`${instance.id} - not good, not serving.`);
         continue;
       }
 
@@ -222,7 +215,6 @@ export class InstanceChecker {
       // If there is no db connection, make one
       if (dbInstance === undefined) {
         this.dbInstances.set(instance.id, new DatabaseClient(instance));
-        LOGGER.debug('Make database client.');
         continue;
       }
 
@@ -232,7 +224,7 @@ export class InstanceChecker {
         dbInstance.destroy();
         this.dbInstances.delete(instance.id);
         this.dbInstances.set(instance.id, new DatabaseClient(instance));
-        LOGGER.debug('Database client is not the same as instance. Delete it.');
+        LOGGER.debug(`${instance.id} - database does not match instance, delete it.`);
         continue;
       }
 
@@ -242,7 +234,7 @@ export class InstanceChecker {
         dbInstance.destroy();
         this.dbInstances.delete(instance.id);
         this.gCloud.deleteInstance(instance.id);
-        LOGGER.debug('Database client is not good. Delete it.');
+        LOGGER.debug(`${instance.id} - database is not good, delete it.`);
       }
     }
   }
