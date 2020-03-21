@@ -64,18 +64,12 @@ export function getDocument(
  * @param document to add to the collection
  * @returns Promise returned by the firestore
  */
-export function addToCollection(
-  collection: string,
-  document: any,
-): Promise<FirebaseFirestore.DocumentReference> {
+export function addToCollection(collection: string, document: any): any[] {
   const doc = getDb()
     .collection(collection)
     .doc();
-
-  return doc.set({
-    ...document,
-    docId: doc.id,
-  });
+  document.docId = doc.id;
+  return [doc.id, doc.set(document)];
 }
 
 /**

@@ -1,4 +1,3 @@
-// Schema for MCDB and list of common queries.
 import * as fs from './Firebase';
 import admin from 'firebase-admin';
 
@@ -6,102 +5,93 @@ const FILE_COLLECTION = 'File';
 const CLIENT_COLLECTION = 'Client';
 const COURSE_COLLECTION = 'Course';
 
-// docId created by firestore and added as an attribute
+// fileId created by firestore.
 export function insertedFile(
   timestamp: number,
   fdbLocations: string[],
   courseIds: string[],
-  readOnlyUserIDs: string[],
+  readOnlyUserIds: string[],
   fileName: string,
   fileHash: string,
-  ownerId: number,
+  ownerId: string,
 ) {
   return fs.addToCollection(FILE_COLLECTION, {
+    // Is there a reason timestamp didn't have a key before?
     fileCreationTime: timestamp,
     fdbLocations: fdbLocations,
     courseIds: courseIds,
-    readOnlyUserIDs: readOnlyUserIDs,
-    fileName: fileName,
+    readOnlyUserIDs: readOnlyUserIds,
+    name: fileName,
     fileHash: fileHash,
     ownerId: ownerId,
   });
 }
 
 // Update file
-export function updateFile(docId: string, timestamp: number, fileHash: string) {
-  return fs.updateDocument(FILE_COLLECTION, docId, {
+export function updateFile(fileId: string, timestamp: number, fileHash: string) {
+  return fs.updateDocument(FILE_COLLECTION, fileId, {
     fileCreationTime: timestamp,
     fileHash: fileHash,
   });
 }
 
 // Delete file
-export function deleteFile(docId: string) {
-  return fs.deleteDocument(FILE_COLLECTION, docId);
+export function deleteFile(fileId: string) {
+  return fs.deleteDocument(FILE_COLLECTION, fileId);
 }
 
 // Change file name
-export function changeFileName(docId: string, fileName: string) {
-  return fs.updateDocument(FILE_COLLECTION, docId, {
-    fileName: fileName,
-  });
-}
-
-// Get all files
-// returns: [{docId, fileName}]
-export function getAllFiles() {
-  return fs.getCollection(FILE_COLLECTION).then((snapshot) => {
-    return snapshot.forEach((doc) => {
-      return { docId: doc.id, fileName: doc.data().fileName };
-    });
+export function changeFileName(fileId: string, fileName: string) {
+  return fs.updateDocument(FILE_COLLECTION, fileId, {
+    name: fileName,
   });
 }
 
 // Add fdbs to fbdLocations list
-export function addFdbLocations(docId: string, fdbs: string[]) {
-  return fs.updateDocument(FILE_COLLECTION, docId, {
-    fdbLocations: admin.firestore.FieldValue.arrayUnion(fdbs),
+export function addFdbLocation(fileId: string, fdb: string) {
+  return fs.updateDocument(FILE_COLLECTION, fileId, {
+    fdbLocations: admin.firestore.FieldValue.arrayUnion(fdb),
   });
 }
 
 // Remove fdbs from fbdLocations list
-export function removeFdbLocations(docId: string, fdbs: string[]) {
-  return fs.updateDocument(FILE_COLLECTION, docId, {
-    fdbLocations: admin.firestore.FieldValue.arrayRemove(fdbs),
+export function removeFdbLocation(fileId: string, fdb: string) {
+  return fs.updateDocument(FILE_COLLECTION, fileId, {
+    fdbLocations: admin.firestore.FieldValue.arrayRemove(fdb),
   });
 }
 
 // Clear fbdLocations list
-export function clearFdbLocationsList(docId: string) {
-  return fs.updateDocument(FILE_COLLECTION, docId, {
+export function clearFdbLocationsList(fileId: string) {
+  return fs.updateDocument(FILE_COLLECTION, fileId, {
     fdbLocations: [],
   });
 }
 
 // Add course ID to file.
-export function addCourseIdToFile(docId: string, courseId: number) {
-  return fs.updateDocument(FILE_COLLECTION, docId, {
+export function addCourseIdToFile(fileId: string, courseId: string) {
+  return fs.updateDocument(FILE_COLLECTION, fileId, {
     courseIds: admin.firestore.FieldValue.arrayUnion(courseId),
   });
 }
 
 // Delete course ID from file.
-export function deleteCourseIdFromFile(docId: string, courseId: number) {
-  return fs.updateDocument(FILE_COLLECTION, docId, {
+export function deleteCourseIdFromFile(fileId: string, courseId: string) {
+  return fs.updateDocument(FILE_COLLECTION, fileId, {
     courseIds: admin.firestore.FieldValue.arrayRemove(courseId),
   });
 }
 
 // Add readOnly ID to file.
-export function addReadOnlyId(docId: string, readOnlyId: number) {
-  return fs.updateDocument(FILE_COLLECTION, docId, {
+export function addReadOnlyId(fileId: string, readOnlyId: string) {
+  return fs.updateDocument(FILE_COLLECTION, fileId, {
     readOnlyUserIDs: admin.firestore.FieldValue.arrayUnion(readOnlyId),
   });
 }
 
 // Delete readOnly ID from file.
-export function deleteReadOnlyId(docId: string, readOnlyId: number) {
-  return fs.updateDocument(FILE_COLLECTION, docId, {
+export function deleteReadOnlyId(fileId: string, readOnlyId: string) {
+  return fs.updateDocument(FILE_COLLECTION, fileId, {
     readOnlyUserIDs: admin.firestore.FieldValue.arrayRemove(readOnlyId),
   });
 }
@@ -119,16 +109,16 @@ export function createNewClient(clientName: string, ipAddr: string, port: number
 }
 
 // Add to filesOwned list.
-export function addNewOwnedFile(ownerId: number, docId: string) {
+export function addNewOwnedFile(ownerId: string, fileId: string) {
   return fs.updateDocument(CLIENT_COLLECTION, ownerId, {
-    filesOwned: admin.firestore.FieldValue.arrayUnion(docId),
+    filesOwned: admin.firestore.FieldValue.arrayUnion(fileId),
   });
 }
 
 // Remove from filesOwned list.
-export function removeOwnedFile(ownerId: number, docId: string) {
+export function removeOwnedFile(ownerId: string, fileId: string) {
   return fs.updateDocument(CLIENT_COLLECTION, ownerId, {
-    filesOwned: admin.firestore.FieldValue.arrayRemove(docId),
+    filesOwned: admin.firestore.FieldValue.arrayRemove(fileId),
   });
 }
 
@@ -143,38 +133,37 @@ export function getAllClients() {
 }
 
 // CourseId created by firestore.
-export function createNewCourse(courseName: string, ownerId: number, courseDescription: string) {
+export function createNewCourse(courseName: string, ownerId: string) {
   return fs.addToCollection(COURSE_COLLECTION, {
     courseName: courseName,
     ownerId: ownerId,
     filesInCourse: [],
-    courseDescription: courseDescription,
   });
 }
 
 // Add to filesOwned list.
-export function addFileToCourse(courseId: number, docId: string) {
+export function addFileToCourse(courseId: string, fileId: string) {
   return fs.updateDocument(COURSE_COLLECTION, courseId, {
-    filesInCourse: admin.firestore.FieldValue.arrayUnion(docId),
+    filesInCourse: admin.firestore.FieldValue.arrayUnion(fileId),
   });
 }
 
 // Remove from filesOwned list.
-export function removeFileFromCourse(courseId: number, docId: string) {
+export function removeFileFromCourse(courseId: string, fileId: string) {
   return fs.updateDocument(COURSE_COLLECTION, courseId, {
-    filesInCourse: admin.firestore.FieldValue.arrayRemove(docId),
+    filesInCourse: admin.firestore.FieldValue.arrayRemove(fileId),
   });
 }
 
 // Change course name.
-export function changeCourseName(courseId: number, newName: string) {
+export function changeCourseName(courseId: string, newName: string) {
   return fs.updateDocument(COURSE_COLLECTION, courseId, {
     courseName: newName,
   });
 }
 
 // Change course course description.
-export function changeCourseDescription(courseId: number, newDescription: string) {
+export function changeCourseDescription(courseId: string, newDescription: string) {
   return fs.updateDocument(COURSE_COLLECTION, courseId, {
     courseDescription: newDescription,
   });
