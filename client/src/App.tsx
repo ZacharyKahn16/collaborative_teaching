@@ -5,17 +5,16 @@ import Home from "./Home";
 // import Courses from "./MyCourses";
 import "./Styles/Navigator.css";
 import "./Styles/MyCourses.css";
-import {Route} from "react-router";
-import { BrowserRouter } from 'react-router-dom';
-
+import { Route } from "react-router";
+import { BrowserRouter } from "react-router-dom";
 
 class App extends React.Component {
-    render() {
-        return (
-            <BrowserRouter>
-                <Route exact component={Home}/>
-            </BrowserRouter>
-        );
-    }
+  render() {
+    return (
+      <BrowserRouter>
+        <Route exact component={Home} />
+      </BrowserRouter>
+    );
+  }
 }
 export default App;

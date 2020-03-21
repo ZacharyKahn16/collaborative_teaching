@@ -103,17 +103,20 @@ function Navigator(props) {
         >
           Collaborative Teaching
         </ListItem>
-        {categories.map(({ id, children }) => (
-          <React.Fragment key={id}>
+        {categories.map(({ id, children }, parentKey) => (
+          <React.Fragment key={parentKey}>
             {children.map(
-              ({ id: childId, icon, active, styleid, path, numIndex }) => (
+              (
+                { id: childId, icon, active, styleid, path, numIndex },
+                childKey
+              ) => (
                 <Link
                   to={path}
                   classes={{
                     primary: classes.itemPrimary
                   }}
                   className={"linkNoStyle"}
-                  key={numIndex}
+                  key={childKey}
                 >
                   <div id={styleid}>
                     <ListItem
