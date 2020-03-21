@@ -1,7 +1,7 @@
 import { AccessFDB } from './workerToFDBConnection.js';
 import { LOGGER } from './Logger';
-import { v4 } from 'uuid';
-import { insertedFile, addFdbLocation } from './MCDB';
+import { insertedFile, addFdbLocation, getFile } from './MCDB';
+import { shuffle, findFdbUsingIp } from './HelperFunctions/WorkerUtilities';
 
 import express from 'express';
 import { Server } from 'http';
@@ -14,7 +14,7 @@ const httpServer = new Server(app);
 const socketServer = io(httpServer);
 
 // List of all FDBs in system
-let fdbList: any = [];
+let fdbList: AccessFDB[] = [];
 
 // Client events
 const CONNECTION_EVENT = 'connection';
@@ -27,47 +27,68 @@ const SERVER_RESP = 'Server Response';
 // Master events
 const DATABASE_LIST = 'database-instances';
 
-function shuffle(array: any) {
-  let currentIndex = array.length;
-  let temporaryValue;
-  let randomIndex;
-
-  // While there remain elements to shuffle...
-  while (0 !== currentIndex) {
-    // Pick a remaining element...
-    randomIndex = Math.floor(Math.random() * currentIndex);
-    currentIndex -= 1;
-
-    // And swap it with the current element.
-    temporaryValue = array[currentIndex];
-    array[currentIndex] = array[randomIndex];
-    array[randomIndex] = temporaryValue;
-  }
-
-  return array;
-}
-
 socketServer.on(CONNECTION_EVENT, function(socket) {
-  // TODO: Retrieve list of files from Firebase
-  // socket.on(RETRIEVE_FILE, function(req) {
-  //   const docId = req.docId;
-  //
-  //   accessFDB.retrieveFile(docId).then(
-  //     function(resp) {
-  //       socket.emit(SERVER_RESP, {
-  //         // TODO: Add a client request ID
-  //         message: resp,
-  //       });
-  //     },
-  //     function(err) {
-  //       socket.emit(SERVER_RESP, {
-  //         // TODO: Add a client request ID
-  //         message: `Error retrieving file ${err}`,
-  //       });
-  //       throw err;
-  //     },
-  //   );
-  // });
+  /**
+   * Retrieves a file from the FDBs
+   *
+   * Sample request JSON
+   {
+    "docId": "Event name 2",
+    "requestId": "XCJ321CSAD"
+   }
+   */
+  socket.on(RETRIEVE_FILE, async function(req) {
+    const docId = req.docId;
+    const requestId = req.requestId;
+
+    let docData = null;
+    const document = await getFile(docId)
+      .then((doc) => {
+        if (!doc.exists) {
+          socket.emit(SERVER_RESP, {
+            requestId,
+            message: 'This document does not exist',
+          });
+        } else {
+          docData = doc.data();
+        }
+      })
+      .catch((err) => {
+        socket.emit(SERVER_RESP, {
+          requestId,
+          message: `Error getting document: ${err}`,
+        });
+      });
+
+    if (docData === null) {
+      return;
+    }
+
+    const fileLocations = docData['fdbLocations'];
+    shuffle(fileLocations);
+    console.log(fdbList);
+    const fdbRef = findFdbUsingIp(fileLocations[0], fdbList);
+
+    if (!fdbRef) {
+      return;
+    }
+
+    fdbRef.retrieveFile(docId).then(
+      function(resp: any) {
+        socket.emit(SERVER_RESP, {
+          requestId,
+          message: resp,
+        });
+      },
+      function(err: any) {
+        socket.emit(SERVER_RESP, {
+          requestId,
+          message: `Error retrieving file ${err}`,
+        });
+        throw err;
+      },
+    );
+  });
 
   /**
    * Create a new file
@@ -81,7 +102,6 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
    }
    */
   socket.on(INSERT_FILE, async function(req) {
-    // Server generated
     const timeStamp = Date.now();
 
     const fileName = req.fileName;
@@ -91,7 +111,7 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
     const ownerId = req.ownerId;
     const fileHash = req.fileHash; // Generate File hash later
 
-    if (fdbList <= 0) {
+    if (fdbList.length <= 0) {
       socket.emit(SERVER_RESP, {
         requestId,
         message: 'Not enough active FDBs',

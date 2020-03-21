@@ -178,3 +178,7 @@ export function getAllFiles() {
     });
   });
 }
+
+export async function getFile(docId: string) {
+  return fs.getDocument(FILE_COLLECTION, docId);
+}
