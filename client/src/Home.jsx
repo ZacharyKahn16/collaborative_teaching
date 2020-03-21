@@ -269,55 +269,53 @@ class Home extends React.Component {
 
 
   render() {
-    const isLoaded = this.state.isLoaded;
-    if (isLoaded != true) {
-      // return <div>Loading...</div>;
-      return <LoadingScreen/>
-    } else {
-      console.log(this.state.workerInfo)
-      return (
-          this.state.loginStatus ?
-              <ThemeProvider theme={theme}>
-                <div className={this.props.classes.root}>
-                  <CssBaseline/>
-                  <nav className={this.props.classes.drawer}>
-                    <Hidden smUp implementation="js">
-                      <Navigator
-                          PaperProps={{style: {width: drawerWidth}}}
-                          variant="temporary"
-                          open={this.state.mobileOpen}
-                          onClose={this.handleDrawerToggle}
-                      />
-                    </Hidden>
-                    <Hidden xsDown implementation="css">
-                      <Navigator PaperProps={{style: {width: drawerWidth}}}/>
-                    </Hidden>
-                  </nav>
-                  <div className={this.props.classes.app}>
-                    {/*<Header onDrawerToggle={handleDrawerToggle} />*/}
-
-                    <main className={this.props.classes.main}>
-                      <Switch>
-                        <Redirect exact from="/" to="my-courses"/>
-                        <Route exact path={"/my-courses"} render={(props) => <Courses {...props} workerInfo={this.state.workerInfo}/>}/>
-                        {/*<Route path={"/my-courses"} component={Courses}/>*/}
-                        <Route path={"/my-files"} render={(props) => <HomeContent {...props} workerInfo={this.state.workerInfo}/>}/>
-                        {/*<Route path={"/my-files"} component={HomeContent}/>*/}
-                        <Route path={"/browse-content"} render={(props) => <BrowseContent {...props} workerInfo={this.state.workerInfo}/>}/>
-                        {/*<Route path={"/browse-content"} component={BrowseContent}/>*/}
-                        <Route path={"/course-page/"} render={(props) => <ViewCourse {...props} workerInfo={"this.state.workerInfo"}/>}/>
-                      </Switch>
-                    </main>
-                    <footer className={this.props.classes.footer}>
-                      <Copyright/>
-                    </footer>
-                  </div>
-                </div>
-              </ThemeProvider>
-              :
-              <LoginPage greeting="Welcome to React"/>
-      )
+    if (!this.state.isLoaded) {
+      return <LoadingScreen />;
     }
+
+    console.log(this.state.workerInfo);
+    return (
+        this.state.loginStatus ?
+            <ThemeProvider theme={theme}>
+              <div className={this.props.classes.root}>
+                <CssBaseline/>
+                <nav className={this.props.classes.drawer}>
+                  <Hidden smUp implementation="js">
+                    <Navigator
+                        PaperProps={{style: {width: drawerWidth}}}
+                        variant="temporary"
+                        open={this.state.mobileOpen}
+                        onClose={this.handleDrawerToggle}
+                    />
+                  </Hidden>
+                  <Hidden xsDown implementation="css">
+                    <Navigator PaperProps={{style: {width: drawerWidth}}}/>
+                  </Hidden>
+                </nav>
+                <div className={this.props.classes.app}>
+                  {/*<Header onDrawerToggle={handleDrawerToggle} />*/}
+
+                  <main className={this.props.classes.main}>
+                    <Switch>
+                      <Redirect exact from="/" to="my-courses"/>
+                      <Route exact path={"/my-courses"} render={(props) => <Courses {...props} workerInfo={this.state.workerInfo}/>}/>
+                      {/*<Route path={"/my-courses"} component={Courses}/>*/}
+                      <Route path={"/my-files"} render={(props) => <HomeContent {...props} workerInfo={this.state.workerInfo}/>}/>
+                      {/*<Route path={"/my-files"} component={HomeContent}/>*/}
+                      <Route path={"/browse-content"} render={(props) => <BrowseContent {...props} workerInfo={this.state.workerInfo}/>}/>
+                      {/*<Route path={"/browse-content"} component={BrowseContent}/>*/}
+                      <Route path={"/course-page/"} render={(props) => <ViewCourse {...props} workerInfo={"this.state.workerInfo"}/>}/>
+                    </Switch>
+                  </main>
+                  <footer className={this.props.classes.footer}>
+                    <Copyright/>
+                  </footer>
+                </div>
+              </div>
+            </ThemeProvider>
+            :
+            <LoginPage greeting="Welcome to React"/>
+    )
   }
 }
 
