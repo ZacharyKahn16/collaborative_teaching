@@ -1,7 +1,7 @@
 import { AccessFDB } from './workerToFDBConnection.js';
 import { LOGGER } from './Logger';
 import { v4 } from 'uuid';
-import { insertedFile, addFdbLocations } from './MCDB';
+import { insertedFile, addFdbLocation } from './MCDB';
 
 import express from 'express';
 import { Server } from 'http';
@@ -154,7 +154,9 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
       return;
     }
 
-    await addFdbLocations(docId, successfulInserts);
+    for (let i = 0; i < successfulInserts.length; i++) {
+      await addFdbLocation(docId, successfulInserts[i]);
+    }
   });
 
   // TODO: Retrieve list of files from Firebase

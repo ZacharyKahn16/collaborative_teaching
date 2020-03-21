@@ -49,17 +49,17 @@ export function changeFileName(fileId: string, fileName: string) {
 
 // Add fdbs to fbdLocations list
 // TODO: test if this properly adds array to current array.
-export function addFdbLocations(fileId: string, fdbs: string[]) {
+export function addFdbLocation(fileId: string, fdb: string) {
   return fs.updateDocument(FILE_COLLECTION, fileId, {
-    fdbLocations: admin.firestore.FieldValue.arrayUnion(fdbs),
+    fdbLocations: admin.firestore.FieldValue.arrayUnion(fdb),
   });
 }
 
 // Remove fdbs from fbdLocations list
 // TODO: test if this properly deletes array from current array.
-export function removeFdbLocations(fileId: string, fdbs: string[]) {
+export function removeFdbLocation(fileId: string, fdb: string) {
   return fs.updateDocument(FILE_COLLECTION, fileId, {
-    fdbLocations: admin.firestore.FieldValue.arrayRemove(fdbs),
+    fdbLocations: admin.firestore.FieldValue.arrayRemove(fdb),
   });
 }
 

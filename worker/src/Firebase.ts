@@ -68,14 +68,8 @@ export function addToCollection(collection: string, document: any): any[] {
   const doc = getDb()
     .collection(collection)
     .doc();
-
-  return [
-    doc.id,
-    doc.set({
-      document,
-      docId: doc.id,
-    }),
-  ];
+  document.docId = doc.id;
+  return [doc.id, doc.set(document)];
 }
 
 /**
