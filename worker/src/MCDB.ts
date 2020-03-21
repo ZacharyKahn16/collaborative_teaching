@@ -48,7 +48,6 @@ export function changeFileName(fileId: string, fileName: string) {
 }
 
 // Add fdbs to fbdLocations list
-// TODO: test if this properly adds array to current array.
 export function addFdbLocation(fileId: string, fdb: string) {
   return fs.updateDocument(FILE_COLLECTION, fileId, {
     fdbLocations: admin.firestore.FieldValue.arrayUnion(fdb),
@@ -56,7 +55,6 @@ export function addFdbLocation(fileId: string, fdb: string) {
 }
 
 // Remove fdbs from fbdLocations list
-// TODO: test if this properly deletes array from current array.
 export function removeFdbLocation(fileId: string, fdb: string) {
   return fs.updateDocument(FILE_COLLECTION, fileId, {
     fdbLocations: admin.firestore.FieldValue.arrayRemove(fdb),
@@ -99,9 +97,6 @@ export function deleteReadOnlyId(fileId: string, readOnlyId: string) {
 }
 
 // ClientId created by firestore.
-// TODO: Any other data we need here?
-// TODO: Do we need IP and port?
-// TODO: Should we add coursesOwned attribute?
 // filesOwned = [] when creating course because we need to get a file's id before
 // we can add it to the filesOwned list.
 export function createNewClient(clientName: string, ipAddr: string, port: number) {
@@ -124,6 +119,16 @@ export function addNewOwnedFile(ownerId: string, fileId: string) {
 export function removeOwnedFile(ownerId: string, fileId: string) {
   return fs.updateDocument(CLIENT_COLLECTION, ownerId, {
     filesOwned: admin.firestore.FieldValue.arrayRemove(fileId),
+  });
+}
+
+// Get all clients
+// returns: [{clientId, clientName}]
+export function getAllClients() {
+  return fs.getCollection(CLIENT_COLLECTION).then((snapshot) => {
+    return snapshot.forEach((doc) => {
+      return { clientId: doc.id, fileName: doc.data().clientName };
+    });
   });
 }
 
@@ -154,5 +159,22 @@ export function removeFileFromCourse(courseId: string, fileId: string) {
 export function changeCourseName(courseId: string, newName: string) {
   return fs.updateDocument(COURSE_COLLECTION, courseId, {
     courseName: newName,
+  });
+}
+
+// Change course course description.
+export function changeCourseDescription(courseId: string, newDescription: string) {
+  return fs.updateDocument(COURSE_COLLECTION, courseId, {
+    courseDescription: newDescription,
+  });
+}
+
+// Get all courses
+// returns: [{courseId, courseName}]
+export function getAllFiles() {
+  return fs.getCollection(COURSE_COLLECTION).then((snapshot) => {
+    return snapshot.forEach((doc) => {
+      return { courseId: doc.id, fileName: doc.data().courseName };
+    });
   });
 }
