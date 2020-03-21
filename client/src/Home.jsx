@@ -202,6 +202,8 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
+const masterIps = ["http://35.226.186.203:4000/worker", "http://35.224.26.195:4000/worker"]
+
 
 class Home extends React.Component {
   constructor(props) {
@@ -211,61 +213,96 @@ class Home extends React.Component {
       loginStatus: true,
       workerInfo: "",
       isLoaded: false,
-      error: null
+      error: null,
+      connectionAttempts: 0
     };
     // this.handleChange = this.handleChange.bind(this);
     // this.handleSubmit = this.handleSubmit.bind(this);
     this.handleDrawerToggle = this.handleDrawerToggle.bind(this);
+    this.connectMaster = this.connectMaster.bind(this)
+    this.connectWorker = this.connectWorker.bind(this)
 
 
   }
 
   componentDidMount() {
-    axios.get("http://35.224.26.195:4000/worker")
-        .then(
-            (result) => {
-              this.setState({
-                isLoaded: true,
-                workerInfo: result.data.worker
-              });
-              console.log(result)
-              const socket = io("http://"+ result.data.worker.publicIp +":4001");
-              socket.on(
-                  "connect", () => {console.log("connected")}
-              );
-              // Send worker a request to write a file into the FDB
-              // socket.emit("Insert File", {
-              //   fileName: "Test-File.txt",
-              //   fileContents: "Hello World 1",
-              //   fileHash: "XXXXXXXX",
-              //   fileType: "String"
-              // });
-
-              // Retrieving file
-              // socket.emit("Retrieve File", {
-              //   fileName: '04d9a6bb-2167-41ed-8bb8-f00d3dfb42e9' // some id
-              // })
-
-              // Database List
-
-              // Listen to worker responses here
-              socket.on("Server Response", function(msg) {
-                console.log(msg);
-              });
-            },
-            (error) => {
-              this.setState({
-                isLoaded: true,
-                error
-              });
-              console.log(error)
-            }
-        )
+    // 35.224.26.195
+    // 35.226.186.203
+    this.connectMaster(masterIps[0], masterIps[1])
   }
 
   handleDrawerToggle = () => {
     this.state.mobileOpen = !this.state.mobileOpen
   };
+
+  connectMaster(primaryIp, backupIp) {
+    console.log("trying to connect................")
+    // console.log(primaryIp)
+    // console.log(backupIp)
+    axios.get(primaryIp)
+        .then(
+            (result) => {
+              console.log("worked!!")
+              if (result.data.worker == null) {
+                console.log("null")
+                this.connectMaster(backupIp, primaryIp)
+              } else {
+                console.log(result)
+                this.connectWorker(result.data.worker)
+              }
+
+            },
+            (error) => {
+              console.log("connection didnt work")
+              this.setState({
+                isLoaded: false,
+                error,
+                attempts: this.state.attempts + 1
+              });
+              if (this.state.attempts > 3) {
+                console.log("give up")
+                console.log(error)
+              } else {
+                setTimeout(() => {
+                  this.connectMaster(backupIp, primaryIp)
+                }, 5000);
+                // this.connectMaster(backupIp, primaryIp)
+              }
+            }
+        )
+  }
+
+  connectWorker(worker) {
+    console.log(worker)
+    this.setState({
+      isLoaded: true,
+      workerInfo: worker
+    });
+    const socket = io("http://"+ worker.publicIp +":4001");
+    socket.on(
+        "connect", () => {console.log("connected")}
+    );
+
+    // Send worker a request to write a file into the FDB
+    // socket.emit("Insert File", {
+    //   fileName: "Test-File.txt",
+    //   fileContents: "Hello World 1",
+    //   fileHash: "XXXXXXXX",
+    //   fileType: "String"
+    // });
+
+    // Retrieving file
+    // socket.emit("Retrieve File", {
+    //   fileName: '04d9a6bb-2167-41ed-8bb8-f00d3dfb42e9' // some id
+    // })
+
+    // Database List
+
+    // Listen to worker responses here
+    // socket.on("Server Response", function(msg) {
+    //   console.log(msg);
+    // });
+  }
 
 
   render() {
