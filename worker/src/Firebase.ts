@@ -64,13 +64,18 @@ export function getDocument(
  * @param document to add to the collection
  * @returns Promise returned by the firestore
  */
-export function addToCollection(
-  collection: string,
-  document: any,
-): Promise<FirebaseFirestore.DocumentReference> {
-  return getDb()
+export function addToCollection(collection: string, document: any): any[] {
+  const doc = getDb()
     .collection(collection)
-    .add(document);
+    .doc();
+
+  return [
+    doc.id,
+    doc.set({
+      document,
+      docId: doc.id,
+    }),
+  ];
 }
 
 /**
@@ -107,4 +112,21 @@ export function updateDocument(
     .collection(collection)
     .doc(documentID)
     .update(document);
+}
+
+/**
+ * This method is used to update a specific document in the Firebase Firestore
+ * db
+ * @param collection - The name of the collection where the document to-be-updated is stored
+ * @param documentID - The ID of the document being deleted.
+ * @returns Promise - Returns a promise that the data will be updated in the specified document
+ */
+export function deleteDocument(
+  collection: string,
+  documentID: string,
+): Promise<FirebaseFirestore.WriteResult> {
+  return getDb()
+    .collection(collection)
+    .doc(documentID)
+    .delete();
 }

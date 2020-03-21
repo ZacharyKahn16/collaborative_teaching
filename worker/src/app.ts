@@ -1,7 +1,7 @@
 import { AccessFDB } from './workerToFDBConnection.js';
 import { LOGGER } from './Logger';
 import { v4 } from 'uuid';
-import { insertedFile } from './MCDB';
+import { insertedFile, addFdbLocations } from './MCDB';
 
 import express from 'express';
 import { Server } from 'http';
@@ -69,18 +69,53 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
   //   );
   // });
 
+  /**
+   * Create a new file
+   * Sample request JSON
+   {
+    "fileName": "Event name 2",
+    "fileContents": "Hello World",
+    "fileType": String
+    "requestId": "XCJ321CSAD"
+    "ownerId": "192.168.12.0"
+   }
+   */
   socket.on(INSERT_FILE, async function(req) {
-    const docId = v4();
+    // Server generated
+    const timeStamp = Date.now();
+
     const fileName = req.fileName;
     const fileContents = req.fileContents;
-    const fileHash = req.fileHash;
-    const fileType = req.fileType;
-    const timeStamp = Date.now();
+    const fileType = req.fileType; // Infer type later
+    const requestId = req.requestId;
+    const ownerId = req.ownerId;
+    const fileHash = req.fileHash; // Generate File hash later
 
     if (fdbList <= 0) {
       socket.emit(SERVER_RESP, {
-        // TODO: Add a request ID
+        requestId,
         message: 'Not enough active FDBs',
+      });
+      return;
+    }
+
+    const insertedResult = insertedFile(timeStamp, [], [], [], fileName, fileHash, ownerId);
+    const docId = insertedResult[0];
+
+    let insertSuccess = true;
+    await insertedResult[1]
+      .then(function() {
+        LOGGER.debug('Successfully created entry MCDB');
+      })
+      .catch(function() {
+        LOGGER.debug('Error creating entry into the MCDB');
+        insertSuccess = false;
+      });
+
+    if (!insertSuccess) {
+      socket.emit(SERVER_RESP, {
+        requestId,
+        message: 'Unable to create an entry into the MCDB, try again',
       });
       return;
     }
@@ -94,16 +129,15 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
         .insertFile(docId, fileName, fileContents, fileHash, fileType, timeStamp)
         .then(
           function(resp: any) {
-            // Write this information to the MCDB to ensure other workers know of this change
             successfulInserts.push(fdbConnection.getIp());
             socket.emit(SERVER_RESP, {
-              // TODO: Add a client request ID
+              requestId,
               message: resp,
             });
           },
           function(err: any) {
             socket.emit(SERVER_RESP, {
-              // TODO: Add a client request ID
+              requestId,
               message: `Error inserting file ${err} into server ${fdbList[i].getUrl()}`,
             });
             throw err;
@@ -113,26 +147,14 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
 
     if (successfulInserts.length <= 0) {
       socket.emit(SERVER_RESP, {
+        requestId,
         message: 'No successful inserts into FDBs',
       });
       LOGGER.debug('No successful inserts into FDBs');
       return;
     }
 
-    // Update MCDB with successful create
-    insertedFile(timeStamp, successfulInserts, [], [], fileName)
-      .then(function() {
-        socket.emit(SERVER_RESP, {
-          message: 'Successfully inserted into MCDB',
-        });
-        LOGGER.debug('Successfully inserted in MCDB');
-      })
-      .catch(function() {
-        socket.emit(SERVER_RESP, {
-          message: 'Error inserting into the MCDB',
-        });
-        LOGGER.debug('Error inserting into the MCDB');
-      });
+    await addFdbLocations(docId, successfulInserts);
   });
 
   // TODO: Retrieve list of files from Firebase
