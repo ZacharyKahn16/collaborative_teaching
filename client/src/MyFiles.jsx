@@ -15,6 +15,7 @@ import RefreshIcon from "@material-ui/icons/Refresh";
 import Header from "./Header";
 import PublishIcon from "@material-ui/icons/Publish";
 import FileList from "./FileList";
+import UploadCard from "./UploadCard";
 import Modal from "@material-ui/core/Modal";
 import Backdrop from "@material-ui/core/Backdrop";
 import Fade from "@material-ui/core/Fade";
@@ -54,24 +55,25 @@ class MyFiles extends React.Component {
     };
 
     this.handleOpenUploadModal = this.handleOpenUploadModal.bind(this);
+    this.handleCloseUploadModal = this.handleCloseUploadModal.bind(this);
   }
 
   handleDrawerToggle() {
     this.setState({
       mobileOpen: !this.state.mobileOpen
-    })
+    });
   };
 
   handleOpenUploadModal() {
-    this.setState({
+    this.setState(() => ({
       uploadModalOpen: true
-    })
+    }));
   };
 
   handleCloseUploadModal() {
-    this.setState({
+    this.setState(() => ({
       uploadModalOpen: false
-    })
+    }));
   };
 
   componentDidMount() {
@@ -130,9 +132,7 @@ class MyFiles extends React.Component {
                   }}
               >
                 <Fade in={this.state.uploadModalOpen}>
-                  <div>
-                    {/*TODO: Conditional card for either editing or deleting*/}
-                  </div>
+                  <UploadCard closeModal={this.handleCloseUploadModal}/>
                 </Fade>
               </Modal>
             </Toolbar>
