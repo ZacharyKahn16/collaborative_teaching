@@ -25,13 +25,9 @@ export function shuffle(array: any) {
 }
 
 export function findFdbUsingIp(ip: string, fdbList: AccessFDB[]) {
-  for (let i = 0; i < fdbList.length; i++) {
-    if (fdbList[i].getIp() === ip) {
-      return fdbList[i];
-    }
-  }
-
-  return false;
+  return fdbList.find((fdb: AccessFDB) => {
+    return fdb.getIp() === ip;
+  });
 }
 
 /**
@@ -53,22 +49,16 @@ export async function createReplicas(
 ) {
   const successfulInserts: string[] = [];
   shuffle(fdbList);
+
   for (let i = 0; i < replicasToMake; i++) {
     const fdbRef = fdbList[i];
+
     await fdbRef.insertFile(docId, fileName, fileContents, fileHash, fileType, timeStamp).then(
       function(resp: any) {
         successfulInserts.push(fdbRef.getIp());
-        socket.emit(SERVER_RESP, {
-          requestId,
-          message: resp,
-        });
       },
       function(err: any) {
-        socket.emit(SERVER_RESP, {
-          requestId,
-          message: `Error inserting file ${err} into server ${fdbList[i].getUrl()}`,
-        });
-        throw err;
+        // Log err
       },
     );
   }
@@ -120,7 +110,5 @@ export async function retrieveFdbLocations(
     return [];
   }
 
-  const fileLocations = docData['fdbLocations'];
-
-  return fileLocations;
+  return docData['fdbLocations'];
 }

@@ -1,4 +1,4 @@
-import { AccessFDB } from './HelperFunctions/workerToFDBConnection.js';
+import { AccessFDB } from './HelperFunctions/workerToFDBConnection';
 import { LOGGER } from './Logger';
 import { insertedFile, addFdbLocation, getFile } from './MCDB';
 import {
@@ -169,12 +169,9 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
     const requestId = req.requestId;
     const fileHash = req.fileHash; // Generate File hash later
 
-    const fdbLocations: any[] = await retrieveFdbLocations(socket, docId, requestId).then(
-      (result) => {
-        return result;
-      },
-    );
+    const fdbLocations: any[] = await retrieveFdbLocations(socket, docId, requestId);
     if (!fdbLocations) {
+      // Can't return here if the fdbLocations are empty
       return;
     }
 
@@ -215,7 +212,7 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
       LOGGER.debug('No successful updates into FDBs');
 
       // Pick random MCDBs and insert this file into
-      const replicasToMake = Math.floor(fdbList.length / 3 + 1);
+      const replicasToMake = Math.floor(fdbList.length / 3 + 1); // Make this into a function
       await createReplicas(
         socket,
         fdbList,
@@ -234,6 +231,8 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
     // If the MCDBs entry for FDB FileLocations of a file has a mismatch
     // between the current FDBs that are alive in the system, populate
     // new ones.
+    // You have to make sure over here, that you don't insert the file a second time into the same FDB
+    // If missingFdbIps = 1 and successfulUpdates = 1
     if (missingFdbIps.length > 0) {
       const replicasToMake = missingFdbIps.length;
       await createReplicas(
