@@ -5,7 +5,9 @@ const FILE_COLLECTION = 'File';
 const CLIENT_COLLECTION = 'Client';
 const COURSE_COLLECTION = 'Course';
 
-// fileId created by firestore.
+/**
+ *  Add a new document into the Firestore collection
+ */
 export function insertedFile(
   timestamp: number,
   fdbLocations: string[],

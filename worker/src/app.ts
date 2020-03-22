@@ -1,7 +1,12 @@
-import { AccessFDB } from './workerToFDBConnection.js';
+import { AccessFDB } from './HelperFunctions/workerToFDBConnection.js';
 import { LOGGER } from './Logger';
 import { insertedFile, addFdbLocation, getFile } from './MCDB';
-import { shuffle, findFdbUsingIp } from './HelperFunctions/WorkerUtilities';
+import {
+  shuffle,
+  findFdbUsingIp,
+  retrieveFdbLocations,
+  createReplicas,
+} from './HelperFunctions/WorkerUtilities';
 
 import express from 'express';
 import { Server } from 'http';
@@ -29,7 +34,7 @@ const DATABASE_LIST = 'database-instances';
 
 socketServer.on(CONNECTION_EVENT, function(socket) {
   /**
-   * Retrieves a file from the FDBs
+   * Retrieves a File
    *
    * Sample request JSON
    {
@@ -41,33 +46,19 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
     const docId = req.docId;
     const requestId = req.requestId;
 
-    let docData = null;
-    const document = await getFile(docId)
-      .then((doc) => {
-        if (!doc.exists) {
-          socket.emit(SERVER_RESP, {
-            requestId,
-            message: 'This document does not exist',
-          });
-        } else {
-          docData = doc.data();
-        }
+    const fdbLocations: any[] = await retrieveFdbLocations(socket, docId, requestId)
+      .then((result) => {
+        return result;
       })
       .catch((err) => {
-        socket.emit(SERVER_RESP, {
-          requestId,
-          message: `Error getting document: ${err}`,
-        });
+        throw err;
       });
-
-    if (docData === null) {
+    if (fdbLocations === []) {
       return;
     }
 
-    const fileLocations = docData['fdbLocations'];
-    shuffle(fileLocations);
-    console.log(fdbList);
-    const fdbRef = findFdbUsingIp(fileLocations[0], fdbList);
+    shuffle(fdbLocations);
+    const fdbRef = findFdbUsingIp(fdbLocations[0], fdbList);
 
     if (!fdbRef) {
       return;
@@ -92,18 +83,19 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
 
   /**
    * Create a new file
+   *
    * Sample request JSON
    {
     "fileName": "Event name 2",
     "fileContents": "Hello World",
-    "fileType": String
-    "requestId": "XCJ321CSAD"
-    "ownerId": "192.168.12.0"
+    "fileType": String,
+    "requestId": "XCJ321CSAD",
+    "ownerId": "192.168.12.0",
+    "fileHash": "XXADFAFDAASD"
    }
    */
   socket.on(INSERT_FILE, async function(req) {
     const timeStamp = Date.now();
-
     const fileName = req.fileName;
     const fileContents = req.fileContents;
     const fileType = req.fileType; // Infer type later
@@ -140,70 +132,122 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
       return;
     }
 
-    const successfulInserts: string[] = [];
     const replicasToMake = Math.floor(fdbList.length / 3 + 1);
-    shuffle(fdbList);
-    for (let i = 0; i < replicasToMake; i++) {
-      const fdbConnection = fdbList[i];
-      await fdbConnection
-        .insertFile(docId, fileName, fileContents, fileHash, fileType, timeStamp)
-        .then(
-          function(resp: any) {
-            successfulInserts.push(fdbConnection.getIp());
-            socket.emit(SERVER_RESP, {
-              requestId,
-              message: resp,
-            });
-          },
-          function(err: any) {
-            socket.emit(SERVER_RESP, {
-              requestId,
-              message: `Error inserting file ${err} into server ${fdbList[i].getUrl()}`,
-            });
-            throw err;
-          },
-        );
-    }
+    await createReplicas(
+      socket,
+      fdbList,
+      replicasToMake,
+      docId,
+      fileName,
+      fileContents,
+      fileHash,
+      fileType,
+      timeStamp,
+      requestId,
+    );
+  });
 
-    if (successfulInserts.length <= 0) {
-      socket.emit(SERVER_RESP, {
-        requestId,
-        message: 'No successful inserts into FDBs',
-      });
-      LOGGER.debug('No successful inserts into FDBs');
+  /**
+   * Updates a File
+   *
+   * Sample request JSON
+   {
+    "docId": "Event name 2",
+    "fileName": "Event name 2",
+    "fileContents": "Hello World",
+    "fileType": String,
+    "requestId": "XCJ321CSAD",
+    "fileHash": "XXADFAFDAASD"
+   }
+   */
+  socket.on(UPDATE_FILE, async function(req) {
+    const docId = req.docId;
+    const timeStamp = Date.now();
+    const fileName = req.fileName;
+    const fileContents = req.fileContents;
+    const fileType = req.fileType; // Infer type later
+    const requestId = req.requestId;
+    const fileHash = req.fileHash; // Generate File hash later
+
+    const fdbLocations: any[] = await retrieveFdbLocations(socket, docId, requestId).then(
+      (result) => {
+        return result;
+      },
+    );
+    if (!fdbLocations) {
       return;
     }
 
-    for (let i = 0; i < successfulInserts.length; i++) {
-      await addFdbLocation(docId, successfulInserts[i]);
-    }
-  });
+    const successfulUpdates: string[] = [];
+    const missingFdbIps: string[] = [];
+    for (let i = 0; i < fdbLocations.length; i++) {
+      const fdbRef = findFdbUsingIp(fdbLocations[i], fdbList);
 
-  // TODO: Retrieve list of files from Firebase
-  // socket.on(UPDATE_FILE, function(req) {
-  //   const docId = req.docId;
-  //   const fileName = req.fileName;
-  //   const fileContents = req.fileContents;
-  //   const fileHash = req.fileHash;
-  //   const fileType = req.fileType;
-  //   const timeStamp = Date.now();
-  //
-  //   accessFDB.updateFile(docId, fileName, fileContents, fileHash, fileType, timeStamp).then(
-  //     function(resp) {
-  //       socket.emit(SERVER_RESP, {
-  //         // TODO: Add a request ID
-  //         message: resp,
-  //       });
-  //     },
-  //     function(err) {
-  //       socket.emit(SERVER_RESP, {
-  //         // TODO: Add a request ID
-  //         message: `Error updating file ${err}`,
-  //       });
-  //       throw err;
-  //     },
-  //   );
-  // });
+      if (!fdbRef) {
+        missingFdbIps.push(fdbLocations[i]);
+        continue;
+      }
+
+      await fdbRef.updateFile(docId, fileName, fileContents, fileHash, fileType, timeStamp).then(
+        function(resp: any) {
+          successfulUpdates.push(fdbRef.getIp());
+          socket.emit(SERVER_RESP, {
+            requestId,
+            message: resp,
+          });
+        },
+        function(err: any) {
+          socket.emit(SERVER_RESP, {
+            requestId,
+            message: `Error updating file ${err}`,
+          });
+          throw err;
+        },
+      );
+    }
+
+    // If it was unable to update any FDB, create replicas elsewhere
+    if (successfulUpdates.length <= 0) {
+      socket.emit(SERVER_RESP, {
+        requestId,
+        message: 'No successful updates into FDBs',
+      });
+      LOGGER.debug('No successful updates into FDBs');
+
+      // Pick random MCDBs and insert this file into
+      const replicasToMake = Math.floor(fdbList.length / 3 + 1);
+      await createReplicas(
+        socket,
+        fdbList,
+        replicasToMake,
+        docId,
+        fileName,
+        fileContents,
+        fileHash,
+        fileType,
+        timeStamp,
+        requestId,
+      );
+      return;
+    }
+
+    // If the MCDBs entry for FDB FileLocations of a file has a mismatch
+    // between the current FDBs that are alive in the system, populate
+    // new ones.
+    const replicasToMake = missingFdbIps.length;
+    await createReplicas(
+      socket,
+      fdbList,
+      replicasToMake,
+      docId,
+      fileName,
+      fileContents,
+      fileHash,
+      fileType,
+      timeStamp,
+      requestId,
+    );
+  });
 
   // TODO: Retrieve list of files from Firebase
   // socket.on(DELETE_FILE, function(req) {
