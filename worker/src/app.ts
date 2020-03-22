@@ -1,11 +1,12 @@
 import { AccessFDB } from './HelperFunctions/workerToFDBConnection';
 import { LOGGER } from './Logger';
-import { insertedFile, addFdbLocation, getFile } from './MCDB';
+import { insertedFile } from './MCDB';
 import {
   shuffle,
   findFdbUsingIp,
   retrieveFdbLocations,
   createReplicas,
+  replicasNeeded,
 } from './HelperFunctions/WorkerUtilities';
 
 import express from 'express';
@@ -28,6 +29,8 @@ const INSERT_FILE = 'Insert File';
 const UPDATE_FILE = 'Update File';
 const DELETE_FILE = 'Delete File';
 const SERVER_RESP = 'Server Response';
+const SUCCESS = 'success';
+const FAILED = 'failed';
 
 // Master events
 const DATABASE_LIST = 'database-instances';
@@ -46,14 +49,9 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
     const docId = req.docId;
     const requestId = req.requestId;
 
-    const fdbLocations: any[] = await retrieveFdbLocations(socket, docId, requestId)
-      .then((result) => {
-        return result;
-      })
-      .catch((err) => {
-        throw err;
-      });
-    if (fdbLocations === []) {
+    const fdbLocations: any[] = await retrieveFdbLocations(socket, docId, requestId);
+    if (!fdbLocations) {
+      // Can't return here if the fdbLocations are empty
       return;
     }
 
@@ -68,12 +66,14 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
       function(resp: any) {
         socket.emit(SERVER_RESP, {
           requestId,
+          status: SUCCESS,
           message: resp,
         });
       },
       function(err: any) {
         socket.emit(SERVER_RESP, {
           requestId,
+          status: FAILED,
           message: `Error retrieving file ${err}`,
         });
         throw err;
@@ -106,6 +106,7 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
     if (fdbList.length <= 0) {
       socket.emit(SERVER_RESP, {
         requestId,
+        status: FAILED,
         message: 'Not enough active FDBs',
       });
       return;
@@ -127,12 +128,13 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
     if (!insertSuccess) {
       socket.emit(SERVER_RESP, {
         requestId,
+        status: FAILED,
         message: 'Unable to create an entry into the MCDB, try again',
       });
       return;
     }
 
-    const replicasToMake = Math.floor(fdbList.length / 3 + 1);
+    const replicasToMake = replicasNeeded(fdbList);
     await createReplicas(
       socket,
       fdbList,
@@ -175,7 +177,7 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
       return;
     }
 
-    const successfulUpdates: string[] = [];
+    const successfulUpdates: AccessFDB[] = [];
     const missingFdbIps: string[] = [];
     for (let i = 0; i < fdbLocations.length; i++) {
       const fdbRef = findFdbUsingIp(fdbLocations[i], fdbList);
@@ -187,17 +189,9 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
 
       await fdbRef.updateFile(docId, fileName, fileContents, fileHash, fileType, timeStamp).then(
         function(resp: any) {
-          successfulUpdates.push(fdbRef.getIp());
-          socket.emit(SERVER_RESP, {
-            requestId,
-            message: resp,
-          });
+          successfulUpdates.push(fdbRef);
         },
         function(err: any) {
-          socket.emit(SERVER_RESP, {
-            requestId,
-            message: `Error updating file ${err}`,
-          });
           throw err;
         },
       );
@@ -211,8 +205,7 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
       });
       LOGGER.debug('No successful updates into FDBs');
 
-      // Pick random MCDBs and insert this file into
-      const replicasToMake = Math.floor(fdbList.length / 3 + 1); // Make this into a function
+      const replicasToMake = replicasNeeded(fdbList);
       await createReplicas(
         socket,
         fdbList,
@@ -228,11 +221,16 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
       return;
     }
 
+    socket.emit(SERVER_RESP, {
+      requestId,
+      status: SUCCESS,
+      message: `Successful updates into ${successfulUpdates.map((elem) => elem.getIp())}`,
+    });
+
     // If the MCDBs entry for FDB FileLocations of a file has a mismatch
     // between the current FDBs that are alive in the system, populate
-    // new ones.
-    // You have to make sure over here, that you don't insert the file a second time into the same FDB
-    // If missingFdbIps = 1 and successfulUpdates = 1
+    // new ones. Also make sure over here, that you don't insert the file
+    // a second time into the same FDB
     if (missingFdbIps.length > 0) {
       const replicasToMake = missingFdbIps.length;
       await createReplicas(
@@ -246,6 +244,7 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
         fileType,
         timeStamp,
         requestId,
+        successfulUpdates,
       );
     }
   });
