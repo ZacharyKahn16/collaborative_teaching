@@ -152,7 +152,7 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
    *
    * Sample request JSON
    {
-    "docId": "Event name 2",
+    "docId": "8oKHFT2KrieG5Ghus9bm",
     "fileName": "Event name 2",
     "fileContents": "Hello World",
     "fileType": String,
@@ -234,19 +234,21 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
     // If the MCDBs entry for FDB FileLocations of a file has a mismatch
     // between the current FDBs that are alive in the system, populate
     // new ones.
-    const replicasToMake = missingFdbIps.length;
-    await createReplicas(
-      socket,
-      fdbList,
-      replicasToMake,
-      docId,
-      fileName,
-      fileContents,
-      fileHash,
-      fileType,
-      timeStamp,
-      requestId,
-    );
+    if (missingFdbIps.length > 0) {
+      const replicasToMake = missingFdbIps.length;
+      await createReplicas(
+        socket,
+        fdbList,
+        replicasToMake,
+        docId,
+        fileName,
+        fileContents,
+        fileHash,
+        fileType,
+        timeStamp,
+        requestId,
+      );
+    }
   });
 
   // TODO: Retrieve list of files from Firebase
