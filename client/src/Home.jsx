@@ -12,7 +12,7 @@ import Link from "@material-ui/core/Link";
 import Navigator from "./Navigator";
 import { Route } from "react-router";
 import Courses from "./MyCourses";
-import HomeContent from "./MyFiles";
+import MyFiles from "./MyFiles";
 import BrowseContent from "./BrowseContent";
 import ViewCourse from "./CoursePage";
 import LoginPage from "./LoginPage";
@@ -214,7 +214,8 @@ class Home extends React.Component {
       workerInfo: "",
       isLoaded: false,
       error: null,
-      connectionAttempts: 0
+      connectionAttempts: 0,
+      socket: null
     };
     // this.handleChange = this.handleChange.bind(this);
     // this.handleSubmit = this.handleSubmit.bind(this);
@@ -279,8 +280,12 @@ class Home extends React.Component {
       workerInfo: worker
     });
     const socket = io("http://"+ worker.publicIp +":4001");
-    socket.on(
-        "connect", () => {console.log("connected")}
+    socket.on("connect", () => {
+          this.setState( () => ({
+            socket: socket
+          }));
+          console.log("connected")
+        }
     );
 
     // Send worker a request to write a file into the FDB
@@ -337,8 +342,8 @@ class Home extends React.Component {
                       <Redirect exact from="/" to="my-courses"/>
                       <Route exact path={"/my-courses"} render={(props) => <Courses {...props} workerInfo={this.state.workerInfo}/>}/>
                       {/*<Route path={"/my-courses"} component={Courses}/>*/}
-                      <Route path={"/my-files"} render={(props) => <HomeContent {...props} workerInfo={this.state.workerInfo}/>}/>
-                      {/*<Route path={"/my-files"} component={HomeContent}/>*/}
+                      <Route path={"/my-files"} render={(props) => <MyFiles {...props} workerInfo={this.state.workerInfo} socket={this.state.socket}/>}/>
+                      {/*<Route path={"/my-files"} component={MyFiles}/>*/}
                       <Route path={"/browse-content"} render={(props) => <BrowseContent {...props} workerInfo={this.state.workerInfo}/>}/>
                       {/*<Route path={"/browse-content"} component={BrowseContent}/>*/}
                       <Route path={"/course-page/"} render={(props) => <ViewCourse {...props} workerInfo={"this.state.workerInfo"}/>}/>

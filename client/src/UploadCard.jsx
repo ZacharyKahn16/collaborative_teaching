@@ -5,6 +5,7 @@ import Typography from "@material-ui/core/Typography";
 import Grid from "@material-ui/core/Grid";
 import Button from '@material-ui/core/Button';
 import "./Styles/Card.css";
+import { writeNewFile, listen } from "./service";
 
 class UploadCard extends Component {
     constructor(props) {
@@ -17,6 +18,16 @@ class UploadCard extends Component {
 
         this.onBrowseChange = this.onBrowseChange.bind(this);
         this.cancelUpload = this.cancelUpload.bind(this);
+        this.uploadFile = this.uploadFile.bind(this);
+    }
+
+    componentDidMount() {
+        const { socket } = this.props;
+
+        listen(socket, (msg) => {
+            console.log("callback");
+            console.log(msg);
+        });
     }
 
     onBrowseChange = (e) => {
@@ -34,6 +45,12 @@ class UploadCard extends Component {
             fileDisplayName: "",
             uploadedFile: null
         }));
+    }
+
+    uploadFile = () => {
+        const { socket } = this.props;
+        writeNewFile(socket, this.state.uploadedFile);
+        console.log("uploading");
     }
 
     render() {
@@ -66,6 +83,7 @@ class UploadCard extends Component {
                       variant="contained"
                       color={this.state.uploadedFile ? "primary" : ""}
                       disabled={!this.state.uploadedFile}
+                      onClick={this.uploadFile}
                   >
                       Upload
                   </Button>
