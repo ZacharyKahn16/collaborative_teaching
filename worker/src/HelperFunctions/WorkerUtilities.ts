@@ -85,12 +85,6 @@ export async function createReplicas(
     );
   }
 
-  socket.emit(SERVER_RESP, {
-    requestId,
-    status: SUCCESS,
-    message: `Successful inserts into ${successfulInserts.map((elem) => elem.getIp())}`,
-  });
-
   if (successfulInserts.length <= 0) {
     socket.emit(SERVER_RESP, {
       requestId,
@@ -100,6 +94,12 @@ export async function createReplicas(
     LOGGER.debug('No successful inserts into FDBs');
     return;
   }
+
+  socket.emit(SERVER_RESP, {
+    requestId,
+    status: SUCCESS,
+    message: `Successful inserts into ${successfulInserts.map((elem) => elem.getIp())}`,
+  });
 
   for (let i = 0; i < successfulInserts.length; i++) {
     await addFdbLocation(docId, successfulInserts[i].getIp());
