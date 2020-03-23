@@ -49,7 +49,7 @@ class UploadCard extends Component {
 
     uploadFile = () => {
         const { socket } = this.props;
-        writeNewFile(socket, this.state.uploadedFile);
+        writeNewFile(socket, this.state.uploadedFile, "Test Owner");
         console.log("uploading");
     }
 

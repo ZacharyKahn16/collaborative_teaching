@@ -279,7 +279,7 @@ class Home extends React.Component {
       isLoaded: true,
       workerInfo: worker
     });
-    const socket = io("http://"+ worker.publicIp +":4001");
+    const socket = io("http://"+ worker.publicIp + ":4001");
     socket.on("connect", () => {
           this.setState( () => ({
             socket: socket

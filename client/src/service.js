@@ -14,13 +14,16 @@ const retrieveFile = (socket, fileName) => {
 }
 
 //write new file
-const writeNewFile = (socket, file) => {
+const  writeNewFile = async (socket, file, ownerId) => {
     // Send worker a request to write a file into the FDB
+    console.log("sending on:");
+    const textContents = await file.text();
+
     socket.emit(INSERT_FILE, {
-      docId: uuidv4(),
+      ownerId: ownerId,
       requestId: uuidv4(),
       fileName: file.name,
-      fileContents: file.arrayBuffer(),
+      fileContents: textContents,
       fileHash: file.size,
       fileType: file.type
     });
