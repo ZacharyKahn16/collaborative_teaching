@@ -8,11 +8,11 @@ import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import { Link } from "react-router-dom";
-// import ListItemText from "@material-ui/core/ListItemText";
 import ExitToAppIcon from "@material-ui/icons/ExitToApp";
 import SchoolIcon from "@material-ui/icons/School";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
 import AccountBalanceIcon from "@material-ui/icons/AccountBalance";
+import { AUTH } from './Firebase';
 
 const categories = [
   {
@@ -36,9 +36,6 @@ const categories = [
         numIndex: 2
       }
     ]
-  },
-  {
-    children: [{ id: "Logout", icon: <ExitToAppIcon />, styleid: "logoutBtn" }]
   }
 ];
 
@@ -95,6 +92,10 @@ function Navigator(props) {
     });
   }
 
+  function logout() {
+    AUTH.signOut().then();
+  }
+
   return (
     <Drawer variant="permanent" {...other}>
       <List disablePadding>
@@ -141,6 +142,13 @@ function Navigator(props) {
             <Divider className={classes.divider} />
           </React.Fragment>
         ))}
+        <ListItem button={true} className={clsx(classes.item)} onClick={logout}>
+          <ListItemIcon className={classes.itemIcon}>
+            <ExitToAppIcon />
+          </ListItemIcon>
+          Logout
+        </ListItem>
+        <Divider className={classes.divider} />
       </List>
     </Drawer>
   );
