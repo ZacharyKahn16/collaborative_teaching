@@ -1,15 +1,23 @@
-import React from "react";
-// import { SyncingEditor } from "./SyncingEditor";
+import React, { useContext } from "react";
+import { BrowserRouter, Route } from "react-router-dom";
 import Home from "./Home";
-// import HomeContent from "./MyFiles";
-// import Courses from "./MyCourses";
+import LoginPage from "./LoginPage";
+import { UserContext } from "./UserContext";
+import "./Styles/App.css";
 import "./Styles/Navigator.css";
 import "./Styles/MyCourses.css";
-import { Route } from "react-router";
-import { BrowserRouter } from "react-router-dom";
 
 class App extends React.Component {
+  static contextType = UserContext;
+
   render() {
+    const { user } = this.context;
+    console.log(user);
+
+    if (!user) {
+      return <LoginPage />;
+    }
+
     return (
       <BrowserRouter>
         <Route exact component={Home} />
