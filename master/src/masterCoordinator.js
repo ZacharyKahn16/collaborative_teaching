@@ -6,10 +6,10 @@ import * as mcdb from './MCDB';
 // const mcdb = require('./MCDB');
 
 const MongoClient = require('mongodb').MongoClient;
-const { Logger } = require('./Logger');
+const { LOGGER } = require('./Logger');
 
 // TODO: Make sure to put note that fbdIps must be passed in.
-// TODO: Using console.info changer to Logger.
+// TODO: Using LOGGER.info changer to Logger.
 // TODO: MAKE SURE OWNERID IS ADDED TO WORKERS.
 // TODO: DECIDE IF fileId is inserted as string or int into FDB.
 
@@ -27,8 +27,8 @@ export class MasterCoordinator {
   /**
    * Retrieve file with given document id from an FDB.
    *
-   * @param {Integer} docId ID of document.
-   * @param {String} FDBIp IP of FDB node.
+   * @param {number} docId ID of document.
+   * @param {String} fdbIp IP of FDB node.
    *
    * @return {Promise} Promise that returns document on success, error otherwise.
    **/
@@ -49,7 +49,7 @@ export class MasterCoordinator {
           return dbo.collection(_fileCollectionName);
         },
         function(err) {
-          console.error('ERROR CONNECTING TO DB', err);
+          LOGGER.error('ERROR CONNECTING TO DB', err);
           throw err;
         },
       )
@@ -58,7 +58,7 @@ export class MasterCoordinator {
           return collection.findOne(query);
         },
         function(err) {
-          console.error('ERROR RETRIEVING DATA FROM DB', err);
+          LOGGER.error('ERROR RETRIEVING DATA FROM DB', err);
           throw err;
         },
       )
@@ -66,7 +66,7 @@ export class MasterCoordinator {
         return items;
       })
       .catch(function(err) {
-        console.error('Something went wrong with retrieval.', err);
+        LOGGER.error('Something went wrong with retrieval.', err);
         throw err;
       })
       .finally(function() {
@@ -77,13 +77,13 @@ export class MasterCoordinator {
   /**
    * Insert new file.
    *
-   * @param {Integer}  docId ID of document.
+   * @param {number}  docId ID of document.
    * @param {String} fdbIp IP of FDB.
    * @param {String} fileName name of file.
    * @param {String} fileContents TODO (zacharykahn): Do we want to store file in binary?
    * @param {String} fileHash Hash of the file.
    * @param {String} fileType Type of file.
-   * @param {Integer} ts Timestamp.
+   * @param {number} ts Timestamp.
    * @param {String} ownerId Owner of file.
    *
    * @return {Promise} Promise that returns if insertion was a success, error otherwise.
@@ -111,7 +111,7 @@ export class MasterCoordinator {
           return dbo.collection(_fileCollectionName);
         },
         function(err) {
-          console.info('ERROR CONNECTING TO DB');
+          LOGGER.info('ERROR CONNECTING TO DB');
           throw err;
         },
       )
@@ -120,7 +120,7 @@ export class MasterCoordinator {
           return collection.insertOne(fDBInsertInfo);
         },
         function(err) {
-          console.info('ERROR INSERTING INTO DB');
+          LOGGER.info('ERROR INSERTING INTO DB');
           throw err;
         },
       )
@@ -128,8 +128,8 @@ export class MasterCoordinator {
         return resp;
       })
       .catch(function(err) {
-        console.info('ERROR: Something went wrong with insertion.');
-        console.info(err);
+        LOGGER.info('ERROR: Something went wrong with insertion.');
+        LOGGER.info(err);
         throw err;
       })
       .finally(function() {
@@ -140,12 +140,13 @@ export class MasterCoordinator {
   /**
    * Updates a file.
    *
-   * @param {Integer}  docId _id of document.
-   * @param {String} FDBIp IP of FDB node.
+   * @param {number}  docId _id of document.
+   * @param {String} fdbIp IP of FDB node.
    * @param {String} fileName name of file.
    * @param {Binary} fileContents File contents.
+   * @param fileHash
    * @param {String} fileType Type of file.
-   * @param {Integer} ts Timestamp.
+   * @param {number} ts Timestamp.
    *
    * @return {Promise} Promise that returns if insertion was a success, error otherwise.
    **/
@@ -171,7 +172,7 @@ export class MasterCoordinator {
           return dbo.collection(_fileCollectionName);
         },
         function(err) {
-          console.error('ERROR CONNECTING TO DB', err);
+          LOGGER.error('ERROR CONNECTING TO DB', err);
           throw err;
         },
       )
@@ -181,7 +182,7 @@ export class MasterCoordinator {
           return collection.updateOne(query, newUpdate, { upsert: true });
         },
         function(err) {
-          console.error('ERROR UPDATING DOCUMENT.', err);
+          LOGGER.error('ERROR UPDATING DOCUMENT.', err);
           throw err;
         },
       )
@@ -189,7 +190,7 @@ export class MasterCoordinator {
         return resp;
       })
       .catch(function(err) {
-        console.error('ERROR: Something went wrong with update.', err);
+        LOGGER.error('ERROR: Something went wrong with update.', err);
         throw err;
       })
       .finally(function() {
@@ -200,8 +201,8 @@ export class MasterCoordinator {
   /**
    * Delete file with given document id.
    *
-   * @param {Integer} docId ID of document.
-   * @param {Integer} fdbIP IP of fdb with file to delete.
+   * @param {number} docId ID of document.
+   * @param {number} fdbIp IP of fdb with file to delete.
    *
    * @return {Promise} Promise that returns documents on success, error otherwise.
    **/
@@ -220,7 +221,7 @@ export class MasterCoordinator {
           return dbo.collection(_fileCollectionName);
         },
         function(err) {
-          console.info('ERROR CONNECTING TO DB');
+          LOGGER.info('ERROR CONNECTING TO DB');
           throw err;
         },
       )
@@ -229,7 +230,7 @@ export class MasterCoordinator {
           return collection.deleteOne(query);
         },
         function(err) {
-          console.info('ERROR DELETING DATA FROM DB');
+          LOGGER.info('ERROR DELETING DATA FROM DB');
           throw err;
         },
       )
@@ -237,8 +238,8 @@ export class MasterCoordinator {
         return items;
       })
       .catch(function(err) {
-        console.info('ERROR: Something went wrong with deletion.');
-        console.info(err);
+        LOGGER.info('ERROR: Something went wrong with deletion.');
+        LOGGER.info(err);
         throw err;
       })
       .finally(function() {
@@ -249,7 +250,7 @@ export class MasterCoordinator {
   /**
    * Grabs hash, file name, and file timestamp for each file in an FDB.
    *
-   * @param {String} FDBIp IP of FDB node.
+   * @param {String} fdbIp IP of FDB node.
    *
    * @return {Promise} Promise that returns all contents of queried FDB on success, error otherwise.
    **/
@@ -267,7 +268,7 @@ export class MasterCoordinator {
           return dbo.collection(_fileCollectionName);
         },
         function(err) {
-          console.error('ERROR CONNECTING TO DB', err);
+          LOGGER.error('ERROR CONNECTING TO DB', err);
           throw err;
         },
       )
@@ -287,7 +288,7 @@ export class MasterCoordinator {
             .toArray();
         },
         function(err) {
-          console.error('ERROR RETRIEVING DATA FROM DB', err);
+          LOGGER.error('ERROR RETRIEVING DATA FROM DB', err);
           throw err;
         },
       )
@@ -295,7 +296,7 @@ export class MasterCoordinator {
         return items;
       })
       .catch(function(err) {
-        console.error('ERROR: Something went wrong with retrieval.', err);
+        LOGGER.error('ERROR: Something went wrong with retrieval.', err);
         throw err;
       })
       .finally(function() {
@@ -311,7 +312,7 @@ export class MasterCoordinator {
    * Data structure has following format:
    * organizedDocData = { docId : [[fdbIp, fileHash, fileCreationTime, ownerId, fileName]] }
    *
-   * @param {String} FDBIp IP of FDB node.
+   * @param {String} fdbIp IP of FDB node.
    *
    * @return {Promise} Promise contains organizedDocData, which contains array
    *                   of FDBs that have a given file and the hash they contain
@@ -325,7 +326,7 @@ export class MasterCoordinator {
     return this.getFDBInfo(fdbIp).then(
       function(items) {
         for (let i = 0; i < items.length; i++) {
-          console.info(items[i]);
+          LOGGER.info(items[i]);
 
           docId = items[i].docId;
           fileName = items[i].fileName;
@@ -343,7 +344,7 @@ export class MasterCoordinator {
         return organizedDocData;
       },
       function(err) {
-        console.error('Error: could not grab data for FDB.', err);
+        LOGGER.error('Error: could not grab data for FDB.', err);
         throw err;
       },
     );
@@ -357,7 +358,7 @@ export class MasterCoordinator {
    * Data structure has following format:
    * organizedDocData = { docId : [[fdbIp, fileHash, fileCreationTime, ownerId, fileName]] }
    *
-   * @param {Array} fbdIps List of fdbIps, eg. ['1.1.1.1']
+   * @param {Array} fdbIps List of fdbIps, eg. ['1.1.1.1']
    *
    * @return {Promise} Promise contains organizedDocData, which contains array
    *                   of FDBs that have a given file and the hash they contain
@@ -378,7 +379,7 @@ export class MasterCoordinator {
         // Get organized data for all FDBs.
         return Promise.all(retrievePromises).then(
           (vals) => {
-            console.info('SUCCESSFULLY RETRIEVED ALL DATA FROM EACH FDB.');
+            LOGGER.info('SUCCESSFULLY RETRIEVED ALL DATA FROM EACH FDB.');
 
             // Merge results from all FDBs.
             // Example of objects to merge.
@@ -401,11 +402,11 @@ export class MasterCoordinator {
             return allData;
           },
           (err) => {
-            console.error('ERROR WHEN RETRIEVING DATA.', err);
+            LOGGER.error('ERROR WHEN RETRIEVING DATA.', err);
           },
         );
       } catch (err) {
-        console.error(err);
+        LOGGER.error(err);
       }
     })();
   }
@@ -413,13 +414,13 @@ export class MasterCoordinator {
   /**
    * Get replication info.
    *
-   * Determines how many replicas need to be made, or files need to be deleleted
+   * Determines how many replicas need to be made, or files need to be deleted
    * to ensure system has correct number of copies.
    * Data structure
    * replicaUpdateInfo: { 'docIda': x, 'docIdb': -y}
    * Indicates docId needs x additional copies and docIdb needs y copies deleted.
    *
-   * @param {Array} fbdIps List of fdbIps, eg. ['1.1.1.1']
+   * @param {Array} fdbIps List of fdbIps, eg. ['1.1.1.1']
    *
    * @returns {Promise} Promise with organizedDocData and replicaUpdateInfo.
    **/
@@ -429,7 +430,7 @@ export class MasterCoordinator {
         // Number of replicas dynamically to n/3 + 1.
         let replicaUpdateInfo = {};
         const desiredReplicas = Math.floor(fdbIps.length / 3) + 1;
-        console.info('GET REPLICA UPDATE INFO');
+        LOGGER.info('GET REPLICA UPDATE INFO');
         for (let fileId in organizedDocData) {
           // Positive difference indicates how many replicas need to be added
           // for a given docId. Negative difference tells us how many replicas
@@ -442,7 +443,7 @@ export class MasterCoordinator {
         };
       },
       function(err) {
-        console.error(err);
+        LOGGER.error(err);
         throw err;
       },
     );
@@ -451,11 +452,11 @@ export class MasterCoordinator {
   /**
    * Workhorse that makes the system have the correct number of replicas.
    *
-   * Determines how many replicas need to be made, or files need to be deleleted
+   * Determines how many replicas need to be made, or files need to be deleted
    * to ensure system has correct number of copies, and then makes updates and
    * deletions.
    *
-   * @param {Array} fbdIpList List of fdbIps, eg. ['1.1.1.1']
+   * @param {Array} fdbIpList List of fdbIps, eg. ['1.1.1.1']
    *
    * @returns {Promise} Promise indicating all updates made successfully, error otherwise.
    **/
@@ -469,45 +470,45 @@ export class MasterCoordinator {
           const fdbsForFile = organizedDocData[fileId].map((ele) => ele[0]);
 
           if (rep > 0) {
-            console.info('MAKE ' + rep + ' more replicas');
+            LOGGER.info('MAKE ' + rep + ' more replicas');
             // Choose rep fdbIPs that don't already have the given fileId.
             // Only add file to FDBs that don't already have the file.
             const newFdbChoices = fdbIpList.filter((ele) => !fdbsForFile.includes(ele));
 
-            console.info('REPLICAS TO CHOOSE');
-            console.info(newFdbChoices);
+            LOGGER.info('REPLICAS TO CHOOSE');
+            LOGGER.info(newFdbChoices);
 
             // Get list of FDBs to add fileId to.
             const replicationList = _this._getRandomFDBs(newFdbChoices, rep);
-            console.info('FileID: ' + fileId);
-            console.info('Replication list: ');
-            console.info(replicationList);
+            LOGGER.info('FileID: ' + fileId);
+            LOGGER.info('Replication list: ');
+            LOGGER.info(replicationList);
 
             // Retrieve correct replica and copy to other FDBs.
             (async () => {
               try {
                 const resp = await _this._retrieveAndInsert(fileId, fdbsForFile, replicationList);
-                console.info('RESPONSE FROM NEW FUNC: ' + resp);
+                LOGGER.info('RESPONSE FROM NEW FUNC: ' + resp);
               } catch (err) {
-                console.error(err);
+                LOGGER.error(err);
               }
             })();
           } else if (rep < 0) {
-            console.info('REMOVE ' + -1 * rep + ' replicas');
+            LOGGER.info('REMOVE ' + -1 * rep + ' replicas');
 
             const deletions = -1 * rep;
             // Get list of FDBs to delete fileId from.
             const deletionList = _this._getRandomFDBs(fdbsForFile, deletions);
-            console.info('DELETEION LIST');
-            console.info(deletionList);
+            LOGGER.info('DELETEION LIST');
+            LOGGER.info(deletionList);
 
             // Delete extra file copies.
             (async () => {
               try {
                 const resp = await _this._deleteExtraFiles(fileId, deletionList);
-                console.info('RESPONSE FROM NEW FUNC: ' + resp);
+                LOGGER.info('RESPONSE FROM NEW FUNC: ' + resp);
               } catch (err) {
-                console.error(err);
+                LOGGER.error(err);
               }
             })();
           }
@@ -516,7 +517,7 @@ export class MasterCoordinator {
         return 0;
       },
       function(err) {
-        console.error(err);
+        LOGGER.error(err);
         throw err;
       },
     );
@@ -526,7 +527,7 @@ export class MasterCoordinator {
    * Used to get rep random FBDs from newFdbChoices list.
    *
    * @param {Array} newFdbChoices List of fdbIps to choose from.
-   * @param {Integer} rep Number of fbds to choose from list.
+   * @param {number} rep Number of fbds to choose from list.
    *
    * @returns {Array} Random sublist of newFdbChoices.
    **/
@@ -539,7 +540,7 @@ export class MasterCoordinator {
     // if additional replications (or deletions) needed is greater than number
     // of FDB choices, set replications (or deletions) equal to number of choices.
     if (rep > opts) {
-      console.info(
+      LOGGER.info(
         'Trying to add/delete from more fdbs than available. Resetting rep to max allowable value for given fdb.',
       );
       rep = opts;
@@ -602,15 +603,15 @@ export class MasterCoordinator {
       // Create replicas.
       Promise.all(updatePromises).then(
         (vals) => {
-          console.info('SUCCESSFULLY REPLICATED ALL COPIES FOR ' + fileId + '.');
+          LOGGER.info('SUCCESSFULLY REPLICATED ALL COPIES FOR ' + fileId + '.');
         },
         (err) => {
-          console.error('ERROR WHEN REPLICATING FILES.', err);
+          LOGGER.error('ERROR WHEN REPLICATING FILES.', err);
         },
       );
       return 0;
     } catch (err) {
-      console.error(err);
+      LOGGER.error(err);
     }
   }
 
@@ -635,15 +636,15 @@ export class MasterCoordinator {
       // Delete replicas.
       Promise.all(updatePromises).then(
         (vals) => {
-          console.info('SUCCESSFULLY DELETED EXTRA COPIES FOR ' + fileId + '.');
+          LOGGER.info('SUCCESSFULLY DELETED EXTRA COPIES FOR ' + fileId + '.');
         },
         (err) => {
-          console.error('ERROR WHEN DELETING COPIES.', err);
+          LOGGER.error('ERROR WHEN DELETING COPIES.', err);
         },
       );
       return 0;
     } catch (err) {
-      console.error(err);
+      LOGGER.error(err);
     }
   }
 
@@ -658,7 +659,7 @@ export class MasterCoordinator {
    * organizedDocData = { docId : [[fdbIp, fileHash, fileCreationTime, ownerId, fileName]] }
    * updateInfoPerFile = {docId: [fdbIpWithCorrectFile, corretHash, latestTs]}
    *
-   * @param {Array} fbdIpList List of fdbIps, eg. ['1.1.1.1']
+   * @param {Array} fdbIps List of fdbIps, eg. ['1.1.1.1']
    *
    * @returns {Promise} Promise contains organizedDocData and updateInfoPerFile
    *                    objects.
@@ -693,7 +694,7 @@ export class MasterCoordinator {
         };
       },
       function(err) {
-        console.error(err);
+        LOGGER.error(err);
         throw err;
       },
     );
@@ -742,7 +743,7 @@ export class MasterCoordinator {
         return { updateInfoPerFile: updateInfoPerFile, updateList: updateList };
       },
       function(err) {
-        console.error(err);
+        LOGGER.error(err);
         throw err;
       },
     );
@@ -770,10 +771,10 @@ export class MasterCoordinator {
       .then(function({ updateInfoPerFile, updateList }) {
         // If updateList is empty, all files are consistent.
         if (Object.entries(updateList).length === 0 && updateList.constructor === Object) {
-          console.info('All files consistent already.');
+          LOGGER.info('All files consistent already.');
           return 0;
         }
-        console.info('Files are inconsistent, fixing this now.');
+        LOGGER.info('Files are inconsistent, fixing this now.');
 
         _updateInfoPerFile = updateInfoPerFile;
         _updateList = updateList;
@@ -781,13 +782,13 @@ export class MasterCoordinator {
       })
       .then(
         function(status) {
-          console.info('STATUS: ' + status);
+          LOGGER.info('STATUS: ' + status);
           if (status === 0) {
             return 0;
           }
           // Need to update inconsistencies.
           // Go through each file and make updates to out of date FDBs
-          console.info('UPDATE INFO PER FILE', _updateInfoPerFile);
+          LOGGER.info('UPDATE INFO PER FILE', _updateInfoPerFile);
 
           // Loop through each docId in _updateList and for each docId
           // retrieve the correct update date file and
@@ -829,24 +830,24 @@ export class MasterCoordinator {
                 // Update all out of sync files.
                 Promise.all(updatePromises).then(
                   (vals) => {
-                    console.info(
+                    LOGGER.info(
                       'SUCCESSFULLY UPDATED ALL INCONSITENT COPIES FOR DOC ' + docId + '.',
                     );
                   },
                   (err) => {
-                    console.error('ERROR WHEN UPDATING INCONSISTENT FILES.', err);
+                    LOGGER.error('ERROR WHEN UPDATING INCONSISTENT FILES.', err);
                   },
                 );
               }
             } catch (err) {
-              console.error(err);
+              LOGGER.error(err);
             }
           })();
 
           return 0;
         },
         function(err) {
-          console.error(err);
+          LOGGER.error(err);
           throw err;
         },
       );
@@ -894,28 +895,28 @@ export class MasterCoordinator {
 
             // Sanity check.
             if (inMcdbButNotFdb.size == 0) {
-              console.log('FDB has everything MCDB has, great!');
+              LOGGER.log('FDB has everything MCDB has, great!');
             } else {
               // Delete extra file ids from MCDB.
               (async () => {
                 try {
                   await _this.deleteExtras(inMcdbButNotFdb);
                 } catch (err) {
-                  console.error(err);
+                  LOGGER.error(err);
                 }
               })();
             }
 
             // Sanity check.
             if (inFdbButNotMcdb.size == 0) {
-              console.log('MCDB has everything FDBs have, great!');
+              LOGGER.log('MCDB has everything FDBs have, great!');
             } else {
               // Add missing file ids to MCDB.
               (async () => {
                 try {
                   await _this.addMissingFileIds(organizedDocData, inFdbButNotMcdb);
                 } catch (err) {
-                  console.error(err);
+                  LOGGER.error(err);
                 }
               })();
             }
@@ -927,20 +928,20 @@ export class MasterCoordinator {
               try {
                 await _this.updateMCDBwithCorrectFDBInfo(organizedDocData, mcdbFiles, inBoth);
               } catch (err) {
-                console.error(err);
+                LOGGER.error(err);
               }
             })();
 
             return 0;
           },
           function(err) {
-            console.error(err);
+            LOGGER.error(err);
             throw err;
           },
         );
       },
       function(err) {
-        console.error(err);
+        LOGGER.error(err);
         throw err;
       },
     );
@@ -954,8 +955,8 @@ export class MasterCoordinator {
    * @returns {Promise} Promise returns 0 on success, otherwise throws error.
    **/
   async deleteExtras(inMcdbButNotFdb) {
-    console.log('IN MCDB BUT NOT FDB');
-    console.log(inMcdbButNotFdb);
+    LOGGER.log('IN MCDB BUT NOT FDB');
+    LOGGER.log(inMcdbButNotFdb);
     try {
       let deletePromises = [];
       // Loop through entries if there are any.
@@ -967,15 +968,15 @@ export class MasterCoordinator {
       // Delete extra file IDs.
       Promise.all(deletePromises).then(
         (vals) => {
-          console.log('SUCCESSFULLY DELETED ERRONEOUS FILE IDS FROM MCDB.');
+          LOGGER.log('SUCCESSFULLY DELETED ERRONEOUS FILE IDS FROM MCDB.');
         },
         (err) => {
-          console.error('ERROR WHEN DELETING ERRONEOUS FILE IDS FROM MCDB.', err);
+          LOGGER.error('ERROR WHEN DELETING ERRONEOUS FILE IDS FROM MCDB.', err);
         },
       );
       return 0;
     } catch (err) {
-      console.error(err);
+      LOGGER.error(err);
     }
   }
 
@@ -988,8 +989,8 @@ export class MasterCoordinator {
    * @returns {Promise} Promise returns 0 on success, otherwise throws error.
    **/
   async addMissingFileIds(organizedDocData, inFdbButNotMcdb) {
-    console.log('IN FDB BUT NOT MCDB');
-    console.log(inFdbButNotMcdb);
+    LOGGER.log('IN FDB BUT NOT MCDB');
+    LOGGER.log(inFdbButNotMcdb);
     try {
       let addPromises = [];
       for (let missingFileId of inFdbButNotMcdb) {
@@ -1021,15 +1022,15 @@ export class MasterCoordinator {
       // Add missing file IDs.
       Promise.all(addPromises).then(
         (vals) => {
-          console.log('SUCCESSFULLY ADDED MISSING FILE IDS TO MCDB.');
+          LOGGER.log('SUCCESSFULLY ADDED MISSING FILE IDS TO MCDB.');
         },
         (err) => {
-          console.error('ERROR WHEN ADDING MISSING FILE IDS TO MCDB.', err);
+          LOGGER.error('ERROR WHEN ADDING MISSING FILE IDS TO MCDB.', err);
         },
       );
       return 0;
     } catch (err) {
-      console.error(err);
+      LOGGER.error(err);
     }
   }
 
@@ -1046,7 +1047,7 @@ export class MasterCoordinator {
     try {
       // mcdbFiles: [{docId: str_id, docData: {all file data}}]
       let mcdbFastLookUp = {};
-      // console.log(mcdbFiles);
+      // LOGGER.log(mcdbFiles);
       for (let i = 0; i < mcdbFiles.length; i++) {
         let doc = mcdbFiles[i];
         mcdbFastLookUp[doc.id] = doc.data();
@@ -1079,9 +1080,9 @@ export class MasterCoordinator {
           fileNameFdb === fileNameMcdb &&
           fdbLocationsFdb.sort() === fdbLocationsFdb.sort()
         ) {
-          console.log(fileNameFdb + ' is same in FDB and MCDB');
+          LOGGER.log(fileNameFdb + ' is same in FDB and MCDB');
         } else {
-          console.log(fileNameFdb + ' IS NOT SAME IN FDB AND MCDB.\nUpdating this now.');
+          LOGGER.log(fileNameFdb + ' IS NOT SAME IN FDB AND MCDB.\nUpdating this now.');
           updatePromises.push(
             mcdb.updateFile(
               fileId,
@@ -1098,15 +1099,15 @@ export class MasterCoordinator {
       // Update all inconsistencies between FDB and MCDB.
       Promise.all(updatePromises).then(
         (vals) => {
-          console.log('SUCCESSFULLY SYNCED FDB AND MCDB ENTRIES.');
+          LOGGER.log('SUCCESSFULLY SYNCED FDB AND MCDB ENTRIES.');
         },
         (err) => {
-          console.error('ERROR WHEN SYNCING FDB AND MCDB ENTRIES.', err);
+          LOGGER.error('ERROR WHEN SYNCING FDB AND MCDB ENTRIES.', err);
         },
       );
       return 0;
     } catch (err) {
-      console.error(err);
+      LOGGER.error(err);
     }
   }
 }

@@ -293,9 +293,17 @@ export class GCloud {
           return instance.publicIp;
         });
 
-      await this.masterCoordinator.makeAllFileCopiesConsistent(ips).then();
-      await this.masterCoordinator.makeCorrectNumberOfReplicas(ips).then();
-      await this.masterCoordinator.makeMCDBWithCorrectInfo(ips).then();
+      try {
+        await this.masterCoordinator.makeAllFileCopiesConsistent(ips);
+      } catch (err) {}
+
+      try {
+        await this.masterCoordinator.makeCorrectNumberOfReplicas(ips);
+      } catch (err) {}
+
+      try {
+        await this.masterCoordinator.makeMCDBWithCorrectInfo(ips);
+      } catch (err) {}
     }
   }
 
