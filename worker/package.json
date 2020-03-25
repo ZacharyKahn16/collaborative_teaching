@@ -25,6 +25,7 @@
     "moment": "2.24.0",
     "mongodb": "3.5.3",
     "morgan": "1.9.1",
+    "rfdc": "^1.1.4",
     "shelljs": "0.8.3",
     "socket.io": "2.3.0",
     "uuid": "7.0.2"
@@ -36,6 +37,7 @@
     "@types/moment": "2.13.0",
     "@types/mongodb": "3.3.16",
     "@types/node": "13.7.2",
+    "@types/rfdc": "1.1.0",
     "@types/shelljs": "0.8.6",
     "@types/socket.io": "2.1.4",
     "@types/uuid": "7.0.0",
