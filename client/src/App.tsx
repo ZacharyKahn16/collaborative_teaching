@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import {BrowserRouter, Route, Switch} from "react-router-dom";
+import { BrowserRouter, Route, Switch } from "react-router-dom";
 import Home from "./Home";
 import LoginPage from "./LoginPage";
 import { UserContext } from "./UserContext";
@@ -21,7 +21,10 @@ class App extends React.Component {
 
     return (
       <BrowserRouter>
-        <Route exact render={(props) => <Home {...props} userInfo={user.name}/>}/>
+        <Route
+          exact
+          render={(props) => <Home {...props} userInfo={user.name} />}
+        />
       </BrowserRouter>
     );
   }

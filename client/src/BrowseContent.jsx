@@ -15,49 +15,49 @@ import RefreshIcon from "@material-ui/icons/Refresh";
 import Header from "./Header";
 import { writeNewFile, listen, retrieveFile } from "./service";
 
-const styles = theme => ({
+const styles = (theme) => ({
   paper: {
     // maxWidth: 936,
     margin: "auto",
-    overflow: "hidden"
+    overflow: "hidden",
   },
   searchBar: {
-    borderBottom: "1px solid rgba(0, 0, 0, 0.12)"
+    borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
   },
   searchInput: {
-    fontSize: theme.typography.fontSize
+    fontSize: theme.typography.fontSize,
   },
   block: {
-    display: "block"
+    display: "block",
   },
   addUser: {
-    marginRight: theme.spacing(1)
+    marginRight: theme.spacing(1),
   },
   contentWrapper: {
-    margin: "40px 16px"
-  }
+    margin: "40px 16px",
+  },
 });
 
 const listOfFiles = [
   {
     filename: "book",
-    author: "daniel"
+    author: "daniel",
   },
   {
     filename: "book2",
-    author: "john"
+    author: "john",
   },
   {
     filename: "book3",
-    author: "mike"
-  }
+    author: "mike",
+  },
 ];
 
 class BrowseContent extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      mobileOpen: false
+      mobileOpen: false,
     };
 
     this.handleSearchOnChange = this.handleSearchOnChange.bind(this);
@@ -65,9 +65,9 @@ class BrowseContent extends React.Component {
 
   handleDrawerToggle() {
     this.setState({
-      mobileOpen: !this.state.mobileOpen
-    })
-  };
+      mobileOpen: !this.state.mobileOpen,
+    });
+  }
 
   handleSearchOnChange(e) {
     // if (e.target.value
@@ -79,61 +79,61 @@ class BrowseContent extends React.Component {
 
   render() {
     const { classes, workerInfo, userName } = this.props;
-    return(
-        <Paper className={classes.paper}>
-          <Header
-              onDrawerToggle={this.handleDrawerToggle}
-              setTitle={{name:"Content Bank"}}
-              setWorkerDis={{name: workerInfo.id}}
-              setUsername={{name: userName}}
-          />
-          <AppBar
-              className={classes.searchBar}
-              position="static"
-              color="default"
-              elevation={0}
-          >
-            <Toolbar>
-              <Grid container spacing={2} alignItems="center">
-                <Grid item>
-                  <SearchIcon className={classes.block} color="inherit" />
-                </Grid>
-                <Grid item xs>
-                  <TextField
-                      fullWidth
-                      placeholder="Search by author, course or file name."
-                      InputProps={{
-                        disableUnderline: true,
-                        className: classes.searchInput
-                      }}
-                      onKeyDown={this.handleSearchOnChange}
-                  />
-                </Grid>
-                <Grid item>
-                  {/*<Button variant="contained" color="primary" className={classes.addUser}>*/}
-                  {/*    Add user*/}
-                  {/*</Button>*/}
-                  <Tooltip title="Reload">
-                    <IconButton>
-                      <RefreshIcon className={classes.block} color="inherit" />
-                    </IconButton>
-                  </Tooltip>
-                </Grid>
+    return (
+      <Paper className={classes.paper}>
+        <Header
+          onDrawerToggle={this.handleDrawerToggle}
+          setTitle={{ name: "Content Bank" }}
+          setWorkerDis={{ name: workerInfo.id }}
+          setUsername={{ name: userName }}
+        />
+        <AppBar
+          className={classes.searchBar}
+          position="static"
+          color="default"
+          elevation={0}
+        >
+          <Toolbar>
+            <Grid container spacing={2} alignItems="center">
+              <Grid item>
+                <SearchIcon className={classes.block} color="inherit" />
               </Grid>
-            </Toolbar>
-          </AppBar>
-          <div className={classes.contentWrapper}>
-            <Typography color="textSecondary" align="center">
-              No users for this project yet
-            </Typography>
-          </div>
-        </Paper>
+              <Grid item xs>
+                <TextField
+                  fullWidth
+                  placeholder="Search by author, course or file name."
+                  InputProps={{
+                    disableUnderline: true,
+                    className: classes.searchInput,
+                  }}
+                  onKeyDown={this.handleSearchOnChange}
+                />
+              </Grid>
+              <Grid item>
+                {/*<Button variant="contained" color="primary" className={classes.addUser}>*/}
+                {/*    Add user*/}
+                {/*</Button>*/}
+                <Tooltip title="Reload">
+                  <IconButton>
+                    <RefreshIcon className={classes.block} color="inherit" />
+                  </IconButton>
+                </Tooltip>
+              </Grid>
+            </Grid>
+          </Toolbar>
+        </AppBar>
+        <div className={classes.contentWrapper}>
+          <Typography color="textSecondary" align="center">
+            No users for this project yet
+          </Typography>
+        </div>
+      </Paper>
     );
   }
 }
 
 BrowseContent.propTypes = {
-  classes: PropTypes.object.isRequired
+  classes: PropTypes.object.isRequired,
 };
 
 export default withStyles(styles)(BrowseContent);
