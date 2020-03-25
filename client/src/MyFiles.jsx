@@ -80,7 +80,9 @@ class MyFiles extends React.Component {
     // console.log("mounted")
   }
   render() {
-    const { classes, workerInfo } = this.props;
+    const { classes, workerInfo, socket } = this.props;
+    // console.log("Socket received:");
+    // console.log(socket);
     return(
         <Paper className={classes.paper}>
           <Header onDrawerToggle={this.handleDrawerToggle} setTitle={{name:"My Files"}} setWorkerDis={{name: workerInfo.id}} />
@@ -132,7 +134,7 @@ class MyFiles extends React.Component {
                   }}
               >
                 <Fade in={this.state.uploadModalOpen}>
-                  <UploadCard closeModal={this.handleCloseUploadModal}/>
+                  <UploadCard closeModal={this.handleCloseUploadModal} socket={socket}/>
                 </Fade>
               </Modal>
             </Toolbar>

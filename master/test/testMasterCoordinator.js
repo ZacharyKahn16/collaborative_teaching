@@ -1,8 +1,11 @@
-// import { ComputeEngineInstance, GCloud } from './GCloud';
+// Test all functionality for the masterCoordinator.
+
 // TODO: Update this to correct directory.
-const MasterCoordinator = require('./masterCoordV2.js');
+import * as mcdb from '../src/MCDB';
+const MasterCoordinator = require('../src/masterCoordinator.js');
 
 const MongoClient = require('mongodb').MongoClient;
+// TODO: MAKE A TEST COLLECTION FOR INSERTING FAKE FILES.
 // TODO: require this when running on gcp, or leave it out if you want to use
 // console.info
 // const { LOGGER } = require('../src/Logger');
@@ -44,6 +47,7 @@ class CreateMockDataForMC {
               `hash${i}`,
               'txt',
               Date.now(),
+              i, // ownerId = fileId here, but not necessary.
             ),
           );
         }
@@ -88,6 +92,7 @@ class CreateMockDataForMC {
               `hash${copyId}`,
               'txt',
               ts,
+              copyId,
             ),
           );
         }
@@ -137,6 +142,7 @@ class CreateMockDataForMC {
               `hash${copyId}${i}`,
               'txt',
               ts,
+              copyId,
             ),
           );
         }
@@ -269,12 +275,66 @@ class CreateMockDataForMC {
       }
     })();
   }
+
+  insertFakeInconsistentMcdbData() {
+    // Insert some entries that the FDBs have.
+    (async () => {
+      try {
+        let mcdbPromises = [];
+        // Since we have 4 IPs, by defualt we have ids 0-3 in FDBs, so we'll
+        // include 0,1 in MCDB.
+        for (let i = 0; i < 2; i++) {
+          mcdbPromises.push(
+            mcdb.insertFileWithSpecifiedFileId(
+              i,
+              Date.now(),
+              [], // defualt to no fdbs.
+              [],
+              [],
+              `${i}.txt`,
+              'some incorrect hash',
+              i,
+            ),
+          );
+        }
+        // Insert some entries into MCDB that will not be in MCDB, namely for this
+        // example, have fileIds > 3.
+        for (let i = 8; i < 10; i++) {
+          mcdbPromises.push(
+            mcdb.insertFileWithSpecifiedFileId(
+              i,
+              Date.now(),
+              [], // defualt to no fdbs.
+              [],
+              [],
+              `${i}.txt`,
+              'some nonexistent file hash',
+              i,
+            ),
+          );
+        }
+
+        // Insert MCDB data.
+        Promise.all(mcdbPromises).then(
+          (vals) => {
+            console.info('SUCCESSFULLY INSERTED FAKE MCDB DATA');
+          },
+          (err) => {
+            console.error('ERROR WHEN INSERTING FAKE MCDB DATA.', err);
+          },
+        );
+        return 0;
+      } catch (err) {
+        console.error(err);
+      }
+    })();
+  }
 }
 
 // let myArgs = process.argv.slice(2);
 // const fdbIps = myArgs[0];
 // Manually copy past in from gcloud console.
-const fdbIps = ['104.197.53.140', '104.197.77.192', '34.69.234.208', '35.223.124.193'];
+const fdbIps = ['35.193.171.27', '35.222.45.75', '35.223.205.69', '104.198.215.78'];
 let mc = new MasterCoordinator();
 let mockDataCreater = new CreateMockDataForMC(mc);
 // TODO: Could put tests below into a script instead of just running each
@@ -288,6 +348,9 @@ let mockDataCreater = new CreateMockDataForMC(mc);
 
 // Insert inconsistent data
 // mockDataCreater.createInconsistentCopies(fdbIps);
+
+// Insert fake, inconsistent data into MCDB.
+// mockDataCreater.insertFakeInconsistentMcdbData();
 
 // Retrieve fake data.
 // mockDataCreater.retrieveAllData(fdbIps).then(
@@ -401,13 +464,20 @@ let mockDataCreater = new CreateMockDataForMC(mc);
 // Addition works.
 // mc.makeCorrectNumberOfReplicas(fdbIps).then(
 //   function(items) {
-//     console.info("The promise was fulfilled with items!", items);
+//     console.info('The promise was fulfilled with items!', items);
 //   },
 //   function(err) {
-//     console.error(
-//       "*******\nTHE PROMISE WAS REJECTED\n*******\n",
-//       err,
-//       err.stack
-//     );
-//   }
+//     console.error('*******\nTHE PROMISE WAS REJECTED\n*******\n', err, err.stack);
+//   },
+// );
+
+// Test updateMCDBWithCorrectFDBInfo
+// This should make MCDB match what is presented in the FDBs.
+// mc.updateMCDBWithCorrectFDBInfo(fdbIps).then(
+//   function(items) {
+//     console.info('The promise was fulfilled with items!', items);
+//   },
+//   function(err) {
+//     console.error('*******\nTHE PROMISE WAS REJECTED\n*******\n', err, err.stack);
+//   },
 // );

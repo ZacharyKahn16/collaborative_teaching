@@ -16,7 +16,28 @@ export function insertedFile(
   ownerId: string,
 ) {
   return fs.addToCollection(FILE_COLLECTION, {
-    // Is there a reason timestamp didn't have a key before?
+    fileCreationTime: timestamp,
+    fdbLocations: fdbLocations,
+    courseIds: courseIds,
+    readOnlyUserIDs: readOnlyUserIds,
+    name: fileName,
+    fileHash: fileHash,
+    ownerId: ownerId,
+  });
+}
+
+// Insert new doc with specified fileId.
+export function insertFileWithSpecifiedFileId(
+  fileId: string,
+  timestamp: number,
+  fdbLocations: string[],
+  courseIds: string[],
+  readOnlyUserIds: string[],
+  fileName: string,
+  fileHash: string,
+  ownerId: string,
+) {
+  return fs.setDocument(FILE_COLLECTION, fileId, {
     fileCreationTime: timestamp,
     fdbLocations: fdbLocations,
     courseIds: courseIds,
@@ -28,10 +49,20 @@ export function insertedFile(
 }
 
 // Update file
-export function updateFile(fileId: string, timestamp: number, fileHash: string) {
+export function updateFile(
+  fileId: string,
+  timestamp: number,
+  fdbLocations: string[],
+  fileName: string,
+  fileHash: string,
+  ownerId: string,
+) {
   return fs.updateDocument(FILE_COLLECTION, fileId, {
     fileCreationTime: timestamp,
+    fdbLocations: fdbLocations,
+    name: fileName,
     fileHash: fileHash,
+    ownerId: ownerId,
   });
 }
 
@@ -93,6 +124,15 @@ export function addReadOnlyId(fileId: string, readOnlyId: string) {
 export function deleteReadOnlyId(fileId: string, readOnlyId: string) {
   return fs.updateDocument(FILE_COLLECTION, fileId, {
     readOnlyUserIDs: admin.firestore.FieldValue.arrayRemove(readOnlyId),
+  });
+}
+
+// Get all files
+// returns: [{docId, docData}]
+// Refer to: https://firebase.google.com/docs/reference/js/firebase.firestore.QuerySnapshot#docs
+export function getAllFiles() {
+  return fs.getCollection(FILE_COLLECTION).then((snapshot) => {
+    return snapshot.docs;
   });
 }
 
@@ -171,7 +211,7 @@ export function changeCourseDescription(courseId: string, newDescription: string
 
 // Get all courses
 // returns: [{courseId, courseName}]
-export function getAllFiles() {
+export function getAllCourses() {
   return fs.getCollection(COURSE_COLLECTION).then((snapshot) => {
     return snapshot.forEach((doc) => {
       return { courseId: doc.id, fileName: doc.data().courseName };
