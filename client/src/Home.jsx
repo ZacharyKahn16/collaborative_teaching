@@ -19,15 +19,6 @@ import LoginPage from "./LoginPage";
 import LoadingScreen from "./LoadingScreen";
 import { Switch, Redirect } from "react-router-dom";
 import axios from 'axios';
-import Avatar from "@material-ui/core/Avatar";
-import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
-import TextField from "@material-ui/core/TextField";
-import FormControlLabel from "@material-ui/core/FormControlLabel";
-import Checkbox from "@material-ui/core/Checkbox";
-import Button from "@material-ui/core/Button";
-import Grid from "@material-ui/core/Grid";
-import Box from "@material-ui/core/Box";
-import Container from "@material-ui/core/Container";
 import io from "socket.io-client";
 
 function Copyright() {
@@ -238,8 +229,6 @@ class Home extends React.Component {
 
   connectMaster(primaryIp, backupIp) {
     console.log("trying to connect................")
-    // console.log(primaryIp)
-    // console.log(backupIp)
     axios.get(primaryIp)
         .then(
             (result) => {
@@ -248,9 +237,9 @@ class Home extends React.Component {
                 console.log("null")
                 this.setState({
                   isLoaded: false,
-                  attempts: this.state.attempts + 1
+                  connectionAttempts: this.state.connectionAttempts + 1
                 });
-                if (this.state.attempts > 3) {
+                if (this.state.connectionAttempts > 3) {
                   console.log("give up")
                 } else {
                   setTimeout(() => {
@@ -268,16 +257,15 @@ class Home extends React.Component {
               this.setState({
                 isLoaded: false,
                 error,
-                attempts: this.state.attempts + 1
+                connectionAttempts: this.state.connectionAttempts + 1
               });
-              if (this.state.attempts > 3) {
-                console.log("give up")
-                console.log(error)
+              console.log(this.state.connectionAttempts)
+              if (this.state.connectionAttempts > 3) {
+                console.log("give up");
               } else {
                 setTimeout(() => {
                   this.connectMaster(backupIp, primaryIp)
                 }, 5000);
-                // this.connectMaster(backupIp, primaryIp)
               }
             }
         )
@@ -326,6 +314,7 @@ class Home extends React.Component {
     }
 
     console.log(this.state.workerInfo);
+    const {userInfo} = this.props;
     return (
         this.state.loginStatus ?
             <ThemeProvider theme={theme}>
@@ -350,11 +339,11 @@ class Home extends React.Component {
                   <main className={this.props.classes.main}>
                     <Switch>
                       <Redirect exact from="/" to="my-courses"/>
-                      <Route exact path={"/my-courses"} render={(props) => <Courses {...props} workerInfo={this.state.workerInfo}/>}/>
+                      <Route exact path={"/my-courses"} render={(props) => <Courses {...props} workerInfo={this.state.workerInfo} userName={userInfo}/>}/>
                       {/*<Route path={"/my-courses"} component={Courses}/>*/}
-                      <Route path={"/my-files"} render={(props) => <MyFiles {...props} workerInfo={this.state.workerInfo} socket={this.state.socket}/>}/>
+                      <Route path={"/my-files"} render={(props) => <MyFiles {...props} workerInfo={this.state.workerInfo} socket={this.state.socket} userName={userInfo}/>}/>
                       {/*<Route path={"/my-files"} component={MyFiles}/>*/}
-                      <Route path={"/browse-content"} render={(props) => <BrowseContent {...props} workerInfo={this.state.workerInfo}/>}/>
+                      <Route path={"/browse-content"} render={(props) => <BrowseContent {...props} workerInfo={this.state.workerInfo} userName={userInfo}/>}/>
                       {/*<Route path={"/browse-content"} component={BrowseContent}/>*/}
                       <Route path={"/course-page/"} render={(props) => <ViewCourse {...props} workerInfo={"this.state.workerInfo"}/>}/>
                     </Switch>

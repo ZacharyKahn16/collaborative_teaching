@@ -13,6 +13,7 @@ import { withStyles } from "@material-ui/core/styles";
 import SearchIcon from "@material-ui/icons/Search";
 import RefreshIcon from "@material-ui/icons/Refresh";
 import Header from "./Header";
+import { writeNewFile, listen, retrieveFile } from "./service";
 
 const styles = theme => ({
   paper: {
@@ -77,13 +78,14 @@ class BrowseContent extends React.Component {
   }
 
   render() {
-    const { classes, workerInfo } = this.props;
+    const { classes, workerInfo, userName } = this.props;
     return(
         <Paper className={classes.paper}>
           <Header
               onDrawerToggle={this.handleDrawerToggle}
               setTitle={{name:"Content Bank"}}
               setWorkerDis={{name: workerInfo.id}}
+              setUsername={{name: userName}}
           />
           <AppBar
               className={classes.searchBar}

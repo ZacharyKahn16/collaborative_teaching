@@ -19,6 +19,7 @@ import UploadCard from "./UploadCard";
 import Modal from "@material-ui/core/Modal";
 import Backdrop from "@material-ui/core/Backdrop";
 import Fade from "@material-ui/core/Fade";
+import LoadingScreen from "./LoadingScreen";
 
 const styles = theme => ({
   paper: {
@@ -51,7 +52,7 @@ class MyFiles extends React.Component {
     super(props);
     this.state = {
       mobileOpen: false,
-      uploadModalOpen: false,
+      uploadModalOpen: false
     };
 
     this.handleOpenUploadModal = this.handleOpenUploadModal.bind(this);
@@ -76,16 +77,21 @@ class MyFiles extends React.Component {
     }));
   };
 
+
   componentDidMount() {
     // console.log("mounted")
   }
   render() {
-    const { classes, workerInfo, socket } = this.props;
-    // console.log("Socket received:");
-    // console.log(socket);
+    const { classes, workerInfo, socket, userName } = this.props;
+    console.log("Socket received:");
+    console.log(socket);
+    if (socket == null) {
+      return <LoadingScreen />;
+    }
+
     return(
         <Paper className={classes.paper}>
-          <Header onDrawerToggle={this.handleDrawerToggle} setTitle={{name:"My Files"}} setWorkerDis={{name: workerInfo.id}} />
+          <Header onDrawerToggle={this.handleDrawerToggle} setTitle={{name:"My Files"}} setWorkerDis={{name: workerInfo.id}} setUsername={{name: userName}} />
           <AppBar
               className={classes.searchBar}
               position="static"
@@ -140,7 +146,7 @@ class MyFiles extends React.Component {
             </Toolbar>
           </AppBar>
           <div className={classes.contentWrapper}>
-            <FileList />
+            <FileList socket={socket} />
           </div>
         </Paper>
     );

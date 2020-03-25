@@ -210,8 +210,7 @@ class MyCourses extends React.Component {
   }
 
   render() {
-    const { classes, workerInfo } = this.props;
-    console.log(workerInfo);
+    const { classes, workerInfo, userName } = this.props;
 
     return (
         <Paper className={classes.paper}>
@@ -219,6 +218,7 @@ class MyCourses extends React.Component {
               onDrawerToggle={this.handleDrawerToggle}
               setTitle={{name: "My Courses"}}
               setWorkerDis={{name: workerInfo.id}}
+              setUsername={{name: userName}}
           />
           <AppBar
               className={this.props.classes.searchBar}

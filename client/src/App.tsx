@@ -1,11 +1,12 @@
 import React, { useContext } from "react";
-import { BrowserRouter, Route } from "react-router-dom";
+import {BrowserRouter, Route, Switch} from "react-router-dom";
 import Home from "./Home";
 import LoginPage from "./LoginPage";
 import { UserContext } from "./UserContext";
 import "./Styles/App.css";
 import "./Styles/Navigator.css";
 import "./Styles/MyCourses.css";
+import Courses from "./MyCourses";
 
 class App extends React.Component {
   static contextType = UserContext;
@@ -20,7 +21,7 @@ class App extends React.Component {
 
     return (
       <BrowserRouter>
-        <Route exact component={Home} />
+        <Route exact render={(props) => <Home {...props} userInfo={user.name}/>}/>
       </BrowserRouter>
     );
   }

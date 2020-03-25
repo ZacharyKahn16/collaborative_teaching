@@ -46,7 +46,7 @@ class Header extends React.Component {
   }
 
   render() {
-    const { classes, onDrawerToggle, setTitle, setWorkerDis } = this.props;
+    const { classes, onDrawerToggle, setTitle, setWorkerDis, setUsername } = this.props;
     return (
         <React.Fragment>
           <AppBar color="primary" position="sticky" elevation={0}>
@@ -79,7 +79,7 @@ class Header extends React.Component {
                 </Grid>
                 <Grid item>
                   <IconButton color="inherit" className={classes.iconButtonAvatar}>
-                    <Avatar src="/static/images/avatar/1.jpg" alt="My Avatar" />
+                    <Avatar src="/static/images/avatar/1.jpg" alt={setUsername.name} />
                   </IconButton>
                 </Grid>
               </Grid>
@@ -145,7 +145,8 @@ Header.propTypes = {
   classes: PropTypes.object.isRequired,
   onDrawerToggle: PropTypes.func.isRequired,
   setTitle: PropTypes.object.isRequired,
-  setWorkerDis: PropTypes.object.isRequired
+  setWorkerDis: PropTypes.object.isRequired,
+  setUsername: PropTypes.object.isRequired
 };
 
 export default withStyles(styles)(Header);
