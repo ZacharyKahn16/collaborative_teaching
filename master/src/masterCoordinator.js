@@ -13,7 +13,7 @@ const { Logger } = require('./Logger');
 // TODO: MAKE SURE OWNERID IS ADDED TO WORKERS.
 // TODO: DECIDE IF fileId is inserted as string or int into FDB.
 
-module.exports = class MasterCoordinator {
+export class MasterCoordinator {
   /**
    * @class
    **/
@@ -870,7 +870,7 @@ module.exports = class MasterCoordinator {
    *
    * @returns {Promise} Promise returns 0 on success, otherwise throws error.
    **/
-  updateMCDBWithCorrectFDBInfo(fdbIps) {
+  makeMCDBWithCorrectInfo(fdbIps) {
     let _this = this;
     // organizedDocData structure: {docId: [[fdbIp, hash, ts, ownerId, fileName]]}
     return this.getAllFDBsOrganizedByDocId(fdbIps).then(
@@ -1109,4 +1109,4 @@ module.exports = class MasterCoordinator {
       console.error(err);
     }
   }
-};
+}
