@@ -246,7 +246,17 @@ class Home extends React.Component {
               console.log("worked!!")
               if (result.data.worker == null) {
                 console.log("null")
-                this.connectMaster(backupIp, primaryIp)
+                this.setState({
+                  isLoaded: false,
+                  attempts: this.state.attempts + 1
+                });
+                if (this.state.attempts > 3) {
+                  console.log("give up")
+                } else {
+                  setTimeout(() => {
+                    this.connectMaster(backupIp, primaryIp)
+                  }, 5000);
+                }
               } else {
                 console.log(result)
                 this.connectWorker(result.data.worker)
