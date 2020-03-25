@@ -7,6 +7,8 @@ import {
   retrieveFdbLocations,
   createReplicas,
   replicasNeeded,
+  sendErrorMessage,
+  sendSuccessMessage,
 } from './HelperFunctions/WorkerUtilities';
 
 import express from 'express';
@@ -28,9 +30,6 @@ const RETRIEVE_FILE = 'Retrieve File';
 const INSERT_FILE = 'Insert File';
 const UPDATE_FILE = 'Update File';
 const DELETE_FILE = 'Delete File';
-const SERVER_RESP = 'Server Response';
-const SUCCESS = 'success';
-const FAILED = 'failed';
 
 // Master events
 const DATABASE_LIST = 'database-instances';
@@ -48,34 +47,33 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
   socket.on(RETRIEVE_FILE, async function(req) {
     const docId = req.docId;
     const requestId = req.requestId;
+    if (!docId || !requestId) {
+      sendErrorMessage(socket, requestId, 'Missing request parameters');
+      return;
+    }
 
     const fdbLocations: any[] = await retrieveFdbLocations(socket, docId, requestId);
     if (!fdbLocations) {
-      // Can't return here if the fdbLocations are empty
+      sendErrorMessage(socket, requestId, 'Error finding FDB locations in the MCDB');
       return;
     }
 
     shuffle(fdbLocations);
     const fdbRef = findFdbUsingIp(fdbLocations[0], fdbList);
-
     if (!fdbRef) {
+      sendErrorMessage(socket, requestId, 'Error finding FDB IP in current Fdb List');
       return;
     }
 
+    /**
+      TODO: Show what success response will look like
+     */
     fdbRef.retrieveFile(docId).then(
       function(resp: any) {
-        socket.emit(SERVER_RESP, {
-          requestId,
-          status: SUCCESS,
-          message: resp,
-        });
+        sendSuccessMessage(socket, requestId, resp);
       },
       function(err: any) {
-        socket.emit(SERVER_RESP, {
-          requestId,
-          status: FAILED,
-          message: `Error retrieving file ${err}`,
-        });
+        sendErrorMessage(socket, requestId, `Error retrieving file ${err}`);
         throw err;
       },
     );
@@ -97,18 +95,19 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
   socket.on(INSERT_FILE, async function(req) {
     const timeStamp = Date.now();
     const fileName = req.fileName;
-    const fileContents = req.fileContents;
     const fileType = req.fileType; // Infer type later
+    const fileContents = req.fileContents;
+    const fileHash = req.fileHash; // Generate File hash later
     const requestId = req.requestId;
     const ownerId = req.ownerId;
-    const fileHash = req.fileHash; // Generate File hash later
+
+    if (!fileName || !fileType || !fileContents || !fileHash || !requestId || !ownerId) {
+      sendErrorMessage(socket, requestId, 'Missing request parameters');
+      return;
+    }
 
     if (fdbList.length <= 0) {
-      socket.emit(SERVER_RESP, {
-        requestId,
-        status: FAILED,
-        message: 'Not enough active FDBs',
-      });
+      sendErrorMessage(socket, requestId, 'Not enough active FDBs');
       return;
     }
 
@@ -126,11 +125,7 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
       });
 
     if (!insertSuccess) {
-      socket.emit(SERVER_RESP, {
-        requestId,
-        status: FAILED,
-        message: 'Unable to create an entry into the MCDB, try again',
-      });
+      sendErrorMessage(socket, requestId, 'Unable to create an entry into the MCDB, try again');
       return;
     }
 
@@ -171,9 +166,14 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
     const requestId = req.requestId;
     const fileHash = req.fileHash; // Generate File hash later
 
+    if (!docId || !fileName || !fileContents || !fileType || !requestId || !fileHash) {
+      sendErrorMessage(socket, requestId, 'Missing request parameters');
+      return;
+    }
+
     const fdbLocations: any[] = await retrieveFdbLocations(socket, docId, requestId);
     if (!fdbLocations) {
-      // Can't return here if the fdbLocations are empty
+      sendErrorMessage(socket, requestId, 'Error finding FDB locations in the MCDB');
       return;
     }
 
@@ -181,7 +181,6 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
     const missingFdbIps: string[] = [];
     for (let i = 0; i < fdbLocations.length; i++) {
       const fdbRef = findFdbUsingIp(fdbLocations[i], fdbList);
-
       if (!fdbRef) {
         missingFdbIps.push(fdbLocations[i]);
         continue;
@@ -199,10 +198,7 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
 
     // If it was unable to update any FDB, create replicas elsewhere
     if (successfulUpdates.length <= 0) {
-      socket.emit(SERVER_RESP, {
-        requestId,
-        message: 'No successful updates into FDBs',
-      });
+      sendErrorMessage(socket, requestId, 'No successful updates into FDBs');
       LOGGER.debug('No successful updates into FDBs');
 
       const replicasToMake = replicasNeeded(fdbList);
@@ -221,11 +217,11 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
       return;
     }
 
-    socket.emit(SERVER_RESP, {
+    sendSuccessMessage(
+      socket,
       requestId,
-      status: SUCCESS,
-      message: `Successful updates into ${successfulUpdates.map((elem) => elem.getIp())}`,
-    });
+      `Successful updates into ${successfulUpdates.map((elem) => elem.getIp())}`,
+    );
 
     // If the MCDBs entry for FDB FileLocations of a file has a mismatch
     // between the current FDBs that are alive in the system, populate
@@ -244,7 +240,7 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
         fileType,
         timeStamp,
         requestId,
-        successfulUpdates,
+        successfulUpdates, // Avoid the previous successful updates
       );
     }
   });
