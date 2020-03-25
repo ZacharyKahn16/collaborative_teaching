@@ -1,13 +1,17 @@
 /**
  * Classes for master coordinator.
  **/
+import * as mcdb from './MCDB';
+// import { insertedFile, addFdbLocation, getFile } from './MCDB';
+// const mcdb = require('./MCDB');
 
 const MongoClient = require('mongodb').MongoClient;
-// TODO: Uncomment.
-// const { Logger } = require("./Logger");
+const { Logger } = require('./Logger');
 
 // TODO: Make sure to put note that fbdIps must be passed in.
-// TODO: Using LOGGER.info changer to Logger.
+// TODO: Using console.info changer to Logger.
+// TODO: MAKE SURE OWNERID IS ADDED TO WORKERS.
+// TODO: DECIDE IF fileId is inserted as string or int into FDB.
 
 module.exports = class MasterCoordinator {
   /**
@@ -45,7 +49,7 @@ module.exports = class MasterCoordinator {
           return dbo.collection(_fileCollectionName);
         },
         function(err) {
-          LOGGER.error('ERROR CONNECTING TO DB', err);
+          console.error('ERROR CONNECTING TO DB', err);
           throw err;
         },
       )
@@ -54,7 +58,7 @@ module.exports = class MasterCoordinator {
           return collection.findOne(query);
         },
         function(err) {
-          LOGGER.error('ERROR RETRIEVING DATA FROM DB', err);
+          console.error('ERROR RETRIEVING DATA FROM DB', err);
           throw err;
         },
       )
@@ -62,7 +66,7 @@ module.exports = class MasterCoordinator {
         return items;
       })
       .catch(function(err) {
-        LOGGER.error('Something went wrong with retrieval.', err);
+        console.error('Something went wrong with retrieval.', err);
         throw err;
       })
       .finally(function() {
@@ -80,10 +84,11 @@ module.exports = class MasterCoordinator {
    * @param {String} fileHash Hash of the file.
    * @param {String} fileType Type of file.
    * @param {Integer} ts Timestamp.
+   * @param {String} ownerId Owner of file.
    *
    * @return {Promise} Promise that returns if insertion was a success, error otherwise.
    **/
-  insertFile(docId, fdbIp, fileName, fileContents, fileHash, fileType, ts) {
+  insertFile(docId, fdbIp, fileName, fileContents, fileHash, fileType, ts, ownerId) {
     const _dbName = this.dbName;
     const _fileCollectionName = this.fileCollectionName;
     const url = `mongodb://${fdbIp}:80`;
@@ -94,6 +99,7 @@ module.exports = class MasterCoordinator {
       fileHash: fileHash,
       fileType: fileType,
       fileCreationTime: ts,
+      ownerId: ownerId,
     };
 
     let _db;
@@ -105,7 +111,7 @@ module.exports = class MasterCoordinator {
           return dbo.collection(_fileCollectionName);
         },
         function(err) {
-          LOGGER.info('ERROR CONNECTING TO DB');
+          console.info('ERROR CONNECTING TO DB');
           throw err;
         },
       )
@@ -114,7 +120,7 @@ module.exports = class MasterCoordinator {
           return collection.insertOne(fDBInsertInfo);
         },
         function(err) {
-          LOGGER.info('ERROR INSERTING INTO DB');
+          console.info('ERROR INSERTING INTO DB');
           throw err;
         },
       )
@@ -122,8 +128,8 @@ module.exports = class MasterCoordinator {
         return resp;
       })
       .catch(function(err) {
-        LOGGER.info('ERROR: Something went wrong with insertion.');
-        LOGGER.info(err);
+        console.info('ERROR: Something went wrong with insertion.');
+        console.info(err);
         throw err;
       })
       .finally(function() {
@@ -165,7 +171,7 @@ module.exports = class MasterCoordinator {
           return dbo.collection(_fileCollectionName);
         },
         function(err) {
-          LOGGER.error('ERROR CONNECTING TO DB', err);
+          console.error('ERROR CONNECTING TO DB', err);
           throw err;
         },
       )
@@ -175,7 +181,7 @@ module.exports = class MasterCoordinator {
           return collection.updateOne(query, newUpdate, { upsert: true });
         },
         function(err) {
-          LOGGER.error('ERROR UPDATING DOCUMENT.', err);
+          console.error('ERROR UPDATING DOCUMENT.', err);
           throw err;
         },
       )
@@ -183,7 +189,7 @@ module.exports = class MasterCoordinator {
         return resp;
       })
       .catch(function(err) {
-        LOGGER.error('ERROR: Something went wrong with update.', err);
+        console.error('ERROR: Something went wrong with update.', err);
         throw err;
       })
       .finally(function() {
@@ -200,8 +206,6 @@ module.exports = class MasterCoordinator {
    * @return {Promise} Promise that returns documents on success, error otherwise.
    **/
   deleteFile(docId, fdbIp) {
-    // TODO: use FDBIP to connect to FDB. For now, use localhost.
-    // const url = "mongodb://localhost:27017/";
     const url = `mongodb://${fdbIp}:80`;
     const _dbName = this.dbName;
     const _fileCollectionName = this.fileCollectionName;
@@ -216,7 +220,7 @@ module.exports = class MasterCoordinator {
           return dbo.collection(_fileCollectionName);
         },
         function(err) {
-          LOGGER.info('ERROR CONNECTING TO DB');
+          console.info('ERROR CONNECTING TO DB');
           throw err;
         },
       )
@@ -225,7 +229,7 @@ module.exports = class MasterCoordinator {
           return collection.deleteOne(query);
         },
         function(err) {
-          LOGGER.info('ERROR DELETING DATA FROM DB');
+          console.info('ERROR DELETING DATA FROM DB');
           throw err;
         },
       )
@@ -233,8 +237,8 @@ module.exports = class MasterCoordinator {
         return items;
       })
       .catch(function(err) {
-        LOGGER.info('ERROR: Something went wrong with deletion.');
-        LOGGER.info(err);
+        console.info('ERROR: Something went wrong with deletion.');
+        console.info(err);
         throw err;
       })
       .finally(function() {
@@ -263,7 +267,7 @@ module.exports = class MasterCoordinator {
           return dbo.collection(_fileCollectionName);
         },
         function(err) {
-          LOGGER.error('ERROR CONNECTING TO DB', err);
+          console.error('ERROR CONNECTING TO DB', err);
           throw err;
         },
       )
@@ -278,11 +282,12 @@ module.exports = class MasterCoordinator {
               fileName: 1,
               fileHash: 1,
               fileCreationTime: 1,
+              ownerId: 1,
             })
             .toArray();
         },
         function(err) {
-          LOGGER.error('ERROR RETRIEVING DATA FROM DB', err);
+          console.error('ERROR RETRIEVING DATA FROM DB', err);
           throw err;
         },
       )
@@ -290,7 +295,7 @@ module.exports = class MasterCoordinator {
         return items;
       })
       .catch(function(err) {
-        LOGGER.error('ERROR: Something went wrong with retrieval.', err);
+        console.error('ERROR: Something went wrong with retrieval.', err);
         throw err;
       })
       .finally(function() {
@@ -304,7 +309,7 @@ module.exports = class MasterCoordinator {
    * For an FDB in network, query ot and store the resulting information
    * to use for updating out of sync files.
    * Data structure has following format:
-   * organizedDocData = { docId : [[fdbIp, fileHash, fileCreationTime]] }
+   * organizedDocData = { docId : [[fdbIp, fileHash, fileCreationTime, ownerId, fileName]] }
    *
    * @param {String} FDBIp IP of FDB node.
    *
@@ -315,29 +320,30 @@ module.exports = class MasterCoordinator {
   organizeByDocId(fdbIp) {
     // Go through each FDB in network, call getFDBInfo and then store the info.
     let organizedDocData = {};
-    let _id, docId, fileName, fileHash, fileCreationTime;
+    let _id, docId, fileName, fileHash, fileCreationTime, ownerId;
 
     return this.getFDBInfo(fdbIp).then(
       function(items) {
         for (let i = 0; i < items.length; i++) {
-          LOGGER.info(items[i]);
+          console.info(items[i]);
 
           docId = items[i].docId;
           fileName = items[i].fileName;
           fileHash = items[i].fileHash;
           fileCreationTime = items[i].fileCreationTime;
+          ownerId = items[i].ownerId;
 
           if (docId in organizedDocData) {
-            organizedDocData[docId].push([fdbIp, fileHash, fileCreationTime]);
+            organizedDocData[docId].push([fdbIp, fileHash, fileCreationTime, ownerId, fileName]);
           } else {
-            organizedDocData[docId] = [[fdbIp, fileHash, fileCreationTime]];
+            organizedDocData[docId] = [[fdbIp, fileHash, fileCreationTime, ownerId, fileName]];
           }
         }
 
         return organizedDocData;
       },
       function(err) {
-        LOGGER.error('Error: could not grab data for FDB.', err);
+        console.error('Error: could not grab data for FDB.', err);
         throw err;
       },
     );
@@ -349,7 +355,7 @@ module.exports = class MasterCoordinator {
    * For each FDB in network, query them and store the resulting information
    * to use for updating out of sync files.
    * Data structure has following format:
-   * organizedDocData = { docId : [[fdbIp, fileHash, fileCreationTime]] }
+   * organizedDocData = { docId : [[fdbIp, fileHash, fileCreationTime, ownerId, fileName]] }
    *
    * @param {Array} fbdIps List of fdbIps, eg. ['1.1.1.1']
    *
@@ -372,7 +378,7 @@ module.exports = class MasterCoordinator {
         // Get organized data for all FDBs.
         return Promise.all(retrievePromises).then(
           (vals) => {
-            LOGGER.info('SUCCESSFULLY RETRIEVED ALL DATA FROM EACH FDB.');
+            console.info('SUCCESSFULLY RETRIEVED ALL DATA FROM EACH FDB.');
 
             // Merge results from all FDBs.
             // Example of objects to merge.
@@ -395,11 +401,11 @@ module.exports = class MasterCoordinator {
             return allData;
           },
           (err) => {
-            LOGGER.error('ERROR WHEN RETRIEVING DATA.', err);
+            console.error('ERROR WHEN RETRIEVING DATA.', err);
           },
         );
       } catch (err) {
-        LOGGER.error(err);
+        console.error(err);
       }
     })();
   }
@@ -423,7 +429,7 @@ module.exports = class MasterCoordinator {
         // Number of replicas dynamically to n/3 + 1.
         let replicaUpdateInfo = {};
         const desiredReplicas = Math.floor(fdbIps.length / 3) + 1;
-        LOGGER.info('GET REPLICA UPDATE INFO');
+        console.info('GET REPLICA UPDATE INFO');
         for (let fileId in organizedDocData) {
           // Positive difference indicates how many replicas need to be added
           // for a given docId. Negative difference tells us how many replicas
@@ -436,7 +442,7 @@ module.exports = class MasterCoordinator {
         };
       },
       function(err) {
-        LOGGER.error(err);
+        console.error(err);
         throw err;
       },
     );
@@ -463,45 +469,45 @@ module.exports = class MasterCoordinator {
           const fdbsForFile = organizedDocData[fileId].map((ele) => ele[0]);
 
           if (rep > 0) {
-            LOGGER.info('MAKE ' + rep + ' more replicas');
+            console.info('MAKE ' + rep + ' more replicas');
             // Choose rep fdbIPs that don't already have the given fileId.
             // Only add file to FDBs that don't already have the file.
             const newFdbChoices = fdbIpList.filter((ele) => !fdbsForFile.includes(ele));
 
-            LOGGER.info('REPLICAS TO CHOOSE');
-            LOGGER.info(newFdbChoices);
+            console.info('REPLICAS TO CHOOSE');
+            console.info(newFdbChoices);
 
             // Get list of FDBs to add fileId to.
             const replicationList = _this._getRandomFDBs(newFdbChoices, rep);
-            LOGGER.info('FileID: ' + fileId);
-            LOGGER.info('Replication list: ');
-            LOGGER.info(replicationList);
+            console.info('FileID: ' + fileId);
+            console.info('Replication list: ');
+            console.info(replicationList);
 
             // Retrieve correct replica and copy to other FDBs.
             (async () => {
               try {
                 const resp = await _this._retrieveAndInsert(fileId, fdbsForFile, replicationList);
-                LOGGER.info('RESPONSE FROM NEW FUNC: ' + resp);
+                console.info('RESPONSE FROM NEW FUNC: ' + resp);
               } catch (err) {
-                LOGGER.error(err);
+                console.error(err);
               }
             })();
           } else if (rep < 0) {
-            LOGGER.info('REMOVE ' + -1 * rep + ' replicas');
+            console.info('REMOVE ' + -1 * rep + ' replicas');
 
             const deletions = -1 * rep;
             // Get list of FDBs to delete fileId from.
             const deletionList = _this._getRandomFDBs(fdbsForFile, deletions);
-            LOGGER.info('DELETEION LIST');
-            LOGGER.info(deletionList);
+            console.info('DELETEION LIST');
+            console.info(deletionList);
 
             // Delete extra file copies.
             (async () => {
               try {
                 const resp = await _this._deleteExtraFiles(fileId, deletionList);
-                LOGGER.info('RESPONSE FROM NEW FUNC: ' + resp);
+                console.info('RESPONSE FROM NEW FUNC: ' + resp);
               } catch (err) {
-                LOGGER.error(err);
+                console.error(err);
               }
             })();
           }
@@ -510,7 +516,7 @@ module.exports = class MasterCoordinator {
         return 0;
       },
       function(err) {
-        LOGGER.error(err);
+        console.error(err);
         throw err;
       },
     );
@@ -533,7 +539,7 @@ module.exports = class MasterCoordinator {
     // if additional replications (or deletions) needed is greater than number
     // of FDB choices, set replications (or deletions) equal to number of choices.
     if (rep > opts) {
-      LOGGER.info(
+      console.info(
         'Trying to add/delete from more fdbs than available. Resetting rep to max allowable value for given fdb.',
       );
       rep = opts;
@@ -572,6 +578,7 @@ module.exports = class MasterCoordinator {
       let correctFileContents = retData.fileContents;
       let correctFileType = retData.fileType;
       let lastestTs = parseInt(retData.fileCreationTime);
+      let correctOwnerId = retData.ownerId;
       let updatePromises = [];
 
       // Write this data to all files.
@@ -587,6 +594,7 @@ module.exports = class MasterCoordinator {
             correctFileContents,
             correctFileType,
             lastestTs,
+            correctOwnerId,
           ),
         );
       }
@@ -594,15 +602,15 @@ module.exports = class MasterCoordinator {
       // Create replicas.
       Promise.all(updatePromises).then(
         (vals) => {
-          LOGGER.info('SUCCESSFULLY REPLICATED ALL COPIES FOR ' + fileId + '.');
+          console.info('SUCCESSFULLY REPLICATED ALL COPIES FOR ' + fileId + '.');
         },
         (err) => {
-          LOGGER.error('ERROR WHEN REPLICATING FILES.', err);
+          console.error('ERROR WHEN REPLICATING FILES.', err);
         },
       );
       return 0;
     } catch (err) {
-      LOGGER.error(err);
+      console.error(err);
     }
   }
 
@@ -627,15 +635,15 @@ module.exports = class MasterCoordinator {
       // Delete replicas.
       Promise.all(updatePromises).then(
         (vals) => {
-          LOGGER.info('SUCCESSFULLY DELETED EXTRA COPIES FOR ' + fileId + '.');
+          console.info('SUCCESSFULLY DELETED EXTRA COPIES FOR ' + fileId + '.');
         },
         (err) => {
-          LOGGER.error('ERROR WHEN DELETING COPIES.', err);
+          console.error('ERROR WHEN DELETING COPIES.', err);
         },
       );
       return 0;
     } catch (err) {
-      LOGGER.error(err);
+      console.error(err);
     }
   }
 
@@ -647,7 +655,7 @@ module.exports = class MasterCoordinator {
    * for each file queried.
    *
    * Data structures returned:
-   * organizedDocData = { docId : [[fdbIp, fileHash, fileCreationTime]] }
+   * organizedDocData = { docId : [[fdbIp, fileHash, fileCreationTime, ownerId, fileName]] }
    * updateInfoPerFile = {docId: [fdbIpWithCorrectFile, corretHash, latestTs]}
    *
    * @param {Array} fbdIpList List of fdbIps, eg. ['1.1.1.1']
@@ -657,7 +665,7 @@ module.exports = class MasterCoordinator {
    *
    **/
   getCorrectFileInfo(fdbIps) {
-    // organizedDocData structure: {docId: [[fdbIp, hash, ts]]}
+    // organizedDocData structure: {docId: [[fdbIp, hash, ts, ownerId, fileName]]}
     return this.getAllFDBsOrganizedByDocId(fdbIps).then(
       function(organizedDocData) {
         let updateInfoPerFile = {};
@@ -685,7 +693,7 @@ module.exports = class MasterCoordinator {
         };
       },
       function(err) {
-        LOGGER.error(err);
+        console.error(err);
         throw err;
       },
     );
@@ -702,7 +710,7 @@ module.exports = class MasterCoordinator {
   getUpdatesForEachFile(fdbIps) {
     return this.getCorrectFileInfo(fdbIps).then(
       function({ organizedDocData, updateInfoPerFile }) {
-        // organizedDocData structure: {docId: [[fdbIp, hash, ts]]}
+        // organizedDocData structure: {docId: [[fdbIp, hash, ts, ownerId, fileName]]}
         // updateInfoPerFile structure: {docId: [fdbIpWithCorrectFile, corretHash, latestTs]}
         let updateList = {};
         // Go through each docId and add hashes that don't match correctHash to
@@ -734,7 +742,7 @@ module.exports = class MasterCoordinator {
         return { updateInfoPerFile: updateInfoPerFile, updateList: updateList };
       },
       function(err) {
-        LOGGER.error(err);
+        console.error(err);
         throw err;
       },
     );
@@ -745,6 +753,8 @@ module.exports = class MasterCoordinator {
    *
    * Main workhorse of making all files consistent. Queries all FBDs, sees
    * which file are out of sync, and updates any of of sync files.
+   *
+   * @param {Array} fdbIps List of fdbIps, eg. ['1.1.1.1']
    *
    * @returns {Promise} Promise returns 0 on success, otherwise throws error.
    **/
@@ -760,10 +770,10 @@ module.exports = class MasterCoordinator {
       .then(function({ updateInfoPerFile, updateList }) {
         // If updateList is empty, all files are consistent.
         if (Object.entries(updateList).length === 0 && updateList.constructor === Object) {
-          LOGGER.info('All files consistent already.');
+          console.info('All files consistent already.');
           return 0;
         }
-        LOGGER.info('Files are inconsistent, fixing this now.');
+        console.info('Files are inconsistent, fixing this now.');
 
         _updateInfoPerFile = updateInfoPerFile;
         _updateList = updateList;
@@ -771,13 +781,13 @@ module.exports = class MasterCoordinator {
       })
       .then(
         function(status) {
-          LOGGER.info('STATUS: ' + status);
+          console.info('STATUS: ' + status);
           if (status === 0) {
             return 0;
           }
           // Need to update inconsistencies.
           // Go through each file and make updates to out of date FDBs
-          LOGGER.info('UPDATE INFO PER FILE', _updateInfoPerFile);
+          console.info('UPDATE INFO PER FILE', _updateInfoPerFile);
 
           // Loop through each docId in _updateList and for each docId
           // retrieve the correct update date file and
@@ -819,26 +829,284 @@ module.exports = class MasterCoordinator {
                 // Update all out of sync files.
                 Promise.all(updatePromises).then(
                   (vals) => {
-                    LOGGER.info(
+                    console.info(
                       'SUCCESSFULLY UPDATED ALL INCONSITENT COPIES FOR DOC ' + docId + '.',
                     );
                   },
                   (err) => {
-                    LOGGER.error('ERROR WHEN UPDATING INCONSISTENT FILES.', err);
+                    console.error('ERROR WHEN UPDATING INCONSISTENT FILES.', err);
                   },
                 );
               }
             } catch (err) {
-              LOGGER.error(err);
+              console.error(err);
             }
           })();
 
           return 0;
         },
         function(err) {
-          LOGGER.error(err);
+          console.error(err);
           throw err;
         },
       );
+  }
+
+  /**
+   * Make MCDB consistent with FDB info.
+   *
+   * FDBs contain the group truth. To handle byzantine failures, always ensure
+   * that the FDB and MCDB are in agreement.
+   * If the FDB has something the MCDB does not, the missing fileIds get added
+   * to the MCDB. If the MCDB has something the FDB does not, the extra fileIds
+   * get deleted from the MCDB.
+   * Finally, for all fileIds that are in both the FDB and MCDB, their contents
+   * are compared to make sure that they are in agreement.
+   *
+   * THIS FUNCTION CAN ONLY RUN AFTER makeCorrectNumberOfReplicas AND
+   * makeAllFileCopiesConsistent HAVE COMPLETED.
+   *
+   * @param {Array} fdbIps List of fdbIps, eg. ['1.1.1.1']
+   *
+   * @returns {Promise} Promise returns 0 on success, otherwise throws error.
+   **/
+  updateMCDBWithCorrectFDBInfo(fdbIps) {
+    let _this = this;
+    // organizedDocData structure: {docId: [[fdbIp, hash, ts, ownerId, fileName]]}
+    return this.getAllFDBsOrganizedByDocId(fdbIps).then(
+      function(organizedDocData) {
+        // Read all MCDB info in.
+        mcdb.getAllFiles().then(
+          // mcdbFiles: [{docId: str_id, docData: {all file data}}]
+          function(mcdbFiles) {
+            const mcdbFileIds = new Set(
+              mcdbFiles.map((doc) => {
+                return doc.id;
+              }),
+            );
+            const fdbFileIds = new Set(Object.keys(organizedDocData));
+
+            let fdbFileIdsArr = [...fdbFileIds];
+
+            const inFdbButNotMcdb = new Set(fdbFileIdsArr.filter((ele) => !mcdbFileIds.has(ele)));
+            const inMcdbButNotFdb = new Set([...mcdbFileIds].filter((ele) => !fdbFileIds.has(ele)));
+            const inBoth = new Set(fdbFileIdsArr.filter((ele) => mcdbFileIds.has(ele)));
+
+            // Sanity check.
+            if (inMcdbButNotFdb.size == 0) {
+              console.log('FDB has everything MCDB has, great!');
+            } else {
+              // Delete extra file ids from MCDB.
+              (async () => {
+                try {
+                  await _this.deleteExtras(inMcdbButNotFdb);
+                } catch (err) {
+                  console.error(err);
+                }
+              })();
+            }
+
+            // Sanity check.
+            if (inFdbButNotMcdb.size == 0) {
+              console.log('MCDB has everything FDBs have, great!');
+            } else {
+              // Add missing file ids to MCDB.
+              (async () => {
+                try {
+                  await _this.addMissingFileIds(organizedDocData, inFdbButNotMcdb);
+                } catch (err) {
+                  console.error(err);
+                }
+              })();
+            }
+
+            // Check all data in the FDBs and MCDB is consistent.
+            // FDBs have the ground truth, so if info does not match, update
+            // MCDB.
+            (async () => {
+              try {
+                await _this.updateMCDBwithCorrectFDBInfo(organizedDocData, mcdbFiles, inBoth);
+              } catch (err) {
+                console.error(err);
+              }
+            })();
+
+            return 0;
+          },
+          function(err) {
+            console.error(err);
+            throw err;
+          },
+        );
+      },
+      function(err) {
+        console.error(err);
+        throw err;
+      },
+    );
+  }
+
+  /**
+   * Delete fileIds in MCDB that are not in FDBs.
+   *
+   * @param {Set} inMcdbButNotFdb List of fileIds in MCDB but not in FDBs.
+   *
+   * @returns {Promise} Promise returns 0 on success, otherwise throws error.
+   **/
+  async deleteExtras(inMcdbButNotFdb) {
+    console.log('IN MCDB BUT NOT FDB');
+    console.log(inMcdbButNotFdb);
+    try {
+      let deletePromises = [];
+      // Loop through entries if there are any.
+      for (let extraFileId of inMcdbButNotFdb) {
+        // Delete fileIds in MCDB that are not found in any of the FDBs.
+        deletePromises.push(mcdb.deleteFile(extraFileId));
+      }
+
+      // Delete extra file IDs.
+      Promise.all(deletePromises).then(
+        (vals) => {
+          console.log('SUCCESSFULLY DELETED ERRONEOUS FILE IDS FROM MCDB.');
+        },
+        (err) => {
+          console.error('ERROR WHEN DELETING ERRONEOUS FILE IDS FROM MCDB.', err);
+        },
+      );
+      return 0;
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  /**
+   * Add fileIds to MCDB that are not in the MCDB but are in the FDBs.
+   *
+   * @param {Array} organizedDocData List of data for each fileId.
+   * @param {Set} inFdbButNotMcdb List of fileIds in FDBs but not in MCDB.
+   *
+   * @returns {Promise} Promise returns 0 on success, otherwise throws error.
+   **/
+  async addMissingFileIds(organizedDocData, inFdbButNotMcdb) {
+    console.log('IN FDB BUT NOT MCDB');
+    console.log(inFdbButNotMcdb);
+    try {
+      let addPromises = [];
+      for (let missingFileId of inFdbButNotMcdb) {
+        // Add fileIds to MCDB that are not in the MCDB but is in at least
+        // one of the FDBs.
+        // organizedDocData structure: {docId: [[fdbIp, hash, ts, ownerId, fileName]]}
+        // Since consistency checker has already ran by this point, it is fine to
+        // choose the first entry of the docData array.
+        let docData = organizedDocData[missingFileId];
+        let fileHash = docData[0][1];
+        let timestamp = Math.max(...docData.map((ele) => ele[2]));
+        let ownerId = docData[0][3];
+        let fileName = docData[0][4];
+        let fdbLocations = docData.map((ele) => ele[0]);
+        addPromises.push(
+          mcdb.insertFileWithSpecifiedFileId(
+            missingFileId,
+            timestamp,
+            fdbLocations,
+            [], // courseIds reset to empty
+            [], // readOnlyUserIds reset to empty
+            fileName,
+            fileHash,
+            ownerId,
+          ),
+        );
+      }
+
+      // Add missing file IDs.
+      Promise.all(addPromises).then(
+        (vals) => {
+          console.log('SUCCESSFULLY ADDED MISSING FILE IDS TO MCDB.');
+        },
+        (err) => {
+          console.error('ERROR WHEN ADDING MISSING FILE IDS TO MCDB.', err);
+        },
+      );
+      return 0;
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  /**
+   * Sync FDB and MCDB data.
+   *
+   * @param {Array} organizedDocData List of data for each fileId.
+   * @param {Array} mcdbFiles Data contained in MCDB, returned by firestore.
+   * @param {Set} inBoth List of fileIds in both FDBs and MCDB.
+   *
+   * @returns {Promise} Promise returns 0 on success, otherwise throws error.
+   **/
+  async updateMCDBwithCorrectFDBInfo(organizedDocData, mcdbFiles, inBoth) {
+    try {
+      // mcdbFiles: [{docId: str_id, docData: {all file data}}]
+      let mcdbFastLookUp = {};
+      // console.log(mcdbFiles);
+      for (let i = 0; i < mcdbFiles.length; i++) {
+        let doc = mcdbFiles[i];
+        mcdbFastLookUp[doc.id] = doc.data();
+      }
+
+      let updatePromises = [];
+      for (let fileId of inBoth) {
+        // Check that the following fields are the same:
+        // fileHash, timestamp, fdbLocations, ownerId, fileName
+        let docData = organizedDocData[fileId];
+        let fileHashFdb = docData[0][1];
+        let timestampFdb = Math.max(...docData.map((ele) => ele[2]));
+        let ownerIdFdb = docData[0][3];
+        let fileNameFdb = docData[0][4];
+        let fdbLocationsFdb = docData.map((ele) => ele[0]);
+
+        // Get MCDB data
+        let mcdbData = mcdbFastLookUp[fileId];
+        let fileHashMcdb = mcdbData.fileHash;
+        let timestampMcdb = mcdbData.fileCreationTime;
+        let ownerIdMcdb = mcdbData.ownerId;
+        let fileNameMcdb = mcdbData.name;
+        let fdbLocationsMcdb = mcdbData.fdbLocations;
+
+        // Make sure all entries are equal
+        if (
+          fileHashFdb === fileHashMcdb &&
+          timestampFdb === timestampMcdb &&
+          ownerIdFdb === ownerIdFdb &&
+          fileNameFdb === fileNameMcdb &&
+          fdbLocationsFdb.sort() === fdbLocationsFdb.sort()
+        ) {
+          console.log(fileNameFdb + ' is same in FDB and MCDB');
+        } else {
+          console.log(fileNameFdb + ' IS NOT SAME IN FDB AND MCDB.\nUpdating this now.');
+          updatePromises.push(
+            mcdb.updateFile(
+              fileId,
+              timestampFdb,
+              fdbLocationsFdb.sort(),
+              fileNameFdb,
+              fileHashFdb,
+              ownerIdFdb,
+            ),
+          );
+        }
+      }
+
+      // Update all inconsistencies between FDB and MCDB.
+      Promise.all(updatePromises).then(
+        (vals) => {
+          console.log('SUCCESSFULLY SYNCED FDB AND MCDB ENTRIES.');
+        },
+        (err) => {
+          console.error('ERROR WHEN SYNCING FDB AND MCDB ENTRIES.', err);
+        },
+      );
+      return 0;
+    } catch (err) {
+      console.error(err);
+    }
   }
 };
