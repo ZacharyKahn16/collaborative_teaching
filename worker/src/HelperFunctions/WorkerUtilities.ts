@@ -155,3 +155,27 @@ export async function retrieveFdbLocations(
 export function replicasNeeded(fdbList: AccessFDB[]): number {
   return Math.floor(fdbList.length / 3 + 1);
 }
+
+/**
+ * This function sends an ERROR message to the socket passed
+ * to it
+ */
+export function sendErrorMessage(socket: any, requestId: string, message: any) {
+  socket.emit(SERVER_RESP, {
+    requestId: requestId,
+    status: FAILED,
+    message: message,
+  });
+}
+
+/**
+ * This function sends a SUCCESS message to the socket passed
+ * to it
+ */
+export function sendSuccessMessage(socket: any, requestId: string, message: any) {
+  socket.emit(SERVER_RESP, {
+    requestId: requestId,
+    status: SUCCESS,
+    message: message,
+  });
+}
