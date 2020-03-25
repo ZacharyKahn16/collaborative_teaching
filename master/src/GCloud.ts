@@ -1,7 +1,7 @@
 import { exec } from 'shelljs';
 import moment from 'moment';
 import { LOGGER } from './Logger';
-// import { MasterCoordinator } from './masterCoordinator';
+import { MasterCoordinator } from './masterCoordinator';
 
 const ZONE = 'us-central1-a';
 const PROJECT_ID = 'collaborative-teaching';
@@ -11,7 +11,7 @@ const INSTANCE_TYPE = {
   DATABASE: 'database',
 };
 
-const REFRESH_DATA_INTERVAL = 2.5 * 60 * 1000; // 2.5 min (ms)
+const REFRESH_DATA_INTERVAL = 4 * 60 * 1000; // 2.5 min (ms)
 const TIME_TILL_ACTIVE = 8 * 60; // 8 min (s)
 
 export const NUM_MASTERS = 2;
@@ -44,7 +44,7 @@ export interface ComputeEngineInstance {
  */
 export class GCloud {
   private static gCloud: GCloud;
-  // private masterCoordinator: MasterCoordinator = new MasterCoordinator();
+  private masterCoordinator: MasterCoordinator = new MasterCoordinator();
 
   readonly id = process.env.NAME;
   thisInstance: ComputeEngineInstance | undefined = undefined;
@@ -279,15 +279,32 @@ export class GCloud {
     }
   }
 
-  checkReplication(): void {
-    // if (
-    //   this.thisInstance !== undefined &&
-    //   this.masterInstances.length === NUM_MASTERS &&
-    //   !this.amIResponder
-    // ) {
-    //   this.masterCoordinator.makeAllFileCopiesConsistent(this.databaseInstances).then();
-    //   // ADD ALL OTHER FUNCTION CALLS HERE;
-    // }
+  async checkReplication(): Promise<void> {
+    if (this.amICoordinator()) {
+      const ips = this.databaseInstances
+        .filter((instance) => {
+          return (
+            this.isInstanceHealthGood(instance) &&
+            instance.instanceServing === true &&
+            instance.instanceRunning
+          );
+        })
+        .map((instance) => {
+          return instance.publicIp;
+        });
+
+      try {
+        await this.masterCoordinator.makeAllFileCopiesConsistent(ips);
+      } catch (err) {}
+
+      try {
+        await this.masterCoordinator.makeCorrectNumberOfReplicas(ips);
+      } catch (err) {}
+
+      try {
+        await this.masterCoordinator.makeMCDBWithCorrectInfo(ips);
+      } catch (err) {}
+    }
   }
 
   createMaster(): void {
