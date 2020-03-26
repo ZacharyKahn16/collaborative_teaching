@@ -2,9 +2,6 @@
  * Classes for master coordinator.
  **/
 import * as mcdb from './MCDB';
-// import { insertedFile, addFdbLocation, getFile } from './MCDB';
-// const mcdb = require('./MCDB');
-
 const MongoClient = require('mongodb').MongoClient;
 const { LOGGER } = require('./Logger');
 
@@ -111,7 +108,7 @@ export class MasterCoordinator {
           return dbo.collection(_fileCollectionName);
         },
         function(err) {
-          LOGGER.info('ERROR CONNECTING TO DB');
+          LOGGER.error('ERROR CONNECTING TO DB', err);
           throw err;
         },
       )
@@ -120,7 +117,7 @@ export class MasterCoordinator {
           return collection.insertOne(fDBInsertInfo);
         },
         function(err) {
-          LOGGER.info('ERROR INSERTING INTO DB');
+          LOGGER.error('ERROR INSERTING INTO DB', err);
           throw err;
         },
       )
@@ -128,8 +125,7 @@ export class MasterCoordinator {
         return resp;
       })
       .catch(function(err) {
-        LOGGER.info('ERROR: Something went wrong with insertion.');
-        LOGGER.info(err);
+        LOGGER.error('ERROR: Something went wrong with insertion.', err);
         throw err;
       })
       .finally(function() {
@@ -221,7 +217,7 @@ export class MasterCoordinator {
           return dbo.collection(_fileCollectionName);
         },
         function(err) {
-          LOGGER.info('ERROR CONNECTING TO DB');
+          LOGGER.error('ERROR CONNECTING TO DB', err);
           throw err;
         },
       )
@@ -230,7 +226,7 @@ export class MasterCoordinator {
           return collection.deleteOne(query);
         },
         function(err) {
-          LOGGER.info('ERROR DELETING DATA FROM DB');
+          LOGGER.error('ERROR DELETING DATA FROM DB', err);
           throw err;
         },
       )
@@ -238,8 +234,7 @@ export class MasterCoordinator {
         return items;
       })
       .catch(function(err) {
-        LOGGER.info('ERROR: Something went wrong with deletion.');
-        LOGGER.info(err);
+        LOGGER.error('ERROR: Something went wrong with deletion.', err);
         throw err;
       })
       .finally(function() {
@@ -462,8 +457,9 @@ export class MasterCoordinator {
    **/
   makeCorrectNumberOfReplicas(fdbIpList) {
     const _this = this;
+
     return this.getReplicaUpdateInfo(fdbIpList).then(
-      function({ organizedDocData, replicaUpdateInfo }) {
+      async function({ organizedDocData, replicaUpdateInfo }) {
         for (let fileId in organizedDocData) {
           let rep = replicaUpdateInfo[fileId];
           // Make following object: {docId : [fdbIp]}
@@ -475,42 +471,38 @@ export class MasterCoordinator {
             // Only add file to FDBs that don't already have the file.
             const newFdbChoices = fdbIpList.filter((ele) => !fdbsForFile.includes(ele));
 
-            LOGGER.info('REPLICAS TO CHOOSE');
-            LOGGER.info(newFdbChoices);
+            LOGGER.info('REPLICAS TO CHOOSE', newFdbChoices);
 
             // Get list of FDBs to add fileId to.
             const replicationList = _this._getRandomFDBs(newFdbChoices, rep);
             LOGGER.info('FileID: ' + fileId);
-            LOGGER.info('Replication list: ');
-            LOGGER.info(replicationList);
+            LOGGER.info('Replication list: ', replicationList);
 
             // Retrieve correct replica and copy to other FDBs.
-            (async () => {
-              try {
-                const resp = await _this._retrieveAndInsert(fileId, fdbsForFile, replicationList);
-                LOGGER.info('RESPONSE FROM NEW FUNC: ' + resp);
-              } catch (err) {
-                LOGGER.error(err);
-              }
-            })();
+
+            try {
+              const resp = await _this._retrieveAndInsert(fileId, fdbsForFile, replicationList);
+              LOGGER.info('RESPONSE FROM NEW FUNC: ' + resp);
+            } catch (err) {
+              LOGGER.error(err);
+            }
           } else if (rep < 0) {
             LOGGER.info('REMOVE ' + -1 * rep + ' replicas');
 
             const deletions = -1 * rep;
             // Get list of FDBs to delete fileId from.
             const deletionList = _this._getRandomFDBs(fdbsForFile, deletions);
-            LOGGER.info('DELETEION LIST');
+            LOGGER.info('DELETION LIST');
             LOGGER.info(deletionList);
 
             // Delete extra file copies.
-            (async () => {
-              try {
-                const resp = await _this._deleteExtraFiles(fileId, deletionList);
-                LOGGER.info('RESPONSE FROM NEW FUNC: ' + resp);
-              } catch (err) {
-                LOGGER.error(err);
-              }
-            })();
+
+            try {
+              const resp = await _this._deleteExtraFiles(fileId, deletionList);
+              LOGGER.info('RESPONSE FROM NEW FUNC: ' + resp);
+            } catch (err) {
+              LOGGER.error(err);
+            }
           }
         }
 
@@ -781,7 +773,7 @@ export class MasterCoordinator {
         return 1;
       })
       .then(
-        function(status) {
+        async function(status) {
           LOGGER.info('STATUS: ' + status);
           if (status === 0) {
             return 0;
@@ -794,55 +786,52 @@ export class MasterCoordinator {
           // retrieve the correct update date file and
           // for each outOfDateFdbIp in _updateList[docId]
           // make the update.
-          (async () => {
-            try {
-              for (let docId in _updateList) {
-                // Get fdbIp with correct file.
-                let fdbIpCorrect = _updateInfoPerFile[docId][0];
-                let correctHash = _updateInfoPerFile[docId][1];
 
-                // Grab correct data for file.
-                let docIdInt = parseInt(docId);
-                let retData = await _this.retrieveFile(docIdInt, fdbIpCorrect);
-                let correctFileName = retData.fileName;
-                let correctFileContents = retData.fileContents;
-                let correctFileType = retData.fileType;
-                let lastestTs = parseInt(retData.fileCreationTime);
-                let updatePromises = [];
+          try {
+            for (let docId in _updateList) {
+              // Get fdbIp with correct file.
+              let fdbIpCorrect = _updateInfoPerFile[docId][0];
+              let correctHash = _updateInfoPerFile[docId][1];
 
-                // Write this data to all files.
-                for (let j = 0; j < _updateList[docId].length; j++) {
-                  let updateFdbIp = _updateList[docId][j];
-                  // Make update.
-                  updatePromises.push(
-                    _this.updateFile(
-                      docIdInt,
-                      updateFdbIp,
-                      correctFileName,
-                      correctFileContents,
-                      correctHash,
-                      correctFileType,
-                      lastestTs,
-                    ),
-                  );
-                }
+              // Grab correct data for file.
+              let docIdInt = parseInt(docId);
+              let retData = await _this.retrieveFile(docIdInt, fdbIpCorrect);
+              let correctFileName = retData.fileName;
+              let correctFileContents = retData.fileContents;
+              let correctFileType = retData.fileType;
+              let lastestTs = parseInt(retData.fileCreationTime);
+              let updatePromises = [];
 
-                // Update all out of sync files.
-                Promise.all(updatePromises).then(
-                  (vals) => {
-                    LOGGER.info(
-                      'SUCCESSFULLY UPDATED ALL INCONSITENT COPIES FOR DOC ' + docId + '.',
-                    );
-                  },
-                  (err) => {
-                    LOGGER.error('ERROR WHEN UPDATING INCONSISTENT FILES.', err);
-                  },
+              // Write this data to all files.
+              for (let j = 0; j < _updateList[docId].length; j++) {
+                let updateFdbIp = _updateList[docId][j];
+                // Make update.
+                updatePromises.push(
+                  _this.updateFile(
+                    docIdInt,
+                    updateFdbIp,
+                    correctFileName,
+                    correctFileContents,
+                    correctHash,
+                    correctFileType,
+                    lastestTs,
+                  ),
                 );
               }
-            } catch (err) {
-              LOGGER.error(err);
+
+              // Update all out of sync files.
+              Promise.all(updatePromises).then(
+                (vals) => {
+                  LOGGER.info('SUCCESSFULLY UPDATED ALL INCONSITENT COPIES FOR DOC ' + docId + '.');
+                },
+                (err) => {
+                  LOGGER.error('ERROR WHEN UPDATING INCONSISTENT FILES.', err);
+                },
+              );
             }
-          })();
+          } catch (err) {
+            LOGGER.error(err);
+          }
 
           return 0;
         },
@@ -879,7 +868,7 @@ export class MasterCoordinator {
         // Read all MCDB info in.
         mcdb.getAllFiles().then(
           // mcdbFiles: [{docId: str_id, docData: {all file data}}]
-          function(mcdbFiles) {
+          async function(mcdbFiles) {
             const mcdbFileIds = new Set(
               mcdbFiles.map((doc) => {
                 return doc.id;
@@ -894,43 +883,37 @@ export class MasterCoordinator {
             const inBoth = new Set(fdbFileIdsArr.filter((ele) => mcdbFileIds.has(ele)));
 
             // Sanity check.
-            if (inMcdbButNotFdb.size == 0) {
-              LOGGER.log('FDB has everything MCDB has, great!');
+            if (inMcdbButNotFdb.size === 0) {
+              LOGGER.debug('FDB has everything MCDB has, great!');
             } else {
               // Delete extra file ids from MCDB.
-              (async () => {
-                try {
-                  await _this.deleteExtras(inMcdbButNotFdb);
-                } catch (err) {
-                  LOGGER.error(err);
-                }
-              })();
+              try {
+                await _this.deleteExtras(inMcdbButNotFdb);
+              } catch (err) {
+                LOGGER.error(err);
+              }
             }
 
             // Sanity check.
-            if (inFdbButNotMcdb.size == 0) {
-              LOGGER.log('MCDB has everything FDBs have, great!');
+            if (inFdbButNotMcdb.size === 0) {
+              LOGGER.debug('MCDB has everything FDBs have, great!');
             } else {
               // Add missing file ids to MCDB.
-              (async () => {
-                try {
-                  await _this.addMissingFileIds(organizedDocData, inFdbButNotMcdb);
-                } catch (err) {
-                  LOGGER.error(err);
-                }
-              })();
+              try {
+                await _this.addMissingFileIds(organizedDocData, inFdbButNotMcdb);
+              } catch (err) {
+                LOGGER.error(err);
+              }
             }
 
             // Check all data in the FDBs and MCDB is consistent.
             // FDBs have the ground truth, so if info does not match, update
             // MCDB.
-            (async () => {
-              try {
-                await _this.updateMCDBwithCorrectFDBInfo(organizedDocData, mcdbFiles, inBoth);
-              } catch (err) {
-                LOGGER.error(err);
-              }
-            })();
+            try {
+              await _this.updateMCDBwithCorrectFDBInfo(organizedDocData, mcdbFiles, inBoth);
+            } catch (err) {
+              LOGGER.error(err);
+            }
 
             return 0;
           },
@@ -955,8 +938,7 @@ export class MasterCoordinator {
    * @returns {Promise} Promise returns 0 on success, otherwise throws error.
    **/
   async deleteExtras(inMcdbButNotFdb) {
-    LOGGER.log('IN MCDB BUT NOT FDB');
-    LOGGER.log(inMcdbButNotFdb);
+    LOGGER.debug('IN MCDB BUT NOT FDB', inMcdbButNotFdb);
     try {
       let deletePromises = [];
       // Loop through entries if there are any.
@@ -968,7 +950,7 @@ export class MasterCoordinator {
       // Delete extra file IDs.
       Promise.all(deletePromises).then(
         (vals) => {
-          LOGGER.log('SUCCESSFULLY DELETED ERRONEOUS FILE IDS FROM MCDB.');
+          LOGGER.debug('SUCCESSFULLY DELETED ERRONEOUS FILE IDS FROM MCDB.');
         },
         (err) => {
           LOGGER.error('ERROR WHEN DELETING ERRONEOUS FILE IDS FROM MCDB.', err);
@@ -989,8 +971,8 @@ export class MasterCoordinator {
    * @returns {Promise} Promise returns 0 on success, otherwise throws error.
    **/
   async addMissingFileIds(organizedDocData, inFdbButNotMcdb) {
-    LOGGER.log('IN FDB BUT NOT MCDB');
-    LOGGER.log(inFdbButNotMcdb);
+    LOGGER.debug('IN FDB BUT NOT MCDB', inFdbButNotMcdb);
+
     try {
       let addPromises = [];
       for (let missingFileId of inFdbButNotMcdb) {
@@ -1022,7 +1004,7 @@ export class MasterCoordinator {
       // Add missing file IDs.
       Promise.all(addPromises).then(
         (vals) => {
-          LOGGER.log('SUCCESSFULLY ADDED MISSING FILE IDS TO MCDB.');
+          LOGGER.debug('SUCCESSFULLY ADDED MISSING FILE IDS TO MCDB.');
         },
         (err) => {
           LOGGER.error('ERROR WHEN ADDING MISSING FILE IDS TO MCDB.', err);
@@ -1047,7 +1029,7 @@ export class MasterCoordinator {
     try {
       // mcdbFiles: [{docId: str_id, docData: {all file data}}]
       let mcdbFastLookUp = {};
-      // LOGGER.log(mcdbFiles);
+      // LOGGER.debug(mcdbFiles);
       for (let i = 0; i < mcdbFiles.length; i++) {
         let doc = mcdbFiles[i];
         mcdbFastLookUp[doc.id] = doc.data();
@@ -1080,9 +1062,10 @@ export class MasterCoordinator {
           fileNameFdb === fileNameMcdb &&
           fdbLocationsFdb.sort() === fdbLocationsFdb.sort()
         ) {
-          LOGGER.log(fileNameFdb + ' is same in FDB and MCDB');
+          LOGGER.debug(fileNameFdb + ' is same in FDB and MCDB');
         } else {
-          LOGGER.log(fileNameFdb + ' IS NOT SAME IN FDB AND MCDB.\nUpdating this now.');
+          LOGGER.debug(fileNameFdb + ' IS NOT SAME IN FDB AND MCDB. Updating this now.');
+
           updatePromises.push(
             mcdb.updateFile(
               fileId,
@@ -1099,7 +1082,7 @@ export class MasterCoordinator {
       // Update all inconsistencies between FDB and MCDB.
       Promise.all(updatePromises).then(
         (vals) => {
-          LOGGER.log('SUCCESSFULLY SYNCED FDB AND MCDB ENTRIES.');
+          LOGGER.debug('SUCCESSFULLY SYNCED FDB AND MCDB ENTRIES.');
         },
         (err) => {
           LOGGER.error('ERROR WHEN SYNCING FDB AND MCDB ENTRIES.', err);
