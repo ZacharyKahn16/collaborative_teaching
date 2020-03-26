@@ -1,9 +1,13 @@
 import * as fs from './Firebase';
 import admin from 'firebase-admin';
 
+// Collection constants
 const FILE_COLLECTION = 'File';
 const CLIENT_COLLECTION = 'Client';
 const COURSE_COLLECTION = 'Course';
+
+// File Collection Fields
+const OWNDER_ID_KEY = 'ownerId';
 
 // fileId created by firestore.
 export function insertedFile(
@@ -16,7 +20,7 @@ export function insertedFile(
   ownerId: string,
 ) {
   return fs.addToCollection(FILE_COLLECTION, {
-    fileCreationTime: timestamp,
+    lastUpdated: timestamp,
     fdbLocations: fdbLocations,
     courseIds: courseIds,
     readOnlyUserIDs: readOnlyUserIds,
@@ -38,7 +42,7 @@ export function insertFileWithSpecifiedFileId(
   ownerId: string,
 ) {
   return fs.setDocument(FILE_COLLECTION, fileId, {
-    fileCreationTime: timestamp,
+    lastUpdated: timestamp,
     fdbLocations: fdbLocations,
     courseIds: courseIds,
     readOnlyUserIDs: readOnlyUserIds,
@@ -58,7 +62,7 @@ export function updateFile(
   ownerId: string,
 ) {
   return fs.updateDocument(FILE_COLLECTION, fileId, {
-    fileCreationTime: timestamp,
+    lastUpdated: timestamp,
     fdbLocations: fdbLocations,
     name: fileName,
     fileHash: fileHash,
@@ -127,12 +131,12 @@ export function deleteReadOnlyId(fileId: string, readOnlyId: string) {
   });
 }
 
-// Get all files
-// returns: [{docId, docData}]
-// Refer to: https://firebase.google.com/docs/reference/js/firebase.firestore.QuerySnapshot#docs
-export function getAllFiles() {
-  return fs.getCollection(FILE_COLLECTION).then((snapshot) => {
-    return snapshot.docs;
+// Get all files from the files collection
+export async function getAllFiles() {
+  const fileCollection = await fs.getCollection(FILE_COLLECTION);
+
+  return fileCollection.docs.map((doc: any) => {
+    return doc.data();
   });
 }
 

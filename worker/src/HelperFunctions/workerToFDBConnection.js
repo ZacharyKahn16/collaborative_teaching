@@ -34,7 +34,7 @@ export class FileDatabase {
       fileContents: fileContents,
       fileHash: fileHash,
       fileType: fileType,
-      fileCreationTime: ts,
+      lastUpdated: ts,
     };
   }
 
@@ -58,7 +58,7 @@ export class FileDatabase {
         fileContents: fileContents,
         fileHash: fileHash,
         fileType: fileType,
-        fileCreationTime: ts,
+        lastUpdated: ts,
       },
     ];
   }

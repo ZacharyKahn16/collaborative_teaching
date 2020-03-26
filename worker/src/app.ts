@@ -1,14 +1,12 @@
 import { AccessFDB } from './HelperFunctions/workerToFDBConnection';
 import { LOGGER } from './Logger';
-import { insertedFile } from './MCDB';
+import { insertedFile, getAllFiles } from './MCDB';
 import {
   shuffle,
   findFdbUsingIp,
   retrieveFdbLocations,
   createReplicas,
   replicasNeeded,
-  sendErrorMessage,
-  sendSuccessMessage,
 } from './HelperFunctions/WorkerUtilities';
 
 import express from 'express';
@@ -26,15 +24,71 @@ let fdbList: AccessFDB[] = [];
 
 // Client events
 const CONNECTION_EVENT = 'connection';
+const GET_ALL_FILES_META = 'Get All Files';
 const RETRIEVE_FILE = 'Retrieve File';
 const INSERT_FILE = 'Insert File';
 const UPDATE_FILE = 'Update File';
 const DELETE_FILE = 'Delete File';
 
+// Server message constants
+const SERVER_RESP = 'Server Response';
+const SUCCESS = 'success';
+const FAILED = 'failed';
+
 // Master events
 const DATABASE_LIST = 'database-instances';
 
+/**
+ * This function sends an ERROR message to the socket passed
+ * to it
+ */
+function sendErrorMessage(socket: any, requestId: string, message: any) {
+  socket.emit(SERVER_RESP, {
+    requestId: requestId,
+    status: FAILED,
+    message: message,
+  });
+}
+
+/**
+ * This function sends a SUCCESS message to the socket passed
+ * to it
+ */
+function sendSuccessMessage(socket: any, requestId: string, message: any) {
+  socket.emit(SERVER_RESP, {
+    requestId: requestId,
+    status: SUCCESS,
+    message: message,
+  });
+}
+
 socketServer.on(CONNECTION_EVENT, function(socket) {
+  /**
+   * Retrieves a list of all the files this
+   * user owns
+   *
+
+   Sample request JSON
+   {
+    "ownerId": "Daniel",
+    "requestId": "XCJ321CSAD"
+   }
+
+   response ex) [34.70.206.197, 35.184.8.156] or false
+   */
+  socket.on(GET_ALL_FILES_META, async function(req) {
+    const ownerId = req.ownerId;
+    const requestId = req.requestId;
+    if (!ownerId || !requestId) {
+      sendErrorMessage(socket, requestId, 'Missing request parameters');
+      return;
+    }
+
+    // Search fire base for a list of files this user owns
+    console.log(await getAllFiles());
+    // Format this list before sending it back
+  });
+
   /**
    * Retrieves a File
    *
@@ -52,9 +106,15 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
       return;
     }
 
-    const fdbLocations: any[] = await retrieveFdbLocations(socket, docId, requestId);
-    if (!fdbLocations) {
-      sendErrorMessage(socket, requestId, 'Error finding FDB locations in the MCDB');
+    let fdbLocations: any[];
+    try {
+      fdbLocations = await retrieveFdbLocations(docId);
+      if (!fdbLocations) {
+        sendErrorMessage(socket, requestId, 'Error finding FDB locations in the MCDB');
+        return;
+      }
+    } catch (err) {
+      sendErrorMessage(socket, requestId, `Error getting document: ${err}`);
       return;
     }
 
@@ -171,9 +231,15 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
       return;
     }
 
-    const fdbLocations: any[] = await retrieveFdbLocations(socket, docId, requestId);
-    if (!fdbLocations) {
-      sendErrorMessage(socket, requestId, 'Error finding FDB locations in the MCDB');
+    let fdbLocations: any[];
+    try {
+      fdbLocations = await retrieveFdbLocations(docId);
+      if (!fdbLocations) {
+        sendErrorMessage(socket, requestId, 'Error finding FDB locations in the MCDB');
+        return;
+      }
+    } catch (err) {
+      sendErrorMessage(socket, requestId, `Error getting document: ${err}`);
       return;
     }
 
@@ -202,25 +268,40 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
       LOGGER.debug('No successful updates into FDBs');
 
       const replicasToMake = replicasNeeded(fdbList);
-      await createReplicas(
-        socket,
-        fdbList,
-        replicasToMake,
-        docId,
-        fileName,
-        fileContents,
-        fileHash,
-        fileType,
-        timeStamp,
-        requestId,
-      );
+      try {
+        const successfulInserts = await createReplicas(
+          fdbList,
+          replicasToMake,
+          docId,
+          fileName,
+          fileContents,
+          fileHash,
+          fileType,
+          timeStamp,
+          requestId,
+        );
+
+        if (successfulInserts.length <= 0) {
+          sendErrorMessage(socket, requestId, 'No successful inserts into FDBs');
+          LOGGER.debug('No successful inserts into FDBs');
+          return;
+        }
+
+        sendSuccessMessage(
+          socket,
+          requestId,
+          `Successful inserts into ${successfulInserts.map((elem) => elem.getIp()).join()}`,
+        );
+      } catch (err) {
+        sendErrorMessage(socket, requestId, `Unable to create replicas because: ${err}`);
+      }
       return;
     }
 
     sendSuccessMessage(
       socket,
       requestId,
-      `Successful updates into ${successfulUpdates.map((elem) => elem.getIp())}`,
+      `Successful updates into ${successfulUpdates.map((elem) => elem.getIp()).join()}`,
     );
 
     // If the MCDBs entry for FDB FileLocations of a file has a mismatch
@@ -229,19 +310,33 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
     // a second time into the same FDB
     if (missingFdbIps.length > 0) {
       const replicasToMake = missingFdbIps.length;
-      await createReplicas(
-        socket,
-        fdbList,
-        replicasToMake,
-        docId,
-        fileName,
-        fileContents,
-        fileHash,
-        fileType,
-        timeStamp,
-        requestId,
-        successfulUpdates, // Avoid the previous successful updates
-      );
+      try {
+        const successfulInserts = await createReplicas(
+          fdbList,
+          replicasToMake,
+          docId,
+          fileName,
+          fileContents,
+          fileHash,
+          fileType,
+          timeStamp,
+          successfulUpdates, // Avoid the previous successful updates
+        );
+
+        if (successfulInserts.length <= 0) {
+          sendErrorMessage(socket, requestId, 'No successful inserts into FDBs');
+          LOGGER.debug('No successful inserts into FDBs');
+          return;
+        }
+
+        sendSuccessMessage(
+          socket,
+          requestId,
+          `Successful inserts into ${successfulInserts.map((elem) => elem.getIp()).join()}`,
+        );
+      } catch (err) {
+        sendErrorMessage(socket, requestId, `Unable to create replicas because: ${err}`);
+      }
     }
   });
 
