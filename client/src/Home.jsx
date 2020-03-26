@@ -179,6 +179,7 @@ class Home extends React.Component {
 
   componentDidMount() {
     this.connectMaster(MASTER_STATIC_IPS[0], MASTER_STATIC_IPS[1]);
+    this.connectWorker("");
   }
 
   connectMaster(ipOne, ipTwo) {
@@ -218,7 +219,8 @@ class Home extends React.Component {
   }
 
   connectWorker(worker) {
-    const socket = io(`http://${worker.publicIp}:${WORKER_SOCKET_PORT}`);
+    // const socket = io(`http://${worker.publicIp}:${WORKER_SOCKET_PORT}`);
+    const socket = io(`http://localhost:${WORKER_SOCKET_PORT}`);
 
     socket.on("connect", () => {
       console.log("connected to worker", worker);
@@ -263,9 +265,9 @@ class Home extends React.Component {
   }
 
   render() {
-    if (!this.state.isLoaded) {
-      return <LoadingScreen />;
-    }
+    // if (!this.state.isLoaded) {
+    //   return <LoadingScreen />;
+    // }
 
     const { userInfo } = this.props;
 

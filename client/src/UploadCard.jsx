@@ -23,10 +23,8 @@ class UploadCard extends Component {
 
   componentDidMount() {
     const { socket } = this.props;
-    console.log(socket);
 
     listen(socket, msg => {
-      console.log("callback");
       console.log(msg);
     });
   }
@@ -49,10 +47,8 @@ class UploadCard extends Component {
   };
 
   uploadFile = () => {
-    const { socket } = this.props;
-    // retrieveFile(socket, 'x0RCUvWjlIZifyb3MQen', 'Daniel')
-    writeNewFile(socket, this.state.uploadedFile, "Test Owner");
-    console.log("uploading");
+    const { socket, userInfo } = this.props;
+    writeNewFile(socket, this.state.uploadedFile, userInfo.uid);
   };
 
   render() {
@@ -97,7 +93,7 @@ class UploadCard extends Component {
           <Button
             className="mr-1"
             variant="contained"
-            color={this.state.uploadedFile ? "primary" : ""}
+            color={this.state.uploadedFile ? "primary" : undefined}
             disabled={!this.state.uploadedFile}
             onClick={this.uploadFile}
           >

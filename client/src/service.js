@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
+import sha256 from "crypto-js/sha256";
 
 const CONNECTION_EVENT = "connection";
 const RETRIEVE_FILE = "Retrieve File";
@@ -7,6 +8,23 @@ const UPDATE_FILE = "Update File";
 const DELETE_FILE = "Delete File";
 const SERVER_RESP = "Server Response";
 const GET_FILES = "Get All Files";
+
+function readAsBinaryString(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = event => {
+      // resolve(new Uint8Array(event.target.result));
+      resolve(event.target.result);
+    };
+
+    reader.onerror = err => {
+      reject(err);
+    };
+
+    reader.readAsBinaryString(file);
+  });
+}
 
 const retrieveFile = (socket, docId, requestId) => {
   socket.emit(RETRIEVE_FILE, {
@@ -24,19 +42,29 @@ const getAllFiles = (socket, ownerId, requestId) => {
 };
 
 //write new file
-const writeNewFile = async (socket, file, ownerId) => {
+const writeNewFile = (socket, file, ownerId) => {
   // Send worker a request to write a file into the FDB
-  console.log("sending on:");
-  const textContents = await file.text();
+  readAsBinaryString(file)
+    .then(binaryString => {
+      const hash = sha256(binaryString).toString();
+      console.log(
+        "sending file with length, hash: ",
+        binaryString.length,
+        hash
+      );
 
-  socket.emit(INSERT_FILE, {
-    ownerId: ownerId,
-    requestId: uuidv4(),
-    fileName: file.name,
-    fileContents: textContents,
-    fileHash: file.size,
-    fileType: file.type
-  });
+      socket.emit(INSERT_FILE, {
+        ownerId: ownerId,
+        requestId: uuidv4(),
+        fileName: file.name,
+        fileContents: binaryString,
+        fileHash: hash,
+        fileType: file.type
+      });
+    })
+    .catch(err => {
+      console.error(err);
+    });
 };
 
 // delete a file

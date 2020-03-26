@@ -142,6 +142,7 @@ class MyFiles extends React.Component {
                 <UploadCard
                   closeModal={this.handleCloseUploadModal}
                   socket={socket}
+                  userInfo={userInfo}
                 />
               </Fade>
             </Modal>
