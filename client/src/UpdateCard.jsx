@@ -5,9 +5,9 @@ import Typography from "@material-ui/core/Typography";
 import Grid from "@material-ui/core/Grid";
 import Button from "@material-ui/core/Button";
 import "./Styles/Card.css";
-import { writeNewFile, listen, retrieveFile } from "./service";
+import { updateFile, listen } from "./service";
 
-class UploadCard extends Component {
+class UpdateCard extends Component {
   constructor(props) {
     super(props);
 
@@ -18,13 +18,13 @@ class UploadCard extends Component {
 
     this.onBrowseChange = this.onBrowseChange.bind(this);
     this.cancelUpload = this.cancelUpload.bind(this);
-    this.uploadFile = this.uploadFile.bind(this);
+    this.updateFile = this.updateFile.bind(this);
   }
 
   componentDidMount() {
+    console.log(this.props.fileName);
     const { socket } = this.props;
-    console.log(socket);
-
+    console.log("mount");
     listen(socket, (msg) => {
       console.log("callback");
       console.log(msg);
@@ -48,10 +48,9 @@ class UploadCard extends Component {
     }));
   };
 
-  uploadFile = () => {
+  updateFile = () => {
     const { socket } = this.props;
-    // retrieveFile(socket, 'x0RCUvWjlIZifyb3MQen', 'Daniel')
-    writeNewFile(socket, this.state.uploadedFile, "Test Owner");
+    // updateFile(socket, this.state.uploadedFile, );
     console.log("uploading");
   };
 
@@ -60,10 +59,12 @@ class UploadCard extends Component {
       <Card className="card-body">
         <CardContent>
           <Typography variant="h5" color="textSecondary" gutterBottom>
-            Upload File
+            Update File
           </Typography>
           <Typography variant="body2" component="p" paragraph gutterBottom>
-            Browse for a file on your computer to upload.
+            Browse for a file on your computer to update this file.
+            <br />
+            File to Update: {this.props.fileName}
           </Typography>
           <Grid className="upload-box-container" container spacing={0}>
             <Grid className="upload-box-left" item xs={9}>
@@ -99,7 +100,7 @@ class UploadCard extends Component {
             variant="contained"
             color={this.state.uploadedFile ? "primary" : ""}
             disabled={!this.state.uploadedFile}
-            onClick={this.uploadFile}
+            onClick={this.updateFile}
           >
             Upload
           </Button>
@@ -112,4 +113,4 @@ class UploadCard extends Component {
   }
 }
 
-export default UploadCard;
+export default UpdateCard;

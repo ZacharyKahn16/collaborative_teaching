@@ -19,31 +19,32 @@ import UploadCard from "./UploadCard";
 import Modal from "@material-ui/core/Modal";
 import Backdrop from "@material-ui/core/Backdrop";
 import Fade from "@material-ui/core/Fade";
+import LoadingScreen from "./LoadingScreen";
 
-const styles = theme => ({
+const styles = (theme) => ({
   paper: {
     // maxWidth: 936,
     margin: "auto",
-    overflow: "hidden"
+    overflow: "hidden",
   },
   searchBar: {
-    borderBottom: "1px solid rgba(0, 0, 0, 0.12)"
+    borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
   },
   searchInput: {
-    fontSize: theme.typography.fontSize
+    fontSize: theme.typography.fontSize,
   },
   block: {
-    display: "block"
+    display: "block",
   },
   addUser: {
-    marginRight: theme.spacing(1)
+    marginRight: theme.spacing(1),
   },
   contentWrapper: {
-    margin: "40px 16px"
+    margin: "40px 16px",
   },
   addFileButton: {
-    marginRight: "5px"
-  }
+    marginRight: "5px",
+  },
 });
 
 class MyFiles extends React.Component {
@@ -60,97 +61,115 @@ class MyFiles extends React.Component {
 
   handleDrawerToggle() {
     this.setState({
-      mobileOpen: !this.state.mobileOpen
+      mobileOpen: !this.state.mobileOpen,
     });
-  };
+  }
 
   handleOpenUploadModal() {
     this.setState(() => ({
-      uploadModalOpen: true
+      uploadModalOpen: true,
     }));
-  };
+  }
 
   handleCloseUploadModal() {
     this.setState(() => ({
-      uploadModalOpen: false
+      uploadModalOpen: false,
     }));
-  };
+  }
 
   componentDidMount() {
     // console.log("mounted")
   }
   render() {
-    const { classes, workerInfo, socket } = this.props;
-    // console.log("Socket received:");
-    // console.log(socket);
-    return(
-        <Paper className={classes.paper}>
-          <Header onDrawerToggle={this.handleDrawerToggle} setTitle={{name:"My Files"}} setWorkerDis={{name: workerInfo.id}} />
-          <AppBar
-              className={classes.searchBar}
-              position="static"
-              color="default"
-              elevation={0}
-          >
-            <Toolbar>
-              <Grid container spacing={2} alignItems="center">
-                <Grid item>
-                  <SearchIcon className={classes.block} color="inherit" />
-                </Grid>
-                <Grid item xs>
-                  <TextField
-                      fullWidth
-                      placeholder="Search by course or file name."
-                      InputProps={{
-                        disableUnderline: true,
-                        className: classes.searchInput
-                      }}
-                  />
-                </Grid>
-                <Grid item>
-                  <Button variant="contained" color="primary" className={classes.addUser} onClick={this.handleOpenUploadModal}>
-                    <PublishIcon className={classes.addFileButton} color="inherit"/>
-                    Add file
-                    <input type="file" style={{ display: "none" }} />
-                  </Button>
-                  <Tooltip title="Reload">
-                    <IconButton>
-                      <RefreshIcon className={classes.block} color="inherit" />
-                    </IconButton>
-                  </Tooltip>
-                </Grid>
+    const { classes, workerInfo, socket, userName } = this.props;
+    console.log("Socket received:");
+    console.log(socket);
+    if (socket == null) {
+      return <LoadingScreen />;
+    }
+
+    return (
+      <Paper className={classes.paper}>
+        <Header
+          onDrawerToggle={this.handleDrawerToggle}
+          setTitle={{ name: "My Files" }}
+          setWorkerDis={{ name: workerInfo.id }}
+          setUsername={{ name: userName }}
+        />
+        <AppBar
+          className={classes.searchBar}
+          position="static"
+          color="default"
+          elevation={0}
+        >
+          <Toolbar>
+            <Grid container spacing={2} alignItems="center">
+              <Grid item>
+                <SearchIcon className={classes.block} color="inherit" />
               </Grid>
-              <Modal
-                  aria-labelledby="transition-modal-title"
-                  aria-describedby="transition-modal-description"
-                  className="modal"
-                  open={this.state.uploadModalOpen}
-                  onClose={this.handleCloseUploadModal}
-                  closeAfterTransition
-                  BackdropComponent={Backdrop}
-                  BackdropProps={{
-                    timeout: 500,
-                    style: {backgroundColor: 'rgba(0,0,0,0.7)'}
+              <Grid item xs>
+                <TextField
+                  fullWidth
+                  placeholder="Search by course or file name."
+                  InputProps={{
+                    disableUnderline: true,
+                    className: classes.searchInput,
                   }}
-              >
-                <Fade in={this.state.uploadModalOpen}>
-                  <UploadCard closeModal={this.handleCloseUploadModal} socket={socket}/>
-                </Fade>
-              </Modal>
-            </Toolbar>
-          </AppBar>
-          <div className={classes.contentWrapper}>
-            <FileList />
-          </div>
-        </Paper>
+                />
+              </Grid>
+              <Grid item>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  className={classes.addUser}
+                  onClick={this.handleOpenUploadModal}
+                >
+                  <PublishIcon
+                    className={classes.addFileButton}
+                    color="inherit"
+                  />
+                  Add file
+                  <input type="file" style={{ display: "none" }} />
+                </Button>
+                <Tooltip title="Reload">
+                  <IconButton>
+                    <RefreshIcon className={classes.block} color="inherit" />
+                  </IconButton>
+                </Tooltip>
+              </Grid>
+            </Grid>
+            <Modal
+              aria-labelledby="transition-modal-title"
+              aria-describedby="transition-modal-description"
+              className="modal"
+              open={this.state.uploadModalOpen}
+              onClose={this.handleCloseUploadModal}
+              closeAfterTransition
+              BackdropComponent={Backdrop}
+              BackdropProps={{
+                timeout: 500,
+                style: { backgroundColor: "rgba(0,0,0,0.7)" },
+              }}
+            >
+              <Fade in={this.state.uploadModalOpen}>
+                <UploadCard
+                  closeModal={this.handleCloseUploadModal}
+                  socket={socket}
+                />
+              </Fade>
+            </Modal>
+          </Toolbar>
+        </AppBar>
+        <div className={classes.contentWrapper}>
+          <FileList socket={socket} />
+        </div>
+      </Paper>
     );
   }
 }
 
-
-
 MyFiles.propTypes = {
-  classes: PropTypes.object.isRequired
+  classes: PropTypes.object.isRequired,
 };
 
 export default withStyles(styles)(MyFiles);
