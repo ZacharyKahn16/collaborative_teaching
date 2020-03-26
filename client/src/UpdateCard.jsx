@@ -13,7 +13,7 @@ class UpdateCard extends Component {
 
     this.state = {
       fileDisplayName: "",
-      uploadedFile: null,
+      uploadedFile: null
     };
 
     this.onBrowseChange = this.onBrowseChange.bind(this);
@@ -25,18 +25,18 @@ class UpdateCard extends Component {
     console.log(this.props.fileName);
     const { socket } = this.props;
     console.log("mount");
-    listen(socket, (msg) => {
+    listen(socket, msg => {
       console.log("callback");
       console.log(msg);
     });
   }
 
-  onBrowseChange = (e) => {
+  onBrowseChange = e => {
     let files = e.target.files;
 
     this.setState(() => ({
       fileDisplayName: files[0].name,
-      uploadedFile: files[0],
+      uploadedFile: files[0]
     }));
   };
 
@@ -44,7 +44,7 @@ class UpdateCard extends Component {
     this.props.closeModal();
     this.setState(() => ({
       fileDisplayName: "",
-      uploadedFile: null,
+      uploadedFile: null
     }));
   };
 

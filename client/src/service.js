@@ -12,14 +12,14 @@ const retrieveFile = (socket, docId, requestId) => {
   socket.emit(RETRIEVE_FILE, {
     // fileName: fileName
     docId: docId,
-    requestId: requestId,
+    requestId: requestId
   });
 };
 
 const getAllFiles = (socket, ownerId, requestId) => {
   socket.emit(GET_FILES, {
     ownerId: ownerId,
-    requestId: uuidv4(),
+    requestId: uuidv4()
   });
 };
 
@@ -35,12 +35,12 @@ const writeNewFile = async (socket, file, ownerId) => {
     fileName: file.name,
     fileContents: textContents,
     fileHash: file.size,
-    fileType: file.type,
+    fileType: file.type
   });
 };
 
 // delete a file
-const deleteFile = async (socket) => {
+const deleteFile = async socket => {
   // console.log("deleting file")
   // socket.emit(DELETE_FILE, {
   //     docId:
@@ -62,7 +62,7 @@ const updateFile = async (socket, file, docId) => {
 
 const listen = (socket, cb) => {
   console.log("listening for worker response...");
-  socket.on(SERVER_RESP, (resp) => {
+  socket.on(SERVER_RESP, resp => {
     cb(resp);
   });
 };

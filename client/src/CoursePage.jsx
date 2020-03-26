@@ -19,84 +19,80 @@ import Modal from "@material-ui/core/Modal";
 import Backdrop from "@material-ui/core/Backdrop";
 import Fade from "@material-ui/core/Fade";
 
-const styles = (theme) => ({
+const styles = theme => ({
   paper: {
     margin: "auto",
-    overflow: "hidden",
+    maxHeight: "100vh",
+    overflowX: "hidden",
+    overflowY: "auto"
   },
   searchBar: {
-    borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
+    borderBottom: "1px solid rgba(0, 0, 0, 0.12)"
   },
   searchInput: {
-    fontSize: theme.typography.fontSize,
+    fontSize: theme.typography.fontSize
   },
   block: {
-    display: "block",
+    display: "block"
   },
   addUser: {
-    marginRight: theme.spacing(1),
+    marginRight: theme.spacing(1)
   },
   contentWrapper: {
-    margin: "40px 16px",
-  },
+    margin: "40px 16px"
+  }
 });
 
 const listOfFiles = [
   {
     filename: "book",
-    author: "daniel",
+    author: "daniel"
   },
   {
     filename: "book2",
-    author: "john",
+    author: "john"
   },
   {
     filename: "book3",
-    author: "mike",
-  },
+    author: "mike"
+  }
 ];
 
 class CoursePage extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      mobileOpen: false,
-      uploadModalOpen: false,
+      uploadModalOpen: false
     };
 
     this.handleOpenUploadModal = this.handleOpenUploadModal.bind(this);
   }
 
-  handleDrawerToggle() {
-    this.setState({
-      mobileOpen: !this.state.mobileOpen,
-    });
-  }
-
   handleOpenUploadModal() {
     this.setState({
-      uploadModalOpen: true,
+      uploadModalOpen: true
     });
   }
 
   handleCloseUploadModal() {
     this.setState({
-      uploadModalOpen: false,
+      uploadModalOpen: false
     });
   }
 
   componentDidMount() {
     // console.log("mounted")
   }
+
   render() {
-    const { classes, workerInfo } = this.props;
-    console.log("workerInfo");
+    const { classes, workerInfo, userInfo } = this.props;
+
     return (
-      <Paper className={classes.paper}>
+      <Paper className={classes.paper} square>
         <Header
-          onDrawerToggle={this.handleDrawerToggle}
-          setTitle={{ name: "List of Courses" }}
-          setWorkerDis={{ name: "testing" }}
+          title={"List of Courses"}
+          workerInfo={workerInfo}
+          userInfo={userInfo}
         />
         <AppBar
           className={classes.searchBar}
@@ -115,7 +111,7 @@ class CoursePage extends React.Component {
                   placeholder="Search by course or file name."
                   InputProps={{
                     disableUnderline: true,
-                    className: classes.searchInput,
+                    className: classes.searchInput
                   }}
                 />
               </Grid>
@@ -150,7 +146,7 @@ class CoursePage extends React.Component {
               BackdropComponent={Backdrop}
               BackdropProps={{
                 timeout: 500,
-                style: { backgroundColor: "rgba(0,0,0,0.7)" },
+                style: { backgroundColor: "rgba(0,0,0,0.7)" }
               }}
             >
               <Fade in={this.state.uploadModalOpen}>
@@ -170,7 +166,7 @@ class CoursePage extends React.Component {
 }
 
 CoursePage.propTypes = {
-  classes: PropTypes.object.isRequired,
+  classes: PropTypes.object.isRequired
 };
 
 export default withStyles(styles)(CoursePage);

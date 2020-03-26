@@ -25,7 +25,7 @@ class FileList extends Component {
     this.state = {
       editModalOpen: false,
       deleteModalOpen: false,
-      selectedFileName: "",
+      selectedFileName: ""
     };
 
     this.handleEditModalOpen = this.handleEditModalOpen.bind(this);
@@ -35,7 +35,6 @@ class FileList extends Component {
 
   componentDidMount() {
     const { socket } = this.props;
-    console.log(socket);
   }
 
   createData = (fileName, fileType, courseName, owner, dateUploaded) => {
@@ -77,27 +76,27 @@ class FileList extends Component {
       "CPSC 329",
       "Garland Khuu",
       "01-28-2019"
-    ),
+    )
   ];
 
-  handleEditModalOpen = (fileName) => {
+  handleEditModalOpen = fileName => {
     console.log(fileName);
     this.setState(() => ({
       editModalOpen: true,
-      selectedFileName: fileName,
+      selectedFileName: fileName
     }));
   };
 
   handleDeleteModalOpen = () => {
     this.setState(() => ({
-      deleteModalOpen: true,
+      deleteModalOpen: true
     }));
   };
 
   handleModalClose = () => {
     this.setState(() => ({
       editModalOpen: false,
-      deleteModalOpen: false,
+      deleteModalOpen: false
     }));
   };
 
@@ -128,7 +127,7 @@ class FileList extends Component {
             </TableRow>
           </TableHead>
           <TableBody>
-            {this.rows.map((row) => (
+            {this.rows.map(row => (
               <TableRow key={row.fileName}>
                 <TableCell align="left">
                   <Typography variant="body2">
@@ -178,7 +177,7 @@ class FileList extends Component {
           BackdropComponent={Backdrop}
           BackdropProps={{
             timeout: 500,
-            style: { backgroundColor: "rgba(0,0,0,0.7)" },
+            style: { backgroundColor: "rgba(0,0,0,0.7)" }
           }}
         >
           <Fade in={this.state.editModalOpen}>
@@ -198,7 +197,7 @@ class FileList extends Component {
 }
 
 FileList.propTypes = {
-  classes: PropTypes.object.isRequired,
+  classes: PropTypes.object.isRequired
 };
 
 export default FileList;
