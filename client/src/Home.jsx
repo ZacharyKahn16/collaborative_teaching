@@ -179,7 +179,6 @@ class Home extends React.Component {
 
   componentDidMount() {
     this.connectMaster(MASTER_STATIC_IPS[0], MASTER_STATIC_IPS[1]);
-    this.connectWorker("");
   }
 
   connectMaster(ipOne, ipTwo) {
