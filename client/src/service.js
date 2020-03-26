@@ -9,12 +9,11 @@ const DELETE_FILE = "Delete File";
 const SERVER_RESP = "Server Response";
 const GET_FILES = "Get All Files";
 
-function readAsBinaryString(file) {
+function readFileAsDataUrl(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
 
     reader.onload = event => {
-      // resolve(new Uint8Array(event.target.result));
       resolve(event.target.result);
     };
 
@@ -22,7 +21,7 @@ function readAsBinaryString(file) {
       reject(err);
     };
 
-    reader.readAsBinaryString(file);
+    reader.readAsDataURL(file);
   });
 }
 
@@ -44,20 +43,16 @@ const getAllFiles = (socket, ownerId, requestId) => {
 //write new file
 const writeNewFile = (socket, file, ownerId) => {
   // Send worker a request to write a file into the FDB
-  readAsBinaryString(file)
-    .then(binaryString => {
-      const hash = sha256(binaryString).toString();
-      console.log(
-        "sending file with length, hash: ",
-        binaryString.length,
-        hash
-      );
+  readFileAsDataUrl(file)
+    .then(dataUrl => {
+      const hash = sha256(dataUrl).toString();
+      console.log("sending file with hash: ", hash);
 
       socket.emit(INSERT_FILE, {
         ownerId: ownerId,
         requestId: uuidv4(),
         fileName: file.name,
-        fileContents: binaryString,
+        fileContents: dataUrl,
         fileHash: hash,
         fileType: file.type
       });
