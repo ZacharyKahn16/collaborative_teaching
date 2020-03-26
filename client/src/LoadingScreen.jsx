@@ -6,7 +6,7 @@ function LoadingScreen() {
   return (
     <Backdrop open={true} style={{ flexDirection: "column" }}>
       <CircularProgress />
-      <p>Loading...</p>
+      <p>Trying to connect to network..</p>
     </Backdrop>
   );
 }

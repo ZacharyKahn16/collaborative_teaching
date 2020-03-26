@@ -1,69 +1,47 @@
-import React, { useEffect } from "react";
-import PropTypes from "prop-types";
+import React from "react";
 import {
   createMuiTheme,
-  makeStyles,
   ThemeProvider,
-  withStyles,
+  withStyles
 } from "@material-ui/core/styles";
 import CssBaseline from "@material-ui/core/CssBaseline";
-import Hidden from "@material-ui/core/Hidden";
-import Typography from "@material-ui/core/Typography";
-import Link from "@material-ui/core/Link";
 import Navigator from "./Navigator";
 import { Route } from "react-router";
 import Courses from "./MyCourses";
 import MyFiles from "./MyFiles";
 import BrowseContent from "./BrowseContent";
 import ViewCourse from "./CoursePage";
-import LoginPage from "./LoginPage";
 import LoadingScreen from "./LoadingScreen";
 import { Switch, Redirect } from "react-router-dom";
 import axios from "axios";
 import io from "socket.io-client";
-import { UserContext } from "./UserContext";
-
-function Copyright() {
-  return (
-    <Typography variant="body2" color="textSecondary" align="center">
-      {"Copyright © "}
-      <Link color="inherit" href="https://material-ui.com/">
-        Collaborative Teaching
-      </Link>{" "}
-      {new Date().getFullYear()}
-      {"."}
-    </Typography>
-  );
-}
+import { MASTER_STATIC_IPS, WORKER_SOCKET_PORT } from "./ServerConfig";
 
 let theme = createMuiTheme({
   palette: {
     primary: {
       light: "#63ccff",
       main: "#009be5",
-      dark: "#006db3",
-    },
+      dark: "#006db3"
+    }
   },
   typography: {
     h5: {
       fontWeight: 500,
       fontSize: 26,
-      letterSpacing: 0.5,
-    },
-  },
-  shape: {
-    // borderRadius: 8,
+      letterSpacing: 0.5
+    }
   },
   props: {
     MuiTab: {
-      disableRipple: true,
-    },
+      disableRipple: true
+    }
   },
   mixins: {
     toolbar: {
-      minHeight: 48,
-    },
-  },
+      minHeight: 48
+    }
+  }
 });
 
 theme = {
@@ -71,30 +49,30 @@ theme = {
   overrides: {
     MuiDrawer: {
       paper: {
-        backgroundColor: "#18202c",
-      },
+        backgroundColor: "#18202c"
+      }
     },
     MuiButton: {
       label: {
-        textTransform: "none",
+        textTransform: "none"
       },
       contained: {
         boxShadow: "none",
         "&:active": {
-          boxShadow: "none",
-        },
-      },
+          boxShadow: "none"
+        }
+      }
     },
     MuiTabs: {
       root: {
-        marginLeft: theme.spacing(1),
+        marginLeft: theme.spacing(1)
       },
       indicator: {
         height: 3,
         borderTopLeftRadius: 3,
         borderTopRightRadius: 3,
-        backgroundColor: theme.palette.common.white,
-      },
+        backgroundColor: theme.palette.common.white
+      }
     },
     MuiTab: {
       root: {
@@ -104,179 +82,164 @@ theme = {
         padding: 0,
         [theme.breakpoints.up("md")]: {
           padding: 0,
-          minWidth: 0,
-        },
-      },
+          minWidth: 0
+        }
+      }
     },
     MuiIconButton: {
       root: {
-        padding: theme.spacing(1),
-      },
+        padding: theme.spacing(1)
+      }
     },
     MuiTooltip: {
       tooltip: {
-        borderRadius: 4,
-      },
+        borderRadius: 4
+      }
     },
     MuiDivider: {
       root: {
-        backgroundColor: "#404854",
-      },
+        backgroundColor: "#404854"
+      }
     },
     MuiListItemText: {
       primary: {
-        fontWeight: theme.typography.fontWeightMedium,
-      },
+        fontWeight: theme.typography.fontWeightMedium
+      }
     },
     MuiListItemIcon: {
       root: {
         color: "inherit",
         marginRight: 0,
         "& svg": {
-          fontSize: 20,
-        },
-      },
+          fontSize: 20
+        }
+      }
     },
     MuiAvatar: {
       root: {
         width: 32,
-        height: 32,
-      },
-    },
-  },
+        height: 32
+      }
+    }
+  }
 };
 
-const drawerWidth = 256;
+const drawerWidth = 250;
 
 const styles = {
   root: {
     display: "flex",
-    minHeight: "100vh",
+    minHeight: "100vh"
   },
   drawer: {
     [theme.breakpoints.up("sm")]: {
       width: drawerWidth,
-      flexShrink: 0,
-    },
+      flexShrink: 0
+    }
   },
   app: {
     flex: 1,
     display: "flex",
-    flexDirection: "column",
+    flexDirection: "column"
   },
   main: {
     flex: 1,
     padding: theme.spacing(0, 0),
-    background: "#eaeff1",
+    background: "#eaeff1"
   },
   footer: {
     padding: theme.spacing(2),
-    background: "#eaeff1",
-  },
+    background: "#eaeff1"
+  }
 };
 
-const useStyles = makeStyles((theme) => ({
-  paper: {
-    marginTop: theme.spacing(8),
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-  },
-  avatar: {
-    margin: theme.spacing(1),
-    backgroundColor: theme.palette.secondary.main,
-  },
-  form: {
-    width: "100%", // Fix IE 11 issue.
-    marginTop: theme.spacing(1),
-  },
-  submit: {
-    margin: theme.spacing(3, 0, 2),
-  },
-}));
-
-const masterIps = [
-  "http://35.226.186.203:4000/worker",
-  "http://35.224.26.195:4000/worker",
-];
+function backOffForRetry(retryNum) {
+  // Exp between 9 and 18 (corresponds to 512 ms to 262144 ms)
+  const exp = Math.min(retryNum + 9, 18);
+  const nominalDelay = 2 ** exp;
+  return nominalDelay * (Math.random() + 0.5);
+}
 
 class Home extends React.Component {
   static contextType = UserContext;
   constructor(props) {
     super(props);
+
     this.state = {
-      mobileOpen: false,
-      loginStatus: true,
       workerInfo: "",
       isLoaded: false,
-      error: null,
       connectionAttempts: 0,
-      socket: null,
+      socket: null
     };
+
     // this.handleChange = this.handleChange.bind(this);
     // this.handleSubmit = this.handleSubmit.bind(this);
-    this.handleDrawerToggle = this.handleDrawerToggle.bind(this);
     this.connectMaster = this.connectMaster.bind(this);
     this.connectWorker = this.connectWorker.bind(this);
   }
 
   componentDidMount() {
-    // 35.224.26.195
-    // 35.226.186.203
-    this.connectMaster(masterIps[0], masterIps[1]);
+    this.connectMaster(MASTER_STATIC_IPS[0], MASTER_STATIC_IPS[1]);
   }
 
-  handleDrawerToggle = () => {
-    this.state.mobileOpen = !this.state.mobileOpen;
-  };
+  connectMaster(ipOne, ipTwo) {
+    console.log(
+      "trying to connect to master, attempt",
+      this.state.connectionAttempts
+    );
 
-  connectMaster(primaryIp, backupIp) {
-    axios.get(primaryIp).then(
-      (result) => {
-        if (result.data.worker == null) {
+    axios
+      .get(ipOne)
+      .then(result => {
+        if (!result.data.worker) {
           this.setState({
             isLoaded: false,
-            connectionAttempts: this.state.connectionAttempts + 1,
+            connectionAttempts: this.state.connectionAttempts + 1
           });
-          if (this.state.connectionAttempts > 3) {
-            console.log("give up");
-          } else {
-            setTimeout(() => {
-              this.connectMaster(backupIp, primaryIp);
-            }, 5000);
-          }
+
+          setTimeout(() => {
+            this.connectMaster(ipTwo, ipOne);
+          }, backOffForRetry(this.state.connectionAttempts));
         } else {
+          console.log("got worker from master", result.data.worker);
           this.connectWorker(result.data.worker);
         }
-      },
-      (error) => {
-        console.log("connection didnt work");
+      })
+      .catch(error => {
+        console.error("master connection error", error);
         this.setState({
           isLoaded: false,
-          error,
-          connectionAttempts: this.state.connectionAttempts + 1,
+          connectionAttempts: this.state.connectionAttempts + 1
         });
-        if (this.state.connectionAttempts > 3) {
-          console.log("give up");
-        } else {
-          setTimeout(() => {
-            this.connectMaster(backupIp, primaryIp);
-          }, 5000);
-        }
-      }
-    );
+
+        setTimeout(() => {
+          this.connectMaster(ipTwo, ipOne);
+        }, backOffForRetry(this.state.connectionAttempts));
+      });
   }
 
   connectWorker(worker) {
-    this.setState({
-      isLoaded: true,
-      workerInfo: worker,
-    });
-    const socket = io("http://" + worker.publicIp + ":4001");
+    const socket = io(`http://${worker.publicIp}:${WORKER_SOCKET_PORT}`);
+
     socket.on("connect", () => {
-      this.setState(() => ({
-        socket: socket,
-      }));
+      console.log("connected to worker", worker);
+      this.setState({
+        isLoaded: true,
+        workerInfo: worker,
+        socket: socket
+      });
+    });
+
+    socket.on("disconnect", () => {
+      console.log("disconnected from worker", worker);
+      socket.close();
+      this.setState({
+        isLoaded: false,
+        workerInfo: "",
+        socket: null
+      });
+
+      this.connectMaster(MASTER_STATIC_IPS[0], MASTER_STATIC_IPS[1]);
     });
     // disconnect
     socket.on("disconnect", () => {
@@ -289,34 +252,24 @@ class Home extends React.Component {
     if (!this.state.isLoaded) {
       return <LoadingScreen />;
     }
-    console.log(user);
-    return this.state.loginStatus ? (
+
+    const { userInfo } = this.props;
+
+    return (
       <ThemeProvider theme={theme}>
         <div className={this.props.classes.root}>
           <CssBaseline />
           <nav className={this.props.classes.drawer}>
-            <Hidden smUp implementation="js">
-              <Navigator
-                PaperProps={{ style: { width: drawerWidth } }}
-                variant="temporary"
-                open={this.state.mobileOpen}
-                onClose={this.handleDrawerToggle}
-              />
-            </Hidden>
-            <Hidden xsDown implementation="css">
-              <Navigator PaperProps={{ style: { width: drawerWidth } }} />
-            </Hidden>
+            <Navigator PaperProps={{ style: { width: drawerWidth } }} />
           </nav>
           <div className={this.props.classes.app}>
-            {/*<Header onDrawerToggle={handleDrawerToggle} />*/}
-
             <main className={this.props.classes.main}>
               <Switch>
                 <Redirect exact from="/" to="my-courses" />
                 <Route
                   exact
                   path={"/my-courses"}
-                  render={(props) => (
+                  render={props => (
                     <Courses
                       {...props}
                       workerInfo={this.state.workerInfo}
@@ -327,7 +280,7 @@ class Home extends React.Component {
                 {/*<Route path={"/my-courses"} component={Courses}/>*/}
                 <Route
                   path={"/my-files"}
-                  render={(props) => (
+                  render={props => (
                     <MyFiles
                       {...props}
                       workerInfo={this.state.workerInfo}
@@ -339,7 +292,7 @@ class Home extends React.Component {
                 {/*<Route path={"/my-files"} component={MyFiles}/>*/}
                 <Route
                   path={"/browse-content"}
-                  render={(props) => (
+                  render={props => (
                     <BrowseContent
                       {...props}
                       workerInfo={this.state.workerInfo}
@@ -351,29 +304,21 @@ class Home extends React.Component {
                 {/*<Route path={"/browse-content"} component={BrowseContent}/>*/}
                 <Route
                   path={"/course-page/"}
-                  render={(props) => (
+                  render={props => (
                     <ViewCourse
                       {...props}
                       workerInfo={"this.state.workerInfo"}
+                      userInfo={userInfo}
                     />
                   )}
                 />
               </Switch>
             </main>
-            <footer className={this.props.classes.footer}>
-              <Copyright />
-            </footer>
           </div>
         </div>
       </ThemeProvider>
-    ) : (
-      <LoginPage greeting="Welcome to React" />
     );
   }
 }
-
-// Home.propTypes = {
-//   classes: PropTypes.object.isRequired
-// };
 
 export default withStyles(styles)(Home);

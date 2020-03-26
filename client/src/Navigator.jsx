@@ -12,7 +12,7 @@ import ExitToAppIcon from "@material-ui/icons/ExitToApp";
 import SchoolIcon from "@material-ui/icons/School";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
 import AccountBalanceIcon from "@material-ui/icons/AccountBalance";
-import { AUTH } from './Firebase';
+import { AUTH } from "./Firebase";
 
 const categories = [
   {
@@ -62,6 +62,7 @@ const styles = theme => ({
     paddingBottom: theme.spacing(2)
   },
   firebase: {
+    userSelect: "none",
     fontSize: 24,
     color: theme.palette.common.white
   },
@@ -84,11 +85,7 @@ function Navigator(props) {
 
   function setActiveTab() {
     categories[0].children.forEach(function(element) {
-      if (window.location.href.includes(element.path)) {
-        element.active = true;
-      } else {
-        element.active = false;
-      }
+      element.active = window.location.href.includes(element.path);
     });
   }
 

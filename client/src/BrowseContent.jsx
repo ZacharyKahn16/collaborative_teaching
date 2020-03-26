@@ -5,7 +5,6 @@ import Toolbar from "@material-ui/core/Toolbar";
 import Typography from "@material-ui/core/Typography";
 import Paper from "@material-ui/core/Paper";
 import Grid from "@material-ui/core/Grid";
-// import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
 import Tooltip from "@material-ui/core/Tooltip";
 import IconButton from "@material-ui/core/IconButton";
@@ -17,58 +16,50 @@ import ContentBank from "./ContentBank";
 import FileList from "./FileList";
 import LoadingScreen from "./LoadingScreen";
 
-const styles = (theme) => ({
+const styles = theme => ({
   paper: {
-    // maxWidth: 936,
     margin: "auto",
-    overflow: "hidden",
+    maxHeight: "100vh",
+    overflowX: "hidden",
+    overflowY: "auto"
   },
   searchBar: {
-    borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
+    borderBottom: "1px solid rgba(0, 0, 0, 0.12)"
   },
   searchInput: {
-    fontSize: theme.typography.fontSize,
+    fontSize: theme.typography.fontSize
   },
   block: {
-    display: "block",
+    display: "block"
   },
   addUser: {
-    marginRight: theme.spacing(1),
+    marginRight: theme.spacing(1)
   },
   contentWrapper: {
-    margin: "40px 16px",
-  },
+    margin: "40px 16px"
+  }
 });
 
 const listOfFiles = [
   {
     filename: "book",
-    author: "daniel",
+    author: "daniel"
   },
   {
     filename: "book2",
-    author: "john",
+    author: "john"
   },
   {
     filename: "book3",
-    author: "mike",
-  },
+    author: "mike"
+  }
 ];
 
 class BrowseContent extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-      mobileOpen: false,
-    };
 
     this.handleSearchOnChange = this.handleSearchOnChange.bind(this);
-  }
-
-  handleDrawerToggle() {
-    this.setState({
-      mobileOpen: !this.state.mobileOpen,
-    });
   }
 
   handleSearchOnChange(e) {
@@ -85,12 +76,11 @@ class BrowseContent extends React.Component {
       return <LoadingScreen />;
     }
     return (
-      <Paper className={classes.paper}>
+      <Paper className={classes.paper} square>
         <Header
-          onDrawerToggle={this.handleDrawerToggle}
-          setTitle={{ name: "Content Bank" }}
-          setWorkerDis={{ name: workerInfo.id }}
-          setUsername={{ name: userName }}
+          title={"Content Bank"}
+          workerInfo={workerInfo}
+          userInfo={userInfo}
         />
         <AppBar
           className={classes.searchBar}
@@ -109,15 +99,12 @@ class BrowseContent extends React.Component {
                   placeholder="Search by author, course or file name."
                   InputProps={{
                     disableUnderline: true,
-                    className: classes.searchInput,
+                    className: classes.searchInput
                   }}
                   onKeyDown={this.handleSearchOnChange}
                 />
               </Grid>
               <Grid item>
-                {/*<Button variant="contained" color="primary" className={classes.addUser}>*/}
-                {/*    Add user*/}
-                {/*</Button>*/}
                 <Tooltip title="Reload">
                   <IconButton>
                     <RefreshIcon className={classes.block} color="inherit" />
@@ -139,7 +126,7 @@ class BrowseContent extends React.Component {
 }
 
 BrowseContent.propTypes = {
-  classes: PropTypes.object.isRequired,
+  classes: PropTypes.object.isRequired
 };
 
 export default withStyles(styles)(BrowseContent);

@@ -120,14 +120,14 @@ class FileList extends Component {
 
   handleDeleteModalOpen = () => {
     this.setState(() => ({
-      deleteModalOpen: true,
+      deleteModalOpen: true
     }));
   };
 
   handleModalClose = () => {
     this.setState(() => ({
       editModalOpen: false,
-      deleteModalOpen: false,
+      deleteModalOpen: false
     }));
   };
 
@@ -222,7 +222,7 @@ class FileList extends Component {
           BackdropComponent={Backdrop}
           BackdropProps={{
             timeout: 500,
-            style: { backgroundColor: "rgba(0,0,0,0.7)" },
+            style: { backgroundColor: "rgba(0,0,0,0.7)" }
           }}
         >
           <Fade in={this.state.editModalOpen}>
@@ -242,7 +242,7 @@ class FileList extends Component {
 }
 
 FileList.propTypes = {
-  classes: PropTypes.object.isRequired,
+  classes: PropTypes.object.isRequired
 };
 
 export default FileList;

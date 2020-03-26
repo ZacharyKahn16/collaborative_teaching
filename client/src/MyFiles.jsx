@@ -2,7 +2,6 @@ import React from "react";
 import PropTypes from "prop-types";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
-// import Typography from "@material-ui/core/Typography";
 import Paper from "@material-ui/core/Paper";
 import Grid from "@material-ui/core/Grid";
 import Button from "@material-ui/core/Button";
@@ -19,67 +18,61 @@ import UploadCard from "./UploadCard";
 import Modal from "@material-ui/core/Modal";
 import Backdrop from "@material-ui/core/Backdrop";
 import Fade from "@material-ui/core/Fade";
-import LoadingScreen from "./LoadingScreen";
 
-const styles = (theme) => ({
+const styles = theme => ({
   paper: {
-    // maxWidth: 936,
     margin: "auto",
-    overflow: "hidden",
+    maxHeight: "100vh",
+    overflowX: "hidden",
+    overflowY: "auto"
   },
   searchBar: {
-    borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
+    borderBottom: "1px solid rgba(0, 0, 0, 0.12)"
   },
   searchInput: {
-    fontSize: theme.typography.fontSize,
+    fontSize: theme.typography.fontSize
   },
   block: {
-    display: "block",
+    display: "block"
   },
   addUser: {
-    marginRight: theme.spacing(1),
+    marginRight: theme.spacing(1)
   },
   contentWrapper: {
-    margin: "40px 16px",
+    margin: "20px 15px 40px 15px"
   },
   addFileButton: {
-    marginRight: "5px",
-  },
+    marginRight: "5px"
+  }
 });
 
 class MyFiles extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      mobileOpen: false,
-      uploadModalOpen: false,
+      uploadModalOpen: false
     };
 
     this.handleOpenUploadModal = this.handleOpenUploadModal.bind(this);
     this.handleCloseUploadModal = this.handleCloseUploadModal.bind(this);
   }
 
-  handleDrawerToggle() {
-    this.setState({
-      mobileOpen: !this.state.mobileOpen,
-    });
-  }
-
   handleOpenUploadModal() {
     this.setState(() => ({
-      uploadModalOpen: true,
+      uploadModalOpen: true
     }));
   }
 
   handleCloseUploadModal() {
     this.setState(() => ({
-      uploadModalOpen: false,
+      uploadModalOpen: false
     }));
   }
 
   componentDidMount() {
     // mounted
   }
+
   render() {
     const { classes, workerInfo, socket, userName } = this.props;
     if (socket == null) {
@@ -87,12 +80,11 @@ class MyFiles extends React.Component {
     }
 
     return (
-      <Paper className={classes.paper}>
+      <Paper className={classes.paper} square={true}>
         <Header
-          onDrawerToggle={this.handleDrawerToggle}
-          setTitle={{ name: "My Files" }}
-          setWorkerDis={{ name: workerInfo.id }}
-          setUsername={{ name: userName }}
+          title={"My Files"}
+          workerInfo={workerInfo}
+          userInfo={userInfo}
         />
         <AppBar
           className={classes.searchBar}
@@ -111,7 +103,7 @@ class MyFiles extends React.Component {
                   placeholder="Search by course or file name."
                   InputProps={{
                     disableUnderline: true,
-                    className: classes.searchInput,
+                    className: classes.searchInput
                   }}
                 />
               </Grid>
@@ -146,7 +138,7 @@ class MyFiles extends React.Component {
               BackdropComponent={Backdrop}
               BackdropProps={{
                 timeout: 500,
-                style: { backgroundColor: "rgba(0,0,0,0.7)" },
+                style: { backgroundColor: "rgba(0,0,0,0.7)" }
               }}
             >
               <Fade in={this.state.uploadModalOpen}>
@@ -159,7 +151,7 @@ class MyFiles extends React.Component {
           </Toolbar>
         </AppBar>
         <div className={classes.contentWrapper}>
-          <FileList socket={socket} />
+          <FileList socket={socket} classes={classes} />
         </div>
       </Paper>
     );
@@ -167,7 +159,7 @@ class MyFiles extends React.Component {
 }
 
 MyFiles.propTypes = {
-  classes: PropTypes.object.isRequired,
+  classes: PropTypes.object.isRequired
 };
 
 export default withStyles(styles)(MyFiles);
