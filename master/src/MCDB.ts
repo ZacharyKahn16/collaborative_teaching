@@ -16,7 +16,7 @@ export function insertedFile(
   ownerId: string,
 ) {
   return fs.addToCollection(FILE_COLLECTION, {
-    fileCreationTime: timestamp,
+    lastUpdated: timestamp,
     fdbLocations: fdbLocations,
     courseIds: courseIds,
     readOnlyUserIDs: readOnlyUserIds,
@@ -38,7 +38,7 @@ export function insertFileWithSpecifiedFileId(
   ownerId: string,
 ) {
   return fs.setDocument(FILE_COLLECTION, fileId, {
-    fileCreationTime: timestamp,
+    lastUpdated: timestamp,
     fdbLocations: fdbLocations,
     courseIds: courseIds,
     readOnlyUserIDs: readOnlyUserIds,
@@ -58,7 +58,7 @@ export function updateFile(
   ownerId: string,
 ) {
   return fs.updateDocument(FILE_COLLECTION, fileId, {
-    fileCreationTime: timestamp,
+    lastUpdated: timestamp,
     fdbLocations: fdbLocations,
     name: fileName,
     fileHash: fileHash,
