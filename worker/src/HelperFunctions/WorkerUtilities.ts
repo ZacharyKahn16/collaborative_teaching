@@ -107,7 +107,7 @@ export async function retrieveFdbLocations(docId: string): Promise<any[]> {
       throw err;
     });
 
-  if (docData === null) {
+  if (!docData) {
     return [];
   }
   return docData['fdbLocations'];

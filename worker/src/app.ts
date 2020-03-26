@@ -72,7 +72,7 @@ async function sendAllFilesToClient(socket: any) {
 // Broadcast all files to all clients in network
 async function broadcastAllFilesToClients() {
   const allFiles = await getAllFiles();
-  socketServer.sockets.emit(SEND_ALL_FILES, allFiles);
+  socketServer.emit(SEND_ALL_FILES, allFiles);
 }
 
 socketServer.on(CONNECTION_EVENT, function(socket) {
