@@ -21,6 +21,7 @@ import LoadingScreen from "./LoadingScreen";
 import { Switch, Redirect } from "react-router-dom";
 import axios from "axios";
 import io from "socket.io-client";
+import { UserContext } from "./UserContext";
 
 function Copyright() {
   return (
@@ -200,6 +201,7 @@ const masterIps = [
 ];
 
 class Home extends React.Component {
+  static contextType = UserContext;
   constructor(props) {
     super(props);
     this.state = {
@@ -229,12 +231,9 @@ class Home extends React.Component {
   };
 
   connectMaster(primaryIp, backupIp) {
-    console.log("trying to connect................");
     axios.get(primaryIp).then(
       (result) => {
-        console.log("worked!!");
         if (result.data.worker == null) {
-          console.log("null");
           this.setState({
             isLoaded: false,
             connectionAttempts: this.state.connectionAttempts + 1,
@@ -247,7 +246,6 @@ class Home extends React.Component {
             }, 5000);
           }
         } else {
-          console.log(result);
           this.connectWorker(result.data.worker);
         }
       },
@@ -258,7 +256,6 @@ class Home extends React.Component {
           error,
           connectionAttempts: this.state.connectionAttempts + 1,
         });
-        console.log(this.state.connectionAttempts);
         if (this.state.connectionAttempts > 3) {
           console.log("give up");
         } else {
@@ -271,7 +268,6 @@ class Home extends React.Component {
   }
 
   connectWorker(worker) {
-    console.log(worker);
     this.setState({
       isLoaded: true,
       workerInfo: worker,
@@ -281,37 +277,19 @@ class Home extends React.Component {
       this.setState(() => ({
         socket: socket,
       }));
-      console.log("connected");
     });
-
-    // Send worker a request to write a file into the FDB
-    // socket.emit("Insert File", {
-    //   fileName: "Test-File.txt",
-    //   fileContents: "Hello World 1",
-    //   fileHash: "XXXXXXXX",
-    //   fileType: "String"
-    // });
-
-    // Retrieving file
-    // socket.emit("Retrieve File", {
-    //   fileName: '04d9a6bb-2167-41ed-8bb8-f00d3dfb42e9' // some id
-    // })
-
-    // Database List
-
-    // Listen to worker responses here
-    // socket.on("Server Response", function(msg) {
-    //   console.log(msg);
-    // });
+    // disconnect
+    socket.on("disconnect", () => {
+      this.connectMaster(masterIps[0], masterIps[1]);
+    });
   }
 
   render() {
+    const { user } = this.context;
     if (!this.state.isLoaded) {
       return <LoadingScreen />;
     }
-
-    console.log(this.state.workerInfo);
-    const { userInfo } = this.props;
+    console.log(user);
     return this.state.loginStatus ? (
       <ThemeProvider theme={theme}>
         <div className={this.props.classes.root}>
@@ -342,7 +320,7 @@ class Home extends React.Component {
                     <Courses
                       {...props}
                       workerInfo={this.state.workerInfo}
-                      userName={userInfo}
+                      userName={user.name}
                     />
                   )}
                 />
@@ -354,7 +332,7 @@ class Home extends React.Component {
                       {...props}
                       workerInfo={this.state.workerInfo}
                       socket={this.state.socket}
-                      userName={userInfo}
+                      userName={user.name}
                     />
                   )}
                 />
@@ -365,7 +343,8 @@ class Home extends React.Component {
                     <BrowseContent
                       {...props}
                       workerInfo={this.state.workerInfo}
-                      userName={userInfo}
+                      socket={this.state.socket}
+                      userName={user.name}
                     />
                   )}
                 />

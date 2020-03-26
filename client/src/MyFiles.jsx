@@ -78,12 +78,10 @@ class MyFiles extends React.Component {
   }
 
   componentDidMount() {
-    // console.log("mounted")
+    // mounted
   }
   render() {
     const { classes, workerInfo, socket, userName } = this.props;
-    console.log("Socket received:");
-    console.log(socket);
     if (socket == null) {
       return <LoadingScreen />;
     }

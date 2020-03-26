@@ -6,20 +6,12 @@ const INSERT_FILE = "Insert File";
 const UPDATE_FILE = "Update File";
 const DELETE_FILE = "Delete File";
 const SERVER_RESP = "Server Response";
-const GET_FILES = "Get All Files";
 
 const retrieveFile = (socket, docId, requestId) => {
   socket.emit(RETRIEVE_FILE, {
     // fileName: fileName
     docId: docId,
     requestId: requestId,
-  });
-};
-
-const getAllFiles = (socket, ownerId, requestId) => {
-  socket.emit(GET_FILES, {
-    ownerId: ownerId,
-    requestId: uuidv4(),
   });
 };
 
@@ -49,15 +41,15 @@ const deleteFile = async (socket) => {
 
 //update a file
 const updateFile = async (socket, file, docId) => {
-  // const textContents = await file.text();
-  // socket.emit(UPDATE_FILE, {
-  //     docId: docId,
-  //     fileName: file.name,
-  //     fileContents: textContents,
-  //     fileType: file.type,
-  //     requestId: uuidv4(),
-  //     fileHash: file.size
-  // });
+  const textContents = await file.text();
+  socket.emit(UPDATE_FILE, {
+    docId: docId,
+    fileName: file.name,
+    fileContents: textContents,
+    fileType: file.type,
+    requestId: uuidv4(),
+    fileHash: file.size,
+  });
 };
 
 const listen = (socket, cb) => {
@@ -67,4 +59,11 @@ const listen = (socket, cb) => {
   });
 };
 
-export { writeNewFile, retrieveFile, listen, updateFile, getAllFiles };
+const retrieveAllFiles = (socket, cb) => {
+  console.log("Waiting for all files");
+  socket.on("All Files", (resp) => {
+    cb(resp);
+  });
+};
+
+export { writeNewFile, retrieveFile, listen, updateFile, retrieveAllFiles };

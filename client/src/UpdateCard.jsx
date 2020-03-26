@@ -18,13 +18,11 @@ class UpdateCard extends Component {
 
     this.onBrowseChange = this.onBrowseChange.bind(this);
     this.cancelUpload = this.cancelUpload.bind(this);
-    this.updateFile = this.updateFile.bind(this);
+    this.updateFileBtn = this.updateFileBtn.bind(this);
   }
 
   componentDidMount() {
-    console.log(this.props.fileName);
     const { socket } = this.props;
-    console.log("mount");
     listen(socket, (msg) => {
       console.log("callback");
       console.log(msg);
@@ -48,9 +46,11 @@ class UpdateCard extends Component {
     }));
   };
 
-  updateFile = () => {
+  updateFileBtn = () => {
     const { socket } = this.props;
-    // updateFile(socket, this.state.uploadedFile, );
+    console.log(this.props.fileInfo.fileId);
+    console.log(this.state.uploadedFile);
+    updateFile(socket, this.state.uploadedFile, this.props.fileInfo.fileId);
     console.log("uploading");
   };
 
@@ -64,7 +64,7 @@ class UpdateCard extends Component {
           <Typography variant="body2" component="p" paragraph gutterBottom>
             Browse for a file on your computer to update this file.
             <br />
-            File to Update: {this.props.fileName}
+            File to Update: {this.props.fileInfo.fileName}
           </Typography>
           <Grid className="upload-box-container" container spacing={0}>
             <Grid className="upload-box-left" item xs={9}>
@@ -100,7 +100,7 @@ class UpdateCard extends Component {
             variant="contained"
             color={this.state.uploadedFile ? "primary" : ""}
             disabled={!this.state.uploadedFile}
-            onClick={this.updateFile}
+            onClick={this.updateFileBtn}
           >
             Upload
           </Button>

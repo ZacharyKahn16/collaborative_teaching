@@ -13,7 +13,6 @@ class App extends React.Component {
 
   render() {
     const { user } = this.context;
-    console.log(user);
 
     if (!user) {
       return <LoginPage />;
@@ -21,10 +20,7 @@ class App extends React.Component {
 
     return (
       <BrowserRouter>
-        <Route
-          exact
-          render={(props) => <Home {...props} userInfo={user.name} />}
-        />
+        <Route exact component={Home} />
       </BrowserRouter>
     );
   }

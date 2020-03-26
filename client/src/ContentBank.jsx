@@ -10,20 +10,15 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import "./Styles/FileList.css";
 import IconButton from "@material-ui/core/IconButton";
-import EditIcon from "@material-ui/icons/Edit";
 import DeleteIcon from "@material-ui/icons/Delete";
 import Modal from "@material-ui/core/Modal";
 import Backdrop from "@material-ui/core/Backdrop";
 import Fade from "@material-ui/core/Fade";
 import UpdateCard from "./UpdateCard";
-import {
-  listen,
-  retrieveFile,
-  writeNewFile,
-  retrieveAllFiles,
-} from "./service";
+import { listen, retrieveAllFiles } from "./service";
+import AddIcon from "@material-ui/icons/Add";
 
-class FileList extends Component {
+class ContentBank extends Component {
   constructor(props) {
     super(props);
 
@@ -38,7 +33,6 @@ class FileList extends Component {
     this.handleEditModalOpen = this.handleEditModalOpen.bind(this);
     this.handleDeleteModalOpen = this.handleDeleteModalOpen.bind(this);
     this.handleModalClose = this.handleModalClose.bind(this);
-    this.createData = this.createData.bind(this);
   }
 
   componentDidMount() {
@@ -47,6 +41,14 @@ class FileList extends Component {
       console.log("callback");
       console.log(msg);
     });
+    console.log("mount");
+
+    retrieveAllFiles(socket, (msg) => {
+      console.log(msg);
+      this.populateFileTable(msg);
+    });
+
+    console.log(socket);
   }
 
   populateFileTable = (msg) => {
@@ -70,46 +72,6 @@ class FileList extends Component {
     return { fileName, fileType, courseName, owner, dateUploaded };
   };
 
-  rows = [];
-
-  // rows = [
-  //   this.createData(
-  //     "Replication & Fault Tolerance.ppt",
-  //     "PPT",
-  //     "CPSC 559",
-  //     "Garland Khuu",
-  //     "02-21-2020"
-  //   ),
-  //   this.createData(
-  //     "Dynamic Programming.pdf",
-  //     "PDF",
-  //     "CPSC 413",
-  //     "Garland Khuu",
-  //     "11-16-2019"
-  //   ),
-  //   this.createData(
-  //     "Utilitarianism.pdf",
-  //     "PDF",
-  //     "PHIL 249",
-  //     "Garland Khuu",
-  //     "09-20-2016"
-  //   ),
-  //   this.createData(
-  //     "10 Tips for Success in Computer Science.ppt",
-  //     "PPT",
-  //     "",
-  //     "Garland Khuu",
-  //     "03-05-2020"
-  //   ),
-  //   this.createData(
-  //     "Password Hashing.pdf",
-  //     "PDF",
-  //     "CPSC 329",
-  //     "Garland Khuu",
-  //     "01-28-2019"
-  //   ),
-  // ];
-
   handleEditModalOpen = (file) => {
     console.log(file);
     this.setState(() => ({
@@ -132,17 +94,10 @@ class FileList extends Component {
   };
 
   render() {
-    const { socket } = this.props;
-    retrieveAllFiles(socket, (msg) => {
-      console.log(msg);
-      if (msg.length != 0) {
-        this.populateFileTable(msg);
-      }
-    });
     if (this.state.allDocsReady == false) {
       return (
         <Typography color="textSecondary" align="center">
-          No docs loaded yet
+          No users for this project yet
         </Typography>
       );
     }
@@ -197,9 +152,9 @@ class FileList extends Component {
                   <IconButton
                     className="action-button"
                     key={row.fileName}
-                    onClick={() => this.handleEditModalOpen(row)}
+                    // onClick={() => this.handleEditModalOpen(row)}
                   >
-                    <EditIcon color="inherit" />
+                    <AddIcon color="inherit" />
                   </IconButton>
                   <IconButton
                     className="action-button"
@@ -241,8 +196,8 @@ class FileList extends Component {
   }
 }
 
-FileList.propTypes = {
+ContentBank.propTypes = {
   classes: PropTypes.object.isRequired,
 };
 
-export default FileList;
+export default ContentBank;
