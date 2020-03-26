@@ -32,6 +32,7 @@ const DELETE_FILE = 'Delete File';
 
 // Server message constants
 const SERVER_RESP = 'Server Response';
+const SEND_ALL_FILES = 'All Files';
 const SUCCESS = 'success';
 const FAILED = 'failed';
 
@@ -62,33 +63,20 @@ function sendSuccessMessage(socket: any, requestId: string, message: any) {
   });
 }
 
+// Send all files to a single client
+async function sendAllFilesToClient(socket: any) {
+  const allFiles = await getAllFiles();
+  socket.emit(SEND_ALL_FILES, allFiles);
+}
+
+// Broadcast all files to all clients in network
+async function broadcastAllFilesToClients() {
+  const allFiles = await getAllFiles();
+  socketServer.sockets.emit(SEND_ALL_FILES, allFiles);
+}
+
 socketServer.on(CONNECTION_EVENT, function(socket) {
-  /**
-   * Retrieves a list of all the files this
-   * user owns
-   *
-
-   Sample request JSON
-   {
-    "ownerId": "Daniel",
-    "requestId": "XCJ321CSAD"
-   }
-
-   response ex) [34.70.206.197, 35.184.8.156] or false
-   */
-  socket.on(GET_ALL_FILES_META, async function(req) {
-    const ownerId = req.ownerId;
-    const requestId = req.requestId;
-    if (!ownerId || !requestId) {
-      sendErrorMessage(socket, requestId, 'Missing request parameters');
-      return;
-    }
-
-    // Search fire base for a list of files this user owns
-    console.log(await getAllFiles());
-    // Format this list before sending it back
-  });
-
+  sendAllFilesToClient(socket);
   /**
    * Retrieves a File
    *
@@ -190,18 +178,34 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
     }
 
     const replicasToMake = replicasNeeded(fdbList);
-    await createReplicas(
-      socket,
-      fdbList,
-      replicasToMake,
-      docId,
-      fileName,
-      fileContents,
-      fileHash,
-      fileType,
-      timeStamp,
-      requestId,
-    );
+    try {
+      const successfulInserts = await createReplicas(
+        fdbList,
+        replicasToMake,
+        docId,
+        fileName,
+        fileContents,
+        fileHash,
+        fileType,
+        timeStamp,
+      );
+
+      if (successfulInserts.length <= 0) {
+        sendErrorMessage(socket, requestId, 'No successful inserts into FDBs');
+        LOGGER.debug('No successful inserts into FDBs');
+        return;
+      }
+
+      sendSuccessMessage(
+        socket,
+        requestId,
+        `Successful inserts into ${successfulInserts.map((elem) => elem.getIp()).join()}`,
+      );
+    } catch (err) {
+      sendErrorMessage(socket, requestId, `Unable to create replicas because: ${err}`);
+    }
+
+    broadcastAllFilesToClients();
   });
 
   /**
@@ -338,6 +342,8 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
         sendErrorMessage(socket, requestId, `Unable to create replicas because: ${err}`);
       }
     }
+
+    broadcastAllFilesToClients();
   });
 
   // TODO: Retrieve list of files from Firebase
@@ -381,4 +387,7 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
 const PORT = process.env.PORT || 4001;
 httpServer.listen(PORT, () => {
   LOGGER.debug(`Server started at http://localhost:${PORT}`);
+  setInterval(() => {
+    broadcastAllFilesToClients();
+  }, 1000 * 60);
 });
