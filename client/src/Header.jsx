@@ -6,25 +6,27 @@ import IconButton from "@material-ui/core/IconButton";
 import Toolbar from "@material-ui/core/Toolbar";
 import Typography from "@material-ui/core/Typography";
 import { withStyles } from "@material-ui/core/styles";
+import { UserContext } from "./UserContext";
 
-const styles = theme => ({
+const styles = (theme) => ({
   appBar: {
-    zIndex: 0
+    zIndex: 0,
   },
   toolBar: {
     borderRadius: 0,
     minHeight: "60px",
-    userSelect: "none"
+    userSelect: "none",
   },
   iconButtonAvatar: {
-    padding: 4
-  }
+    padding: 4,
+  },
 });
 
 class Header extends React.Component {
+  static contextType = UserContext;
   render() {
-    const { classes, title, workerInfo, userInfo } = this.props;
-
+    const { classes, title, workerInfo } = this.props;
+    const { user } = this.context;
     return (
       <AppBar
         component="div"
@@ -47,7 +49,7 @@ class Header extends React.Component {
             </Grid>
             <Grid item>
               <IconButton className={classes.iconButtonAvatar} disabled={true}>
-                <Avatar src="/static/images/avatar/1.jpg" alt={userInfo.name} />
+                <Avatar src="/static/images/avatar/1.jpg" alt={user} />
               </IconButton>
             </Grid>
           </Grid>

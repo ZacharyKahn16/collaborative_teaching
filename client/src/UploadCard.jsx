@@ -13,7 +13,7 @@ class UploadCard extends Component {
 
     this.state = {
       fileDisplayName: "",
-      uploadedFile: null
+      uploadedFile: null,
     };
 
     this.onBrowseChange = this.onBrowseChange.bind(this);
@@ -25,18 +25,18 @@ class UploadCard extends Component {
     const { socket } = this.props;
     console.log(socket);
 
-    listen(socket, msg => {
+    listen(socket, (msg) => {
       console.log("callback");
       console.log(msg);
     });
   }
 
-  onBrowseChange = e => {
+  onBrowseChange = (e) => {
     let files = e.target.files;
 
     this.setState(() => ({
       fileDisplayName: files[0].name,
-      uploadedFile: files[0]
+      uploadedFile: files[0],
     }));
   };
 
@@ -44,7 +44,7 @@ class UploadCard extends Component {
     this.props.closeModal();
     this.setState(() => ({
       fileDisplayName: "",
-      uploadedFile: null
+      uploadedFile: null,
     }));
   };
 

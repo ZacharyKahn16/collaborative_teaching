@@ -16,12 +16,7 @@ import Modal from "@material-ui/core/Modal";
 import Backdrop from "@material-ui/core/Backdrop";
 import Fade from "@material-ui/core/Fade";
 import UpdateCard from "./UpdateCard";
-import {
-  listen,
-  retrieveFile,
-  writeNewFile,
-  retrieveAllFiles,
-} from "./service";
+import { listen, retrieveAllFiles } from "./service";
 
 class FileList extends Component {
   constructor(props) {
@@ -70,46 +65,6 @@ class FileList extends Component {
     return { fileName, fileType, courseName, owner, dateUploaded };
   };
 
-  rows = [];
-
-  // rows = [
-  //   this.createData(
-  //     "Replication & Fault Tolerance.ppt",
-  //     "PPT",
-  //     "CPSC 559",
-  //     "Garland Khuu",
-  //     "02-21-2020"
-  //   ),
-  //   this.createData(
-  //     "Dynamic Programming.pdf",
-  //     "PDF",
-  //     "CPSC 413",
-  //     "Garland Khuu",
-  //     "11-16-2019"
-  //   ),
-  //   this.createData(
-  //     "Utilitarianism.pdf",
-  //     "PDF",
-  //     "PHIL 249",
-  //     "Garland Khuu",
-  //     "09-20-2016"
-  //   ),
-  //   this.createData(
-  //     "10 Tips for Success in Computer Science.ppt",
-  //     "PPT",
-  //     "",
-  //     "Garland Khuu",
-  //     "03-05-2020"
-  //   ),
-  //   this.createData(
-  //     "Password Hashing.pdf",
-  //     "PDF",
-  //     "CPSC 329",
-  //     "Garland Khuu",
-  //     "01-28-2019"
-  //   ),
-  // ];
-
   handleEditModalOpen = (file) => {
     console.log(file);
     this.setState(() => ({
@@ -120,14 +75,14 @@ class FileList extends Component {
 
   handleDeleteModalOpen = () => {
     this.setState(() => ({
-      deleteModalOpen: true
+      deleteModalOpen: true,
     }));
   };
 
   handleModalClose = () => {
     this.setState(() => ({
       editModalOpen: false,
-      deleteModalOpen: false
+      deleteModalOpen: false,
     }));
   };
 
@@ -135,11 +90,11 @@ class FileList extends Component {
     const { socket } = this.props;
     retrieveAllFiles(socket, (msg) => {
       console.log(msg);
-      if (msg.length != 0) {
+      if (msg.length !== 0) {
         this.populateFileTable(msg);
       }
     });
-    if (this.state.allDocsReady == false) {
+    if (this.state.allDocsReady === false) {
       return (
         <Typography color="textSecondary" align="center">
           No docs loaded yet
@@ -222,7 +177,7 @@ class FileList extends Component {
           BackdropComponent={Backdrop}
           BackdropProps={{
             timeout: 500,
-            style: { backgroundColor: "rgba(0,0,0,0.7)" }
+            style: { backgroundColor: "rgba(0,0,0,0.7)" },
           }}
         >
           <Fade in={this.state.editModalOpen}>
@@ -242,7 +197,7 @@ class FileList extends Component {
 }
 
 FileList.propTypes = {
-  classes: PropTypes.object.isRequired
+  classes: PropTypes.object.isRequired,
 };
 
 export default FileList;
