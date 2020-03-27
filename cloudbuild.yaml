@@ -5,7 +5,9 @@ steps:
   - name: "gcr.io/cloud-builders/gsutil"
     args: ["rm", "-r", "gs://collaborative-teaching.appspot.com/worker"]
   - name: "gcr.io/cloud-builders/gsutil"
-    args: ["rm", "-r", "gs://collaborative-teaching.appspot.com/scripts"]
+    args: ["rm", "-r", "gs://collaborative-teaching.appspot.com/client"]
+  - name: "gcr.io/cloud-builders/gsutil"
+    args: ["rm", "-r", "gs://collaborative-teaching.appspot.com/build"]
 
   # Upload Master Code
   - name: "gcr.io/cloud-builders/gsutil"
@@ -22,7 +24,7 @@ steps:
   # Install React app dependencies
   - name: "gcr.io/cloud-builders/npm"
     dir: "client"
-    args: ["ci"]
+    args: ["install"]
 
   # Build React app
   - name: "gcr.io/cloud-builders/npm"
@@ -30,13 +32,7 @@ steps:
     args: ["run", "build"]
 
   # Deploy React app
-  - name: "gcr.io/$PROJECT_ID/firebase"
-    dir: "client/build"
-    args:
-      [
-        "deploy",
-        "--debug",
-        "--token",
-        "1//06Wz6HOOUk265CgYIARAAGAYSNwF-L9IrZCyVKSN4_P45z2IQub1idM4TUTRR_hUnjD2u4KelPHAU83ikSIqj2E63fwHX5UeaOt4",
-      ]
+  - name: "gcr.io/cloud-builders/gsutil"
+    dir: "client"
+    args: ["cp", "-r", "build", "gs://collaborative-teaching.appspot.com/"]
 timeout: "1000s"
