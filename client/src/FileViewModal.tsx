@@ -39,7 +39,6 @@ class FileViewModal extends Component<FileViewModalPropType> {
 
   render() {
     const { classes, open, fileName, fileContent, onClose } = this.props;
-    console.log(fileContent);
     return (
       <Dialog
         className={classes.dialog}
@@ -58,8 +57,7 @@ class FileViewModal extends Component<FileViewModalPropType> {
         </IconButton>
         <DialogTitle>{fileName}</DialogTitle>
         <DialogContent>
-          testing
-          {/*<iframe src={fileContent} className={classes.iFrame} />*/}
+          <iframe src={fileContent} className={classes.iFrame} />
         </DialogContent>
       </Dialog>
     );

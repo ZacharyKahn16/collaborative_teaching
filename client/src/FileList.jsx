@@ -29,7 +29,6 @@ class FileList extends Component {
     this.state = {
       editModalOpen: false,
       deleteModalOpen: false,
-      viewModalOpen: false,
       selectedFile: {},
       allDocsReady: false,
       allDocs: [],
@@ -48,6 +47,9 @@ class FileList extends Component {
     listen(socket, (msg) => {
       console.log("callback");
       console.log(msg);
+      this.setState(() => ({
+        viewFile: msg.message[0],
+      }));
     });
   }
 
@@ -89,20 +91,16 @@ class FileList extends Component {
     }));
   };
 
-  handleViewModalOpen = () => {
+  handleViewModalOpen = (fileid) => {
     const { socket } = this.props;
-    // getting file to get content
-    retrieveFile(socket, this.state.allDocs[0].fileId, uuidv4());
-    this.setState(() => ({
-      viewModalOpen: true,
-    }));
+    retrieveFile(socket, fileid, uuidv4());
   };
 
   handleModalClose = () => {
     this.setState(() => ({
       editModalOpen: false,
       deleteModalOpen: false,
-      viewModalOpen: false,
+      viewFile: null,
     }));
   };
 
@@ -123,6 +121,14 @@ class FileList extends Component {
     }
     return (
       <TableContainer>
+        {this.state.viewFile !== null ? (
+          <FileViewModal
+            open={true}
+            fileName={this.state.viewFile.fileName}
+            fileContent={this.state.viewFile.fileContents}
+            onClose={this.handleModalClose}
+          />
+        ) : null}
         <Table aria-label="simple table">
           <TableHead>
             <TableRow className="bold">
@@ -156,18 +162,12 @@ class FileList extends Component {
                       href="#"
                       onClick={() => {
                         //TODO: View file
-                        this.handleViewModalOpen();
+                        this.handleViewModalOpen(row.fileId);
                       }}
                     >
                       {row.fileName}
                     </Link>
                   </Typography>
-                  <FileViewModal
-                    open={this.state.viewModalOpen}
-                    fileName={row.fileName}
-                    fileContent={"nothing"}
-                    onClose={this.handleModalClose}
-                  />
                 </TableCell>
                 <TableCell align="left">
                   {row.fileId ? row.fileId : "None"}
