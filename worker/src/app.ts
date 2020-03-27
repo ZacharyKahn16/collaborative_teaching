@@ -13,6 +13,7 @@ import express from 'express';
 import { Server } from 'http';
 import io from 'socket.io';
 import cors from 'cors';
+import { SHA256 } from 'crypto-js';
 
 const app = express();
 app.use(cors());
@@ -156,6 +157,13 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
 
     if (fdbList.length <= 0) {
       sendErrorMessage(socket, requestId, 'Not enough active FDBs');
+      return;
+    }
+
+    const newHash = SHA256(fileContents).toString();
+
+    if (newHash !== fileHash) {
+      sendErrorMessage(socket, requestId, 'File hashes do not match');
       return;
     }
 

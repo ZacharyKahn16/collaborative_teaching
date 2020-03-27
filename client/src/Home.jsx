@@ -2,7 +2,7 @@ import React from "react";
 import {
   createMuiTheme,
   ThemeProvider,
-  withStyles,
+  withStyles
 } from "@material-ui/core/styles";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import Navigator from "./Navigator";
@@ -23,26 +23,26 @@ let theme = createMuiTheme({
     primary: {
       light: "#63ccff",
       main: "#009be5",
-      dark: "#006db3",
-    },
+      dark: "#006db3"
+    }
   },
   typography: {
     h5: {
       fontWeight: 500,
       fontSize: 26,
-      letterSpacing: 0.5,
-    },
+      letterSpacing: 0.5
+    }
   },
   props: {
     MuiTab: {
-      disableRipple: true,
-    },
+      disableRipple: true
+    }
   },
   mixins: {
     toolbar: {
-      minHeight: 48,
-    },
-  },
+      minHeight: 48
+    }
+  }
 });
 
 theme = {
@@ -50,30 +50,30 @@ theme = {
   overrides: {
     MuiDrawer: {
       paper: {
-        backgroundColor: "#18202c",
-      },
+        backgroundColor: "#18202c"
+      }
     },
     MuiButton: {
       label: {
-        textTransform: "none",
+        textTransform: "none"
       },
       contained: {
         boxShadow: "none",
         "&:active": {
-          boxShadow: "none",
-        },
-      },
+          boxShadow: "none"
+        }
+      }
     },
     MuiTabs: {
       root: {
-        marginLeft: theme.spacing(1),
+        marginLeft: theme.spacing(1)
       },
       indicator: {
         height: 3,
         borderTopLeftRadius: 3,
         borderTopRightRadius: 3,
-        backgroundColor: theme.palette.common.white,
-      },
+        backgroundColor: theme.palette.common.white
+      }
     },
     MuiTab: {
       root: {
@@ -83,46 +83,46 @@ theme = {
         padding: 0,
         [theme.breakpoints.up("md")]: {
           padding: 0,
-          minWidth: 0,
-        },
-      },
+          minWidth: 0
+        }
+      }
     },
     MuiIconButton: {
       root: {
-        padding: theme.spacing(1),
-      },
+        padding: theme.spacing(1)
+      }
     },
     MuiTooltip: {
       tooltip: {
-        borderRadius: 4,
-      },
+        borderRadius: 4
+      }
     },
     MuiDivider: {
       root: {
-        backgroundColor: "#404854",
-      },
+        backgroundColor: "#404854"
+      }
     },
     MuiListItemText: {
       primary: {
-        fontWeight: theme.typography.fontWeightMedium,
-      },
+        fontWeight: theme.typography.fontWeightMedium
+      }
     },
     MuiListItemIcon: {
       root: {
         color: "inherit",
         marginRight: 0,
         "& svg": {
-          fontSize: 20,
-        },
-      },
+          fontSize: 20
+        }
+      }
     },
     MuiAvatar: {
       root: {
         width: 32,
-        height: 32,
-      },
-    },
-  },
+        height: 32
+      }
+    }
+  }
 };
 
 const drawerWidth = 250;
@@ -130,28 +130,28 @@ const drawerWidth = 250;
 const styles = {
   root: {
     display: "flex",
-    minHeight: "100vh",
+    minHeight: "100vh"
   },
   drawer: {
     [theme.breakpoints.up("sm")]: {
       width: drawerWidth,
-      flexShrink: 0,
-    },
+      flexShrink: 0
+    }
   },
   app: {
     flex: 1,
     display: "flex",
-    flexDirection: "column",
+    flexDirection: "column"
   },
   main: {
     flex: 1,
     padding: theme.spacing(0, 0),
-    background: "#eaeff1",
+    background: "#eaeff1"
   },
   footer: {
     padding: theme.spacing(2),
-    background: "#eaeff1",
-  },
+    background: "#eaeff1"
+  }
 };
 
 function backOffForRetry(retryNum) {
@@ -170,7 +170,7 @@ class Home extends React.Component {
       workerInfo: "",
       isLoaded: false,
       connectionAttempts: 0,
-      socket: null,
+      socket: null
     };
 
     // this.handleChange = this.handleChange.bind(this);
@@ -191,11 +191,11 @@ class Home extends React.Component {
 
     axios
       .get(ipOne)
-      .then((result) => {
+      .then(result => {
         if (!result.data.worker) {
           this.setState({
             isLoaded: false,
-            connectionAttempts: this.state.connectionAttempts + 1,
+            connectionAttempts: this.state.connectionAttempts + 1
           });
 
           setTimeout(() => {
@@ -206,11 +206,11 @@ class Home extends React.Component {
           this.connectWorker(result.data.worker);
         }
       })
-      .catch((error) => {
+      .catch(error => {
         console.error("master connection error", error);
         this.setState({
           isLoaded: false,
-          connectionAttempts: this.state.connectionAttempts + 1,
+          connectionAttempts: this.state.connectionAttempts + 1
         });
 
         setTimeout(() => {
@@ -221,35 +221,31 @@ class Home extends React.Component {
 
   connectWorker(worker) {
     const socket = io(`http://${worker.publicIp}:${WORKER_SOCKET_PORT}`);
-    console.log(socket);
+
     socket.on("connect", () => {
       console.log("connected to worker", worker);
       this.setState({
         isLoaded: true,
         workerInfo: worker,
-        socket: socket,
+        socket: socket
       });
     });
 
     socket.on("disconnect", () => {
       console.log("disconnected from worker", worker);
       socket.close();
+
       this.setState({
         isLoaded: false,
         workerInfo: "",
-        socket: null,
+        socket: null
       });
 
-      this.connectMaster(MASTER_STATIC_IPS[0], MASTER_STATIC_IPS[1]);
-    });
-    // disconnect
-    socket.on("disconnect", () => {
       this.connectMaster(MASTER_STATIC_IPS[0], MASTER_STATIC_IPS[1]);
     });
   }
 
   render() {
-    const { user } = this.context;
     if (!this.state.isLoaded) {
       return <LoadingScreen />;
     }
@@ -268,7 +264,7 @@ class Home extends React.Component {
                 <Route
                   exact
                   path={"/my-courses"}
-                  render={(props) => (
+                  render={props => (
                     <Courses
                       {...props}
                       socket={this.state.socket}
@@ -279,7 +275,7 @@ class Home extends React.Component {
                 {/*<Route path={"/my-courses"} component={Courses}/>*/}
                 <Route
                   path={"/my-files"}
-                  render={(props) => (
+                  render={props => (
                     <MyFiles
                       {...props}
                       workerInfo={this.state.workerInfo}
@@ -290,7 +286,7 @@ class Home extends React.Component {
                 {/*<Route path={"/my-files"} component={MyFiles}/>*/}
                 <Route
                   path={"/browse-content"}
-                  render={(props) => (
+                  render={props => (
                     <BrowseContent
                       {...props}
                       workerInfo={this.state.workerInfo}
@@ -301,7 +297,7 @@ class Home extends React.Component {
                 {/*<Route path={"/browse-content"} component={BrowseContent}/>*/}
                 <Route
                   path={"/course-page/"}
-                  render={(props) => (
+                  render={props => (
                     <ViewCourse
                       {...props}
                       workerInfo={"this.state.workerInfo"}

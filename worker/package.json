@@ -19,6 +19,7 @@
     "@google-cloud/logging-bunyan": "2.0.3",
     "bunyan": "1.8.12",
     "cors": "2.8.5",
+    "crypto-js": "4.0.0",
     "express": "4.17.1",
     "express-async-handler": "1.1.4",
     "firebase-admin": "8.9.2",
@@ -33,6 +34,7 @@
   "devDependencies": {
     "@types/bunyan": "1.8.6",
     "@types/cors": "2.8.6",
+    "@types/crypto-js": "3.1.43",
     "@types/express": "4.17.2",
     "@types/moment": "2.13.0",
     "@types/mongodb": "3.3.16",

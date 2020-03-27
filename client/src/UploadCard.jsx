@@ -13,7 +13,7 @@ class UploadCard extends Component {
 
     this.state = {
       fileDisplayName: "",
-      uploadedFile: null,
+      uploadedFile: null
     };
 
     this.onBrowseChange = this.onBrowseChange.bind(this);
@@ -23,36 +23,33 @@ class UploadCard extends Component {
 
   componentDidMount() {
     const { socket } = this.props;
-    console.log(socket);
 
-    listen(socket, (msg) => {
-      console.log("callback");
+    listen(socket, msg => {
       console.log(msg);
     });
   }
 
-  onBrowseChange = (e) => {
+  onBrowseChange = e => {
     let files = e.target.files;
 
     this.setState(() => ({
       fileDisplayName: files[0].name,
-      uploadedFile: files[0],
+      uploadedFile: files[0]
     }));
   };
 
   cancelUpload = () => {
     this.props.closeModal();
+
     this.setState(() => ({
       fileDisplayName: "",
-      uploadedFile: null,
+      uploadedFile: null
     }));
   };
 
   uploadFile = () => {
-    const { socket } = this.props;
-    // retrieveFile(socket, 'x0RCUvWjlIZifyb3MQen', 'Daniel')
-    writeNewFile(socket, this.state.uploadedFile, "Test Owner");
-    console.log("uploading");
+    const { socket, userInfo } = this.props;
+    writeNewFile(socket, this.state.uploadedFile, userInfo.uid);
   };
 
   render() {
@@ -97,7 +94,7 @@ class UploadCard extends Component {
           <Button
             className="mr-1"
             variant="contained"
-            color={this.state.uploadedFile ? "primary" : ""}
+            color={this.state.uploadedFile ? "primary" : undefined}
             disabled={!this.state.uploadedFile}
             onClick={this.uploadFile}
           >

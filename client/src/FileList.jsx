@@ -27,7 +27,7 @@ class FileList extends Component {
       deleteModalOpen: false,
       selectedFile: {},
       allDocsReady: false,
-      allDocs: [],
+      allDocs: []
     };
 
     this.handleEditModalOpen = this.handleEditModalOpen.bind(this);
@@ -38,26 +38,26 @@ class FileList extends Component {
 
   componentDidMount() {
     const { socket } = this.props;
-    listen(socket, (msg) => {
+    listen(socket, msg => {
       console.log("callback");
       console.log(msg);
     });
   }
 
-  populateFileTable = (msg) => {
+  populateFileTable = msg => {
     let temp = [];
-    msg.forEach(function (doc) {
+    msg.forEach(function(doc) {
       temp.push({
         fileName: doc.name,
         fileType: doc.name.split(".")[1],
         fileId: doc.docId,
         owner: doc.ownerId,
-        dateUploaded: doc.fileCreationTime,
+        dateUploaded: doc.fileCreationTime
       });
     });
     this.setState({
       allDocs: temp,
-      allDocsReady: true,
+      allDocsReady: true
     });
   };
 
@@ -65,30 +65,31 @@ class FileList extends Component {
     return { fileName, fileType, courseName, owner, dateUploaded };
   };
 
-  handleEditModalOpen = (file) => {
+  handleEditModalOpen = file => {
     console.log(file);
     this.setState(() => ({
       editModalOpen: true,
-      selectedFile: file,
+      selectedFile: file
     }));
   };
 
   handleDeleteModalOpen = () => {
     this.setState(() => ({
-      deleteModalOpen: true,
+      deleteModalOpen: true
     }));
   };
 
   handleModalClose = () => {
     this.setState(() => ({
       editModalOpen: false,
-      deleteModalOpen: false,
+      deleteModalOpen: false
     }));
   };
 
   render() {
     const { socket } = this.props;
-    retrieveAllFiles(socket, (msg) => {
+
+    retrieveAllFiles(socket, msg => {
       console.log(msg);
       if (msg.length !== 0) {
         this.populateFileTable(msg);
@@ -127,7 +128,7 @@ class FileList extends Component {
             </TableRow>
           </TableHead>
           <TableBody>
-            {this.state.allDocs.map((row) => (
+            {this.state.allDocs.map(row => (
               <TableRow key={row.fileId}>
                 <TableCell align="left">
                   <Typography variant="body2">
@@ -177,7 +178,7 @@ class FileList extends Component {
           BackdropComponent={Backdrop}
           BackdropProps={{
             timeout: 500,
-            style: { backgroundColor: "rgba(0,0,0,0.7)" },
+            style: { backgroundColor: "rgba(0,0,0,0.7)" }
           }}
         >
           <Fade in={this.state.editModalOpen}>
@@ -197,7 +198,7 @@ class FileList extends Component {
 }
 
 FileList.propTypes = {
-  classes: PropTypes.object.isRequired,
+  classes: PropTypes.object.isRequired
 };
 
 export default FileList;
