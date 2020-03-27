@@ -16,43 +16,43 @@ import ContentBank from "./ContentBank";
 import FileList from "./FileList";
 import LoadingScreen from "./LoadingScreen";
 
-const styles = (theme) => ({
+const styles = theme => ({
   paper: {
     margin: "auto",
     maxHeight: "100vh",
     overflowX: "hidden",
-    overflowY: "auto",
+    overflowY: "auto"
   },
   searchBar: {
-    borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
+    borderBottom: "1px solid rgba(0, 0, 0, 0.12)"
   },
   searchInput: {
-    fontSize: theme.typography.fontSize,
+    fontSize: theme.typography.fontSize
   },
   block: {
-    display: "block",
+    display: "block"
   },
   addUser: {
-    marginRight: theme.spacing(1),
+    marginRight: theme.spacing(1)
   },
   contentWrapper: {
-    margin: "40px 16px",
-  },
+    margin: "40px 16px"
+  }
 });
 
 const listOfFiles = [
   {
     filename: "book",
-    author: "daniel",
+    author: "daniel"
   },
   {
     filename: "book2",
-    author: "john",
+    author: "john"
   },
   {
     filename: "book3",
-    author: "mike",
-  },
+    author: "mike"
+  }
 ];
 
 class BrowseContent extends React.Component {
@@ -95,7 +95,7 @@ class BrowseContent extends React.Component {
                   placeholder="Search by author, course or file name."
                   InputProps={{
                     disableUnderline: true,
-                    className: classes.searchInput,
+                    className: classes.searchInput
                   }}
                   onKeyDown={this.handleSearchOnChange}
                 />
@@ -122,7 +122,7 @@ class BrowseContent extends React.Component {
 }
 
 BrowseContent.propTypes = {
-  classes: PropTypes.object.isRequired,
+  classes: PropTypes.object.isRequired
 };
 
 export default withStyles(styles)(BrowseContent);
