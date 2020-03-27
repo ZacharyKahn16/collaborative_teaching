@@ -21,31 +21,31 @@ import Fade from "@material-ui/core/Fade";
 import LoadingScreen from "./LoadingScreen";
 import { UserContext } from "./UserContext";
 
-const styles = theme => ({
+const styles = (theme) => ({
   paper: {
     margin: "auto",
     maxHeight: "100vh",
     overflowX: "hidden",
-    overflowY: "auto"
+    overflowY: "auto",
   },
   searchBar: {
-    borderBottom: "1px solid rgba(0, 0, 0, 0.12)"
+    borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
   },
   searchInput: {
-    fontSize: theme.typography.fontSize
+    fontSize: theme.typography.fontSize,
   },
   block: {
-    display: "block"
+    display: "block",
   },
   addUser: {
-    marginRight: theme.spacing(1)
+    marginRight: theme.spacing(1),
   },
   contentWrapper: {
-    margin: "20px 15px 40px 15px"
+    margin: "20px 15px 40px 15px",
   },
   addFileButton: {
-    marginRight: "5px"
-  }
+    marginRight: "5px",
+  },
 });
 
 class MyFiles extends React.Component {
@@ -54,7 +54,7 @@ class MyFiles extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      uploadModalOpen: false
+      uploadModalOpen: false,
     };
 
     this.handleOpenUploadModal = this.handleOpenUploadModal.bind(this);
@@ -63,13 +63,13 @@ class MyFiles extends React.Component {
 
   handleOpenUploadModal() {
     this.setState(() => ({
-      uploadModalOpen: true
+      uploadModalOpen: true,
     }));
   }
 
   handleCloseUploadModal() {
     this.setState(() => ({
-      uploadModalOpen: false
+      uploadModalOpen: false,
     }));
   }
 
@@ -79,9 +79,7 @@ class MyFiles extends React.Component {
 
   render() {
     const { classes, workerInfo, socket } = this.props;
-    const { userInfo } = this.context;
-
-    if (socket == null) {
+    if (socket === null) {
       return <LoadingScreen />;
     }
 
@@ -105,7 +103,7 @@ class MyFiles extends React.Component {
                   placeholder="Search by course or file name."
                   InputProps={{
                     disableUnderline: true,
-                    className: classes.searchInput
+                    className: classes.searchInput,
                   }}
                 />
               </Grid>
@@ -140,14 +138,13 @@ class MyFiles extends React.Component {
               BackdropComponent={Backdrop}
               BackdropProps={{
                 timeout: 500,
-                style: { backgroundColor: "rgba(0,0,0,0.7)" }
+                style: { backgroundColor: "rgba(0,0,0,0.7)" },
               }}
             >
               <Fade in={this.state.uploadModalOpen}>
                 <UploadCard
                   closeModal={this.handleCloseUploadModal}
                   socket={socket}
-                  userInfo={userInfo}
                 />
               </Fade>
             </Modal>
@@ -162,7 +159,7 @@ class MyFiles extends React.Component {
 }
 
 MyFiles.propTypes = {
-  classes: PropTypes.object.isRequired
+  classes: PropTypes.object.isRequired,
 };
 
 export default withStyles(styles)(MyFiles);

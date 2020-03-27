@@ -8,18 +8,18 @@ import Typography from "@material-ui/core/Typography";
 import { withStyles } from "@material-ui/core/styles";
 import { UserContext } from "./UserContext";
 
-const styles = theme => ({
+const styles = (theme) => ({
   appBar: {
-    zIndex: 0
+    zIndex: 0,
   },
   toolBar: {
     borderRadius: 0,
     minHeight: "60px",
-    userSelect: "none"
+    userSelect: "none",
   },
   iconButtonAvatar: {
-    padding: 4
-  }
+    padding: 4,
+  },
 });
 
 class Header extends React.Component {

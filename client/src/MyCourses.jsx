@@ -24,34 +24,34 @@ import DialogTitle from "@material-ui/core/DialogTitle";
 import { Link } from "react-router-dom";
 import { Grid } from "@material-ui/core";
 
-const styles = theme => ({
+const styles = (theme) => ({
   container: {
-    padding: "10px"
+    padding: "10px",
   },
   paper: {
     margin: "auto",
     maxHeight: "100vh",
     overflowX: "hidden",
-    overflowY: "auto"
+    overflowY: "auto",
   },
   searchBar: {
-    borderBottom: "1px solid rgba(0, 0, 0, 0.12)"
+    borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
   },
   searchInput: {
-    fontSize: theme.typography.fontSize
+    fontSize: theme.typography.fontSize,
   },
   block: {
-    display: "block"
+    display: "block",
   },
   addUser: {
-    marginRight: theme.spacing(1)
+    marginRight: theme.spacing(1),
   },
   contentWrapper: {
-    margin: "40px 16px"
+    margin: "40px 16px",
   },
   root: {
-    height: 250
-  }
+    height: 250,
+  },
 });
 
 let categories = [
@@ -59,38 +59,38 @@ let categories = [
     id: 0,
     course: "CPSC 559",
     description: "Distributed systems..............",
-    path: "/course-page/CPSC559"
+    path: "/course-page/CPSC559",
   },
   {
     id: 1,
     course: "CPSC 471",
     description: "Database management systems..............",
-    path: "/course-page/CPSC471"
+    path: "/course-page/CPSC471",
   },
   {
     id: 2,
     course: "CPSC 565",
     description: "Emergent Computing..............",
-    path: "/course-page/CPSC565"
+    path: "/course-page/CPSC565",
   },
   {
     id: 3,
     course: "CPSC 413",
     description: "Algorithms..............",
-    path: "/course-page/CPSC413"
+    path: "/course-page/CPSC413",
   },
   {
     id: 4,
     course: "CPSC 405",
     description: "Entreupernship.............",
-    path: "/course-page/CPSC405"
+    path: "/course-page/CPSC405",
   },
   {
     id: 5,
     course: "SENG 513",
     description: "Web based systems..............",
-    path: "/course-page/SENG513"
-  }
+    path: "/course-page/SENG513",
+  },
 ];
 
 class MyCourses extends React.Component {
@@ -102,7 +102,7 @@ class MyCourses extends React.Component {
       courseDescription: "",
       courseIndex: 0,
       openDialogueNewCourse: false,
-      openEditCourse: false
+      openEditCourse: false,
     };
     this.handleClickOpenEditCourse = this.handleClickOpenEditCourse.bind(this);
     this.handleCloseEditCourse = this.handleCloseEditCourse.bind(this);
@@ -124,13 +124,13 @@ class MyCourses extends React.Component {
       courseName: courseName,
       courseDescription: courseDescription,
       courseIndex: index,
-      openEditCourse: true
+      openEditCourse: true,
     });
   }
 
   handleClickOpenDialogueNewCourse() {
     this.setState({
-      openDialogueNewCourse: true
+      openDialogueNewCourse: true,
     });
   }
 
@@ -140,7 +140,7 @@ class MyCourses extends React.Component {
       this.editCourse();
     }
     this.setState({
-      openEditCourse: false
+      openEditCourse: false,
     });
   }
 
@@ -149,7 +149,7 @@ class MyCourses extends React.Component {
       this.addNewCourse(this.state.courseName, this.state.courseDescription);
     }
     this.setState({
-      openDialogueNewCourse: false
+      openDialogueNewCourse: false,
     });
   }
 
@@ -162,13 +162,13 @@ class MyCourses extends React.Component {
     console.log(e);
     console.log(e.target.value);
     this.setState({
-      courseName: e.target.value
+      courseName: e.target.value,
     });
   }
 
   createCourseDescription(e) {
     this.setState({
-      courseDescription: e.target.value
+      courseDescription: e.target.value,
     });
   }
 
@@ -178,7 +178,7 @@ class MyCourses extends React.Component {
     temp[this.state.courseIndex].course = this.state.courseName;
     temp[this.state.courseIndex].description = this.state.courseDescription;
     this.setState({
-      myClasses: temp
+      myClasses: temp,
     });
   }
 
@@ -190,10 +190,10 @@ class MyCourses extends React.Component {
       id: this.state.myClasses.length,
       course: name,
       description: desc,
-      path: "/course-page/" + name.replace(/ /g, "")
+      path: "/course-page/" + name.replace(/ /g, ""),
     });
     this.setState({
-      myClasses: temp
+      myClasses: temp,
     });
     console.log(this.state.myClasses);
   }
@@ -380,7 +380,7 @@ class MyCourses extends React.Component {
 }
 
 MyCourses.propTypes = {
-  classes: PropTypes.object.isRequired
+  classes: PropTypes.object.isRequired,
 };
 
 export default withStyles(styles)(MyCourses);

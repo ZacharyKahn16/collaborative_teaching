@@ -16,48 +16,58 @@ import Modal from "@material-ui/core/Modal";
 import Backdrop from "@material-ui/core/Backdrop";
 import Fade from "@material-ui/core/Fade";
 import UpdateCard from "./UpdateCard";
-import { listen, retrieveAllFiles } from "./service";
+import { listen, retrieveAllFiles, retrieveFile } from "./service";
+import { UserContext } from "./UserContext";
+import FileViewModal from "./FileViewModal";
+import { v4 as uuidv4 } from "uuid";
 
 class FileList extends Component {
+  static contextType = UserContext;
   constructor(props) {
     super(props);
 
     this.state = {
       editModalOpen: false,
       deleteModalOpen: false,
+      viewModalOpen: false,
       selectedFile: {},
       allDocsReady: false,
-      allDocs: []
+      allDocs: [],
+      viewFile: null,
     };
 
     this.handleEditModalOpen = this.handleEditModalOpen.bind(this);
     this.handleDeleteModalOpen = this.handleDeleteModalOpen.bind(this);
+    this.handleViewModalOpen = this.handleViewModalOpen.bind(this);
     this.handleModalClose = this.handleModalClose.bind(this);
     this.createData = this.createData.bind(this);
   }
 
   componentDidMount() {
     const { socket } = this.props;
-    listen(socket, msg => {
+    listen(socket, (msg) => {
       console.log("callback");
       console.log(msg);
     });
   }
 
-  populateFileTable = msg => {
+  populateFileTable = (msg) => {
     let temp = [];
-    msg.forEach(function(doc) {
-      temp.push({
-        fileName: doc.name,
-        fileType: doc.name.split(".")[1],
-        fileId: doc.docId,
-        owner: doc.ownerId,
-        dateUploaded: doc.fileCreationTime
-      });
+    const { user } = this.context;
+    msg.forEach(function (doc) {
+      if (user.name === doc.ownerId) {
+        temp.push({
+          fileName: doc.name,
+          fileType: doc.name.split(".")[1],
+          fileId: doc.docId,
+          owner: doc.ownerId,
+          dateUploaded: doc.lastUpdated,
+        });
+      }
     });
     this.setState({
       allDocs: temp,
-      allDocsReady: true
+      allDocsReady: true,
     });
   };
 
@@ -65,37 +75,46 @@ class FileList extends Component {
     return { fileName, fileType, courseName, owner, dateUploaded };
   };
 
-  handleEditModalOpen = file => {
+  handleEditModalOpen = (file) => {
     console.log(file);
     this.setState(() => ({
       editModalOpen: true,
-      selectedFile: file
+      selectedFile: file,
     }));
   };
 
   handleDeleteModalOpen = () => {
     this.setState(() => ({
-      deleteModalOpen: true
+      deleteModalOpen: true,
+    }));
+  };
+
+  handleViewModalOpen = () => {
+    const { socket } = this.props;
+    // getting file to get content
+    retrieveFile(socket, this.state.allDocs[0].fileId, uuidv4());
+    this.setState(() => ({
+      viewModalOpen: true,
     }));
   };
 
   handleModalClose = () => {
     this.setState(() => ({
       editModalOpen: false,
-      deleteModalOpen: false
+      deleteModalOpen: false,
+      viewModalOpen: false,
     }));
   };
 
   render() {
     const { socket } = this.props;
-
-    retrieveAllFiles(socket, msg => {
+    retrieveAllFiles(socket, (msg) => {
       console.log(msg);
       if (msg.length !== 0) {
         this.populateFileTable(msg);
       }
     });
-    if (this.state.allDocsReady === false) {
+    if (this.state.allDocsReady === false || this.state.allDocs.length === 0) {
       return (
         <Typography color="textSecondary" align="center">
           No docs loaded yet
@@ -120,7 +139,7 @@ class FileList extends Component {
                 Owner
               </TableCell>
               <TableCell className="bold" align="left">
-                Date Uploaded
+                Last Updated
               </TableCell>
               <TableCell className="bold" align="center">
                 Actions
@@ -128,7 +147,7 @@ class FileList extends Component {
             </TableRow>
           </TableHead>
           <TableBody>
-            {this.state.allDocs.map(row => (
+            {this.state.allDocs.map((row) => (
               <TableRow key={row.fileId}>
                 <TableCell align="left">
                   <Typography variant="body2">
@@ -137,11 +156,18 @@ class FileList extends Component {
                       href="#"
                       onClick={() => {
                         //TODO: View file
+                        this.handleViewModalOpen();
                       }}
                     >
                       {row.fileName}
                     </Link>
                   </Typography>
+                  <FileViewModal
+                    open={this.state.viewModalOpen}
+                    fileName={row.fileName}
+                    fileContent={"nothing"}
+                    onClose={this.handleModalClose}
+                  />
                 </TableCell>
                 <TableCell align="left">
                   {row.fileId ? row.fileId : "None"}
@@ -178,7 +204,7 @@ class FileList extends Component {
           BackdropComponent={Backdrop}
           BackdropProps={{
             timeout: 500,
-            style: { backgroundColor: "rgba(0,0,0,0.7)" }
+            style: { backgroundColor: "rgba(0,0,0,0.7)" },
           }}
         >
           <Fade in={this.state.editModalOpen}>
@@ -198,7 +224,7 @@ class FileList extends Component {
 }
 
 FileList.propTypes = {
-  classes: PropTypes.object.isRequired
+  classes: PropTypes.object.isRequired,
 };
 
 export default FileList;

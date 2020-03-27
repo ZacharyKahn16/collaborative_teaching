@@ -6,14 +6,16 @@ import Grid from "@material-ui/core/Grid";
 import Button from "@material-ui/core/Button";
 import "./Styles/Card.css";
 import { writeNewFile, listen, retrieveFile } from "./service";
+import { UserContext } from "./UserContext";
 
 class UploadCard extends Component {
+  static contextType = UserContext;
   constructor(props) {
     super(props);
 
     this.state = {
       fileDisplayName: "",
-      uploadedFile: null
+      uploadedFile: null,
     };
 
     this.onBrowseChange = this.onBrowseChange.bind(this);
@@ -24,17 +26,17 @@ class UploadCard extends Component {
   componentDidMount() {
     const { socket } = this.props;
 
-    listen(socket, msg => {
+    listen(socket, (msg) => {
       console.log(msg);
     });
   }
 
-  onBrowseChange = e => {
+  onBrowseChange = (e) => {
     let files = e.target.files;
 
     this.setState(() => ({
       fileDisplayName: files[0].name,
-      uploadedFile: files[0]
+      uploadedFile: files[0],
     }));
   };
 
@@ -43,13 +45,15 @@ class UploadCard extends Component {
 
     this.setState(() => ({
       fileDisplayName: "",
-      uploadedFile: null
+      uploadedFile: null,
     }));
   };
 
   uploadFile = () => {
-    const { socket, userInfo } = this.props;
-    writeNewFile(socket, this.state.uploadedFile, userInfo.uid);
+    const { socket } = this.props;
+    const { user } = this.context;
+    console.log(this.state.uploadedFile);
+    writeNewFile(socket, this.state.uploadedFile, user.name);
   };
 
   render() {

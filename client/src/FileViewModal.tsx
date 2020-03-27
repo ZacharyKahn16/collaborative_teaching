@@ -6,24 +6,24 @@ import {
   Theme,
   createStyles,
   IconButton,
-  withStyles
+  withStyles,
 } from "@material-ui/core";
 import CloseIcon from "@material-ui/icons/Close";
 
 export const fileViewModalStyles = (theme: Theme) =>
   createStyles({
     dialog: {
-      overflowY: "auto"
+      overflowY: "auto",
     },
     closeButton: {
       position: "absolute",
       right: theme.spacing(1),
-      top: theme.spacing(1)
+      top: theme.spacing(1),
     },
     iFrame: {
       width: "100%",
-      height: "80vh"
-    }
+      height: "80vh",
+    },
   });
 
 interface FileViewModalPropType {
@@ -35,9 +35,11 @@ interface FileViewModalPropType {
 }
 
 class FileViewModal extends Component<FileViewModalPropType> {
+  componentDidMount() {}
+
   render() {
     const { classes, open, fileName, fileContent, onClose } = this.props;
-
+    console.log(fileContent);
     return (
       <Dialog
         className={classes.dialog}
@@ -56,7 +58,8 @@ class FileViewModal extends Component<FileViewModalPropType> {
         </IconButton>
         <DialogTitle>{fileName}</DialogTitle>
         <DialogContent>
-          <iframe src={fileContent} className={classes.iFrame} />
+          testing
+          {/*<iframe src={fileContent} className={classes.iFrame} />*/}
         </DialogContent>
       </Dialog>
     );

@@ -27,7 +27,7 @@ class ContentBank extends Component {
       deleteModalOpen: false,
       selectedFile: {},
       allDocsReady: false,
-      allDocs: []
+      allDocs: [],
     };
 
     this.handleEditModalOpen = this.handleEditModalOpen.bind(this);
@@ -37,30 +37,26 @@ class ContentBank extends Component {
 
   componentDidMount() {
     const { socket } = this.props;
-    listen(socket, msg => {
+    listen(socket, (msg) => {
+      console.log("callback");
       console.log(msg);
-    });
-
-    retrieveAllFiles(socket, msg => {
-      console.log(msg);
-      this.populateFileTable(msg);
     });
   }
 
-  populateFileTable = msg => {
+  populateFileTable = (msg) => {
     let temp = [];
-    msg.forEach(function(doc) {
+    msg.forEach(function (doc) {
       temp.push({
         fileName: doc.name,
         fileType: doc.name.split(".")[1],
         fileId: doc.docId,
         owner: doc.ownerId,
-        dateUploaded: doc.fileCreationTime
+        dateUploaded: doc.lastUpdated,
       });
     });
     this.setState({
       allDocs: temp,
-      allDocsReady: true
+      allDocsReady: true,
     });
   };
 
@@ -68,32 +64,41 @@ class ContentBank extends Component {
     return { fileName, fileType, courseName, owner, dateUploaded };
   };
 
-  handleEditModalOpen = file => {
+  handleEditModalOpen = (file) => {
     console.log(file);
     this.setState(() => ({
       editModalOpen: true,
-      selectedFile: file
+      selectedFile: file,
     }));
   };
 
   handleDeleteModalOpen = () => {
     this.setState(() => ({
-      deleteModalOpen: true
+      deleteModalOpen: true,
     }));
   };
 
   handleModalClose = () => {
     this.setState(() => ({
       editModalOpen: false,
-      deleteModalOpen: false
+      deleteModalOpen: false,
     }));
   };
 
   render() {
-    if (this.state.allDocsReady === false) {
+    const { socket } = this.props;
+
+    retrieveAllFiles(socket, (msg) => {
+      console.log(msg);
+      if (msg.length !== 0) {
+        this.populateFileTable(msg);
+      }
+    });
+
+    if (this.state.allDocsReady === false || this.state.allDocs.length === 0) {
       return (
         <Typography color="textSecondary" align="center">
-          No users for this project yet
+          No docs loaded yet
         </Typography>
       );
     }
@@ -116,7 +121,7 @@ class ContentBank extends Component {
                 Owner
               </TableCell>
               <TableCell className="bold" align="left">
-                Date Uploaded
+                Last Updated
               </TableCell>
               <TableCell className="bold" align="center">
                 Actions
@@ -124,7 +129,7 @@ class ContentBank extends Component {
             </TableRow>
           </TableHead>
           <TableBody>
-            {this.state.allDocs.map(row => (
+            {this.state.allDocs.map((row) => (
               <TableRow key={row.fileId}>
                 <TableCell align="left">
                   <Typography variant="body2">
@@ -174,7 +179,7 @@ class ContentBank extends Component {
           BackdropComponent={Backdrop}
           BackdropProps={{
             timeout: 500,
-            style: { backgroundColor: "rgba(0,0,0,0.7)" }
+            style: { backgroundColor: "rgba(0,0,0,0.7)" },
           }}
         >
           <Fade in={this.state.editModalOpen}>
@@ -194,7 +199,7 @@ class ContentBank extends Component {
 }
 
 ContentBank.propTypes = {
-  classes: PropTypes.object.isRequired
+  classes: PropTypes.object.isRequired,
 };
 
 export default ContentBank;

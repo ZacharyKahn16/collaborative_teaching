@@ -13,11 +13,11 @@ function readFileAsDataUrl(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
 
-    reader.onload = event => {
+    reader.onload = (event) => {
       resolve(event.target.result);
     };
 
-    reader.onerror = err => {
+    reader.onerror = (err) => {
       reject(err);
     };
 
@@ -29,7 +29,7 @@ const retrieveFile = (socket, docId, requestId) => {
   socket.emit(RETRIEVE_FILE, {
     // fileName: fileName
     docId: docId,
-    requestId: requestId
+    requestId: requestId,
   });
 };
 
@@ -37,7 +37,7 @@ const retrieveFile = (socket, docId, requestId) => {
 const writeNewFile = (socket, file, ownerId) => {
   // Send worker a request to write a file into the FDB
   readFileAsDataUrl(file)
-    .then(dataUrl => {
+    .then((dataUrl) => {
       const hash = sha256(dataUrl).toString();
       console.log("sending file with hash: ", hash);
 
@@ -47,16 +47,16 @@ const writeNewFile = (socket, file, ownerId) => {
         fileName: file.name,
         fileContents: dataUrl,
         fileHash: hash,
-        fileType: file.type
+        fileType: file.type,
       });
     })
-    .catch(err => {
+    .catch((err) => {
       console.error(err);
     });
 };
 
 // delete a file
-const deleteFile = async socket => {
+const deleteFile = async (socket) => {
   // console.log("deleting file")
   // socket.emit(DELETE_FILE, {
   //     docId:
@@ -72,20 +72,20 @@ const updateFile = async (socket, file, docId) => {
     fileContents: textContents,
     fileType: file.type,
     requestId: uuidv4(),
-    fileHash: file.size
+    fileHash: file.size,
   });
 };
 
 const listen = (socket, cb) => {
   console.log("listening for worker response...");
-  socket.on(SERVER_RESP, resp => {
+  socket.on(SERVER_RESP, (resp) => {
     cb(resp);
   });
 };
 
 const retrieveAllFiles = (socket, cb) => {
   console.log("Waiting for all files");
-  socket.on("All Files", resp => {
+  socket.on("All Files", (resp) => {
     cb(resp);
   });
 };

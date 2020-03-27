@@ -21,62 +21,62 @@ const categories = [
         id: "My Courses",
         icon: <SchoolIcon />,
         path: "/my-courses",
-        numIndex: 0
+        numIndex: 0,
       },
       {
         id: "My Files",
         icon: <FileCopyIcon />,
         path: "/my-files",
-        numIndex: 1
+        numIndex: 1,
       },
       {
         id: "Browse Content Bank",
         icon: <AccountBalanceIcon />,
         path: "/browse-content",
-        numIndex: 2
-      }
-    ]
-  }
+        numIndex: 2,
+      },
+    ],
+  },
 ];
 
-const styles = theme => ({
+const styles = (theme) => ({
   categoryHeader: {
     paddingTop: theme.spacing(2),
-    paddingBottom: theme.spacing(2)
+    paddingBottom: theme.spacing(2),
   },
   categoryHeaderPrimary: {
-    color: theme.palette.common.white
+    color: theme.palette.common.white,
   },
   item: {
     paddingTop: 10,
     paddingBottom: 10,
     color: "rgba(255, 255, 255, 0.7)",
     "&:hover,&:focus": {
-      backgroundColor: "rgba(255, 255, 255, 0.08)"
-    }
+      backgroundColor: "rgba(255, 255, 255, 0.08)",
+    },
   },
   itemCategory: {
     backgroundColor: "#232f3e",
     boxShadow: "0 -1px 0 #404854 inset",
     paddingTop: theme.spacing(2),
-    paddingBottom: theme.spacing(2)
+    paddingBottom: theme.spacing(2),
   },
   firebase: {
     userSelect: "none",
     fontSize: 24,
-    color: theme.palette.common.white
+    color: theme.palette.common.white,
   },
   itemActiveItem: {
-    color: "#4fc3f7"
+    color: "#4fc3f7",
   },
   itemPrimary: {
-    fontSize: "inherit"
+    fontSize: "inherit",
   },
   itemIcon: {
     minWidth: "auto",
-    marginRight: theme.spacing(2)
+    marginRight: theme.spacing(2),
   },
-  divider: {}
+  divider: {},
 });
 
 function Navigator(props) {
@@ -84,7 +84,7 @@ function Navigator(props) {
   const { classes, ...other } = props;
 
   function setActiveTab() {
-    categories[0].children.forEach(function(element) {
+    categories[0].children.forEach(function (element) {
       element.active = window.location.href.includes(element.path);
     });
   }
@@ -111,7 +111,7 @@ function Navigator(props) {
                 <Link
                   to={path}
                   classes={{
-                    primary: classes.itemPrimary
+                    primary: classes.itemPrimary,
                   }}
                   className={"linkNoStyle"}
                   key={childKey}
@@ -152,7 +152,7 @@ function Navigator(props) {
 }
 
 Navigator.propTypes = {
-  classes: PropTypes.object.isRequired
+  classes: PropTypes.object.isRequired,
 };
 
 export default withStyles(styles)(Navigator);
