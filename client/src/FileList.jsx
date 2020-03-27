@@ -88,6 +88,7 @@ class FileList extends Component {
 
   render() {
     const { socket } = this.props;
+
     retrieveAllFiles(socket, msg => {
       console.log(msg);
       if (msg.length !== 0) {

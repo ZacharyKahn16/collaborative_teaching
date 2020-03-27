@@ -33,13 +33,6 @@ const retrieveFile = (socket, docId, requestId) => {
   });
 };
 
-const getAllFiles = (socket, ownerId, requestId) => {
-  socket.emit(GET_FILES, {
-    ownerId: ownerId,
-    requestId: uuidv4()
-  });
-};
-
 //write new file
 const writeNewFile = (socket, file, ownerId) => {
   // Send worker a request to write a file into the FDB
