@@ -40,6 +40,7 @@ class UploadCard extends Component {
 
   cancelUpload = () => {
     this.props.closeModal();
+
     this.setState(() => ({
       fileDisplayName: "",
       uploadedFile: null

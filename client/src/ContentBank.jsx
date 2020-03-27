@@ -10,15 +10,15 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import "./Styles/FileList.css";
 import IconButton from "@material-ui/core/IconButton";
-import EditIcon from "@material-ui/icons/Edit";
 import DeleteIcon from "@material-ui/icons/Delete";
 import Modal from "@material-ui/core/Modal";
 import Backdrop from "@material-ui/core/Backdrop";
 import Fade from "@material-ui/core/Fade";
 import UpdateCard from "./UpdateCard";
 import { listen, retrieveAllFiles } from "./service";
+import AddIcon from "@material-ui/icons/Add";
 
-class FileList extends Component {
+class ContentBank extends Component {
   constructor(props) {
     super(props);
 
@@ -33,14 +33,17 @@ class FileList extends Component {
     this.handleEditModalOpen = this.handleEditModalOpen.bind(this);
     this.handleDeleteModalOpen = this.handleDeleteModalOpen.bind(this);
     this.handleModalClose = this.handleModalClose.bind(this);
-    this.createData = this.createData.bind(this);
   }
 
   componentDidMount() {
     const { socket } = this.props;
     listen(socket, msg => {
-      console.log("callback");
       console.log(msg);
+    });
+
+    retrieveAllFiles(socket, msg => {
+      console.log(msg);
+      this.populateFileTable(msg);
     });
   }
 
@@ -87,20 +90,14 @@ class FileList extends Component {
   };
 
   render() {
-    const { socket } = this.props;
-    retrieveAllFiles(socket, msg => {
-      console.log(msg);
-      if (msg.length !== 0) {
-        this.populateFileTable(msg);
-      }
-    });
     if (this.state.allDocsReady === false) {
       return (
         <Typography color="textSecondary" align="center">
-          No docs loaded yet
+          No users for this project yet
         </Typography>
       );
     }
+
     return (
       <TableContainer>
         <Table aria-label="simple table">
@@ -152,9 +149,9 @@ class FileList extends Component {
                   <IconButton
                     className="action-button"
                     key={row.fileName}
-                    onClick={() => this.handleEditModalOpen(row)}
+                    // onClick={() => this.handleEditModalOpen(row)}
                   >
-                    <EditIcon color="inherit" />
+                    <AddIcon color="inherit" />
                   </IconButton>
                   <IconButton
                     className="action-button"
@@ -196,8 +193,8 @@ class FileList extends Component {
   }
 }
 
-FileList.propTypes = {
+ContentBank.propTypes = {
   classes: PropTypes.object.isRequired
 };
 
-export default FileList;
+export default ContentBank;

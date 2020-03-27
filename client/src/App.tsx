@@ -19,7 +19,7 @@ class App extends React.Component {
 
     return (
       <BrowserRouter>
-        <Route exact render={props => <Home {...props} userInfo={user} />} />
+        <Route exact component={Home} />
       </BrowserRouter>
     );
   }

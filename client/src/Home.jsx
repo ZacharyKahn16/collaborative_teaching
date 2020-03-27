@@ -16,6 +16,7 @@ import { Switch, Redirect } from "react-router-dom";
 import axios from "axios";
 import io from "socket.io-client";
 import { MASTER_STATIC_IPS, WORKER_SOCKET_PORT } from "./ServerConfig";
+import { UserContext } from "./UserContext";
 
 let theme = createMuiTheme({
   palette: {
@@ -161,6 +162,7 @@ function backOffForRetry(retryNum) {
 }
 
 class Home extends React.Component {
+  static contextType = UserContext;
   constructor(props) {
     super(props);
 
@@ -232,6 +234,7 @@ class Home extends React.Component {
     socket.on("disconnect", () => {
       console.log("disconnected from worker", worker);
       socket.close();
+
       this.setState({
         isLoaded: false,
         workerInfo: "",
@@ -240,34 +243,12 @@ class Home extends React.Component {
 
       this.connectMaster(MASTER_STATIC_IPS[0], MASTER_STATIC_IPS[1]);
     });
-
-    // Send worker a request to write a file into the FDB
-    // socket.emit("Insert File", {
-    //   fileName: "Test-File.txt",
-    //   fileContents: "Hello World 1",
-    //   fileHash: "XXXXXXXX",
-    //   fileType: "String"
-    // });
-
-    // Retrieving file
-    // socket.emit("Retrieve File", {
-    //   fileName: '04d9a6bb-2167-41ed-8bb8-f00d3dfb42e9' // some id
-    // })
-
-    // Database List
-
-    // Listen to worker responses here
-    // socket.on("Server Response", function(msg) {
-    //   console.log(msg);
-    // });
   }
 
   render() {
     if (!this.state.isLoaded) {
       return <LoadingScreen />;
     }
-
-    const { userInfo } = this.props;
 
     return (
       <ThemeProvider theme={theme}>
@@ -286,8 +267,8 @@ class Home extends React.Component {
                   render={props => (
                     <Courses
                       {...props}
+                      socket={this.state.socket}
                       workerInfo={this.state.workerInfo}
-                      userInfo={userInfo}
                     />
                   )}
                 />
@@ -299,7 +280,6 @@ class Home extends React.Component {
                       {...props}
                       workerInfo={this.state.workerInfo}
                       socket={this.state.socket}
-                      userInfo={userInfo}
                     />
                   )}
                 />
@@ -310,7 +290,7 @@ class Home extends React.Component {
                     <BrowseContent
                       {...props}
                       workerInfo={this.state.workerInfo}
-                      userInfo={userInfo}
+                      socket={this.state.socket}
                     />
                   )}
                 />
@@ -321,7 +301,6 @@ class Home extends React.Component {
                     <ViewCourse
                       {...props}
                       workerInfo={"this.state.workerInfo"}
-                      userInfo={userInfo}
                     />
                   )}
                 />

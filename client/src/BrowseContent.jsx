@@ -12,7 +12,9 @@ import { withStyles } from "@material-ui/core/styles";
 import SearchIcon from "@material-ui/icons/Search";
 import RefreshIcon from "@material-ui/icons/Refresh";
 import Header from "./Header";
-import { writeNewFile, listen, retrieveFile } from "./service";
+import ContentBank from "./ContentBank";
+import FileList from "./FileList";
+import LoadingScreen from "./LoadingScreen";
 
 const styles = theme => ({
   paper: {
@@ -69,15 +71,13 @@ class BrowseContent extends React.Component {
   }
 
   render() {
-    const { classes, workerInfo, userInfo } = this.props;
-
+    const { classes, workerInfo, socket } = this.props;
+    if (socket === null) {
+      return <LoadingScreen />;
+    }
     return (
       <Paper className={classes.paper} square>
-        <Header
-          title={"Content Bank"}
-          workerInfo={workerInfo}
-          userInfo={userInfo}
-        />
+        <Header title={"Content Bank"} workerInfo={workerInfo} />
         <AppBar
           className={classes.searchBar}
           position="static"
@@ -112,7 +112,8 @@ class BrowseContent extends React.Component {
         </AppBar>
         <div className={classes.contentWrapper}>
           <Typography color="textSecondary" align="center">
-            No users for this project yet
+            {/*No users for this project yet*/}
+            <ContentBank socket={socket} />
           </Typography>
         </div>
       </Paper>

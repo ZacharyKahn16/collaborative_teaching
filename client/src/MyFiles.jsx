@@ -18,6 +18,8 @@ import UploadCard from "./UploadCard";
 import Modal from "@material-ui/core/Modal";
 import Backdrop from "@material-ui/core/Backdrop";
 import Fade from "@material-ui/core/Fade";
+import LoadingScreen from "./LoadingScreen";
+import { UserContext } from "./UserContext";
 
 const styles = theme => ({
   paper: {
@@ -47,6 +49,8 @@ const styles = theme => ({
 });
 
 class MyFiles extends React.Component {
+  static contextType = UserContext;
+
   constructor(props) {
     super(props);
     this.state = {
@@ -70,19 +74,20 @@ class MyFiles extends React.Component {
   }
 
   componentDidMount() {
-    // console.log("mounted")
+    // mounted
   }
 
   render() {
-    const { classes, workerInfo, socket, userInfo } = this.props;
+    const { classes, workerInfo, socket } = this.props;
+    const { userInfo } = this.context;
+
+    if (socket == null) {
+      return <LoadingScreen />;
+    }
 
     return (
       <Paper className={classes.paper} square={true}>
-        <Header
-          title={"My Files"}
-          workerInfo={workerInfo}
-          userInfo={userInfo}
-        />
+        <Header title={"My Files"} workerInfo={workerInfo} />
         <AppBar
           className={classes.searchBar}
           position="static"
