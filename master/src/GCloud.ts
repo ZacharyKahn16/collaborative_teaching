@@ -93,25 +93,27 @@ export class GCloud {
           const instanceRunning =
             words.length === 6 ? words[5].trim() === 'RUNNING' : words[4].trim() === 'RUNNING';
 
-          const instance: ComputeEngineInstance = {
-            id,
-            instanceType: id.split('-')[0],
-            number: Number(id.split('-')[1]),
-            zone,
-            machine,
-            internalIp,
-            publicIp,
-            instanceRunning,
-          };
+          if (!id.includes('website')) {
+            const instance: ComputeEngineInstance = {
+              id,
+              instanceType: id.split('-')[0],
+              number: Number(id.split('-')[1]),
+              zone,
+              machine,
+              internalIp,
+              publicIp,
+              instanceRunning,
+            };
 
-          try {
-            const meta = await this.getMetadata(id);
-            instance.createdOn = meta.created;
-            instance.initializedOn = meta.initialized;
-            instance.instanceServing = meta.serving;
+            try {
+              const meta = await this.getMetadata(id);
+              instance.createdOn = meta.created;
+              instance.initializedOn = meta.initialized;
+              instance.instanceServing = meta.serving;
 
-            newInstances.push(instance);
-          } catch (error) {}
+              newInstances.push(instance);
+            } catch (error) {}
+          }
         }
 
         if (newInstances.length > 0) {

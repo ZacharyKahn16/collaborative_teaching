@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import sha256 from "crypto-js/sha256";
+import { SHA256 } from "crypto-js";
 
 const CONNECTION_EVENT = "connection";
 const RETRIEVE_FILE = "Retrieve File";
@@ -37,8 +37,8 @@ const retrieveFile = (socket, docId, requestId) => {
 const writeNewFile = (socket, file, ownerId) => {
   // Send worker a request to write a file into the FDB
   readFileAsDataUrl(file)
-    .then((dataUrl) => {
-      const hash = sha256(dataUrl).toString();
+    .then(dataUrl => {
+      const hash = SHA256(dataUrl).toString();
       console.log("sending file with hash: ", hash);
 
       socket.emit(INSERT_FILE, {
