@@ -86,12 +86,7 @@ class MyFiles extends React.Component {
     return (
       <Paper className={classes.paper} square={true}>
         <Header title={"My Files"} workerInfo={workerInfo} />
-        <AppBar
-          className={classes.searchBar}
-          position="static"
-          color="default"
-          elevation={0}
-        >
+        <AppBar className={classes.searchBar} position="static" color="default" elevation={0}>
           <Toolbar>
             <Grid container spacing={2} alignItems="center">
               <Grid item>
@@ -114,10 +109,7 @@ class MyFiles extends React.Component {
                   className={classes.addUser}
                   onClick={this.handleOpenUploadModal}
                 >
-                  <PublishIcon
-                    className={classes.addFileButton}
-                    color="inherit"
-                  />
+                  <PublishIcon className={classes.addFileButton} color="inherit" />
                   Add file
                   <input type="file" style={{ display: "none" }} />
                 </Button>
@@ -142,10 +134,7 @@ class MyFiles extends React.Component {
               }}
             >
               <Fade in={this.state.uploadModalOpen}>
-                <UploadCard
-                  closeModal={this.handleCloseUploadModal}
-                  socket={socket}
-                />
+                <UploadCard closeModal={this.handleCloseUploadModal} socket={socket} />
               </Fade>
             </Modal>
           </Toolbar>

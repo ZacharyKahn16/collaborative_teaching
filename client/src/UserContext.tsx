@@ -7,22 +7,20 @@ const UserContextProvider = (props: any) => {
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
-    AUTH.onAuthStateChanged(user => {
+    AUTH.onAuthStateChanged((user) => {
       if (user) {
         setUser({
           uid: user.uid,
           name: user.displayName,
           email: user.email,
-        })
+        });
       } else {
         setUser(null);
       }
     });
   }, []);
 
-  return (
-    <UserContext.Provider value={{user}}>{props.children}</UserContext.Provider>
-  );
+  return <UserContext.Provider value={{ user }}>{props.children}</UserContext.Provider>;
 };
 
 export default UserContextProvider;

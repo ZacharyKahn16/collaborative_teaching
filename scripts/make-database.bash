@@ -3,7 +3,7 @@
 # Creates Database 1
 
 gcloud beta compute --project=collaborative-teaching instances create database-1 \
-  --zone=us-central1-a --machine-type=f1-micro --subnet=default --network-tier=PREMIUM \
+  --zone=us-central1-a --machine-type=n1-standard-2 --subnet=default --network-tier=PREMIUM \
   --maintenance-policy=MIGRATE --service-account=165250393917-compute@developer.gserviceaccount.com \
   --scopes=https://www.googleapis.com/auth/cloud-platform --tags=database-server \
   --image=ubuntu-minimal-1804-bionic-v20200220 --image-project=ubuntu-os-cloud --boot-disk-size=10GB \

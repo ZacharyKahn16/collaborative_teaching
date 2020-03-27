@@ -14,18 +14,13 @@ export const SyncingEditor = () => {
   const remote = useRef(false);
 
   useEffect(() => {
-    socket.on(
-      "new-remote-operations",
-      ({ editorId, ops }) => {
-        if (id.current !== editorId) {
-          remote.current = true;
-          JSON.parse(ops).forEach((op) =>
-            editor.current.applyOperation(op)
-          );
-          remote.current = false;
-        }
+    socket.on("new-remote-operations", ({ editorId, ops }) => {
+      if (id.current !== editorId) {
+        remote.current = true;
+        JSON.parse(ops).forEach((op) => editor.current.applyOperation(op));
+        remote.current = false;
       }
-    );
+    });
   }, []);
 
   return (
@@ -34,14 +29,14 @@ export const SyncingEditor = () => {
       style={{
         backgroundColor: "#fafafa",
         maxWidth: 800,
-        minHeight: 150
+        minHeight: 150,
       }}
       value={value}
-      onChange={opts => {
+      onChange={(opts) => {
         setValue(opts.value);
 
         const ops = opts.operations
-          .filter(o => {
+          .filter((o) => {
             if (o) {
               return (
                 o.type !== "set_selection" &&
@@ -58,7 +53,7 @@ export const SyncingEditor = () => {
         if (ops.length && !remote.current) {
           socket.emit("new-operations", {
             editorId: id.current,
-            ops: JSON.stringify(ops)
+            ops: JSON.stringify(ops),
           });
         }
       }}

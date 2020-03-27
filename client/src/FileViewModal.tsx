@@ -48,11 +48,7 @@ class FileViewModal extends Component<FileViewModalPropType> {
         disableBackdropClick={true}
         disableEscapeKeyDown={false}
       >
-        <IconButton
-          className={classes.closeButton}
-          onClick={onClose}
-          color="inherit"
-        >
+        <IconButton className={classes.closeButton} onClick={onClose} color="inherit">
           <CloseIcon />
         </IconButton>
         <DialogTitle>{fileName}</DialogTitle>

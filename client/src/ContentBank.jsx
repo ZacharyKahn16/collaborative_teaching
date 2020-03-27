@@ -38,14 +38,13 @@ class ContentBank extends Component {
   componentDidMount() {
     const { socket } = this.props;
     listen(socket, (msg) => {
-      console.log("callback");
       console.log(msg);
     });
   }
 
   populateFileTable = (msg) => {
     let temp = [];
-    msg.forEach(function (doc) {
+    msg.forEach(function(doc) {
       temp.push({
         fileName: doc.name,
         fileType: doc.name.split(".")[1],
@@ -144,9 +143,7 @@ class ContentBank extends Component {
                     </Link>
                   </Typography>
                 </TableCell>
-                <TableCell align="left">
-                  {row.fileId ? row.fileId : "None"}
-                </TableCell>
+                <TableCell align="left">{row.fileId ? row.fileId : "None"}</TableCell>
                 <TableCell align="left">{row.fileType}</TableCell>
                 <TableCell align="left">{row.owner}</TableCell>
                 <TableCell align="left">{row.dateUploaded}</TableCell>
@@ -158,10 +155,7 @@ class ContentBank extends Component {
                   >
                     <AddIcon color="inherit" />
                   </IconButton>
-                  <IconButton
-                    className="action-button"
-                    onClick={this.handleDeleteModalOpen}
-                  >
+                  <IconButton className="action-button" onClick={this.handleDeleteModalOpen}>
                     <DeleteIcon color="inherit" />
                   </IconButton>
                 </TableCell>

@@ -89,17 +89,8 @@ class CoursePage extends React.Component {
 
     return (
       <Paper className={classes.paper} square>
-        <Header
-          title={"List of Courses"}
-          workerInfo={workerInfo}
-          userInfo={userInfo}
-        />
-        <AppBar
-          className={classes.searchBar}
-          position="static"
-          color="default"
-          elevation={0}
-        >
+        <Header title={"List of Courses"} workerInfo={workerInfo} userInfo={userInfo} />
+        <AppBar className={classes.searchBar} position="static" color="default" elevation={0}>
           <Toolbar>
             <Grid container spacing={2} alignItems="center">
               <Grid item>
@@ -122,10 +113,7 @@ class CoursePage extends React.Component {
                   className={classes.addUser}
                   onClick={this.handleOpenUploadModal}
                 >
-                  <PublishIcon
-                    className={classes.addFileButton}
-                    color="inherit"
-                  />
+                  <PublishIcon className={classes.addFileButton} color="inherit" />
                   Add file
                   <input type="file" style={{ display: "none" }} />
                 </Button>
@@ -150,15 +138,13 @@ class CoursePage extends React.Component {
               }}
             >
               <Fade in={this.state.uploadModalOpen}>
-                <div>
-                  {/*TODO: Conditional card for either editing or deleting*/}
-                </div>
+                <div>{/*TODO: Conditional card for either editing or deleting*/}</div>
               </Fade>
             </Modal>
           </Toolbar>
         </AppBar>
         <div className={classes.contentWrapper}>
-          <FileList />
+          <FileList classes={classes} />
         </div>
       </Paper>
     );

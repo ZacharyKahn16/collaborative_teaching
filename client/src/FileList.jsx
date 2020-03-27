@@ -56,7 +56,7 @@ class FileList extends Component {
   populateFileTable = (msg) => {
     let temp = [];
     const { user } = this.context;
-    msg.forEach(function (doc) {
+    msg.forEach(function(doc) {
       if (user.name === doc.ownerId) {
         temp.push({
           fileName: doc.name,
@@ -91,9 +91,9 @@ class FileList extends Component {
     }));
   };
 
-  handleViewModalOpen = (fileid) => {
+  handleViewModalOpen = (fileId) => {
     const { socket } = this.props;
-    retrieveFile(socket, fileid, uuidv4());
+    retrieveFile(socket, fileId, uuidv4());
   };
 
   handleModalClose = () => {
@@ -106,6 +106,7 @@ class FileList extends Component {
 
   render() {
     const { socket } = this.props;
+
     retrieveAllFiles(socket, (msg) => {
       console.log(msg);
       if (msg.length !== 0) {
@@ -169,9 +170,7 @@ class FileList extends Component {
                     </Link>
                   </Typography>
                 </TableCell>
-                <TableCell align="left">
-                  {row.fileId ? row.fileId : "None"}
-                </TableCell>
+                <TableCell align="left">{row.fileId ? row.fileId : "None"}</TableCell>
                 <TableCell align="left">{row.fileType}</TableCell>
                 <TableCell align="left">{row.owner}</TableCell>
                 <TableCell align="left">{row.dateUploaded}</TableCell>
@@ -183,10 +182,7 @@ class FileList extends Component {
                   >
                     <EditIcon color="inherit" />
                   </IconButton>
-                  <IconButton
-                    className="action-button"
-                    onClick={this.handleDeleteModalOpen}
-                  >
+                  <IconButton className="action-button" onClick={this.handleDeleteModalOpen}>
                     <DeleteIcon color="inherit" />
                   </IconButton>
                 </TableCell>

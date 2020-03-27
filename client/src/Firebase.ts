@@ -11,7 +11,7 @@ const firebase = app.initializeApp({
   storageBucket: "collaborative-teaching.appspot.com",
   messagingSenderId: "165250393917",
   appId: "1:165250393917:web:3c80eb525febc903908754",
-  measurementId: "G-JHBH418GRJ"
+  measurementId: "G-JHBH418GRJ",
 });
 
 export const AUTH = firebase.auth();

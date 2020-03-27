@@ -1,9 +1,5 @@
 import React from "react";
-import {
-  createMuiTheme,
-  ThemeProvider,
-  withStyles,
-} from "@material-ui/core/styles";
+import { createMuiTheme, ThemeProvider, withStyles } from "@material-ui/core/styles";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import Navigator from "./Navigator";
 import { Route } from "react-router";
@@ -184,10 +180,7 @@ class Home extends React.Component {
   }
 
   connectMaster(ipOne, ipTwo) {
-    console.log(
-      "trying to connect to master, attempt",
-      this.state.connectionAttempts
-    );
+    console.log("trying to connect to master, attempt", this.state.connectionAttempts);
 
     axios
       .get(ipOne)
@@ -298,12 +291,7 @@ class Home extends React.Component {
                 {/*<Route path={"/browse-content"} component={BrowseContent}/>*/}
                 <Route
                   path={"/course-page/"}
-                  render={(props) => (
-                    <ViewCourse
-                      {...props}
-                      workerInfo={"this.state.workerInfo"}
-                    />
-                  )}
+                  render={(props) => <ViewCourse {...props} workerInfo={"this.state.workerInfo"} />}
                 />
               </Switch>
             </main>

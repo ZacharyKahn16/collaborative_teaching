@@ -63,12 +63,7 @@ class BrowseContent extends React.Component {
     return (
       <Paper className={classes.paper} square>
         <Header title={"Content Bank"} workerInfo={workerInfo} />
-        <AppBar
-          className={classes.searchBar}
-          position="static"
-          color="default"
-          elevation={0}
-        >
+        <AppBar className={classes.searchBar} position="static" color="default" elevation={0}>
           <Toolbar>
             <Grid container spacing={2} alignItems="center">
               <Grid item>

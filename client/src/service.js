@@ -37,7 +37,7 @@ const retrieveFile = (socket, docId, requestId) => {
 const writeNewFile = (socket, file, ownerId) => {
   // Send worker a request to write a file into the FDB
   readFileAsDataUrl(file)
-    .then(dataUrl => {
+    .then((dataUrl) => {
       const hash = SHA256(dataUrl).toString();
       console.log("sending file with hash: ", hash);
 

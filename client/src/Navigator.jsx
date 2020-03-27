@@ -84,7 +84,7 @@ function Navigator(props) {
   const { classes, ...other } = props;
 
   function setActiveTab() {
-    categories[0].children.forEach(function (element) {
+    categories[0].children.forEach(function(element) {
       element.active = window.location.href.includes(element.path);
     });
   }
@@ -96,45 +96,33 @@ function Navigator(props) {
   return (
     <Drawer variant="permanent" {...other}>
       <List disablePadding>
-        <ListItem
-          className={clsx(classes.firebase, classes.item, classes.itemCategory)}
-        >
+        <ListItem className={clsx(classes.firebase, classes.item, classes.itemCategory)}>
           Collaborative Teaching
         </ListItem>
         {categories.map(({ id, children }, parentKey) => (
           <React.Fragment key={parentKey}>
-            {children.map(
-              (
-                { id: childId, icon, active, styleid, path, numIndex },
-                childKey
-              ) => (
-                <Link
-                  to={path}
-                  classes={{
-                    primary: classes.itemPrimary,
-                  }}
-                  className={"linkNoStyle"}
-                  key={childKey}
-                >
-                  <div id={styleid}>
-                    <ListItem
-                      key={childId}
-                      button
-                      className={clsx(
-                        classes.item,
-                        active && classes.itemActiveItem
-                      )}
-                    >
-                      <ListItemIcon className={classes.itemIcon}>
-                        {icon}
-                      </ListItemIcon>
+            {children.map(({ id: childId, icon, active, styleid, path, numIndex }, childKey) => (
+              <Link
+                to={path}
+                classes={{
+                  primary: classes.itemPrimary,
+                }}
+                className={"linkNoStyle"}
+                key={childKey}
+              >
+                <div id={styleid}>
+                  <ListItem
+                    key={childId}
+                    button
+                    className={clsx(classes.item, active && classes.itemActiveItem)}
+                  >
+                    <ListItemIcon className={classes.itemIcon}>{icon}</ListItemIcon>
 
-                      {childId}
-                    </ListItem>
-                  </div>
-                </Link>
-              )
-            )}
+                    {childId}
+                  </ListItem>
+                </div>
+              </Link>
+            ))}
 
             <Divider className={classes.divider} />
           </React.Fragment>

@@ -68,27 +68,13 @@ class UploadCard extends Component {
           </Typography>
           <Grid className="upload-box-container" container spacing={0}>
             <Grid className="upload-box-left" item xs={9}>
-              <Typography
-                className="file-name-p"
-                variant="body2"
-                component="p"
-                noWrap
-              >
+              <Typography className="file-name-p" variant="body2" component="p" noWrap>
                 {this.state.fileDisplayName}
               </Typography>
             </Grid>
             <Grid className="upload-box-right" item xs={3}>
-              <Button
-                className="browse-btn"
-                component="label"
-                variant="contained"
-                color="primary"
-              >
-                <input
-                  className="display-none"
-                  type="file"
-                  onChange={this.onBrowseChange}
-                />
+              <Button className="browse-btn" component="label" variant="contained" color="primary">
+                <input className="display-none" type="file" onChange={this.onBrowseChange} />
                 Browse
               </Button>
             </Grid>

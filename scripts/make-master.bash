@@ -3,7 +3,7 @@
 ## Creates Master 1
 
 gcloud beta compute --project=collaborative-teaching instances create master-1 \
-  --zone=us-central1-a --machine-type=g1-small --subnet=default --network-tier=PREMIUM \
+  --zone=us-central1-a --machine-type=n1-standard-8 --subnet=default --network-tier=PREMIUM \
   --maintenance-policy=MIGRATE --service-account=165250393917-compute@developer.gserviceaccount.com \
   --scopes=https://www.googleapis.com/auth/cloud-platform --tags=http-server \
   --image=ubuntu-minimal-1804-bionic-v20200220 --image-project=ubuntu-os-cloud --boot-disk-size=10GB \

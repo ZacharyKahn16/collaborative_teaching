@@ -106,12 +106,8 @@ class MyCourses extends React.Component {
     };
     this.handleClickOpenEditCourse = this.handleClickOpenEditCourse.bind(this);
     this.handleCloseEditCourse = this.handleCloseEditCourse.bind(this);
-    this.handleClickOpenDialogueNewCourse = this.handleClickOpenDialogueNewCourse.bind(
-      this
-    );
-    this.handleCloseDialogueNewCourse = this.handleCloseDialogueNewCourse.bind(
-      this
-    );
+    this.handleClickOpenDialogueNewCourse = this.handleClickOpenDialogueNewCourse.bind(this);
+    this.handleCloseDialogueNewCourse = this.handleCloseDialogueNewCourse.bind(this);
     this.deleteClass = this.deleteClass.bind(this);
     this.createCourseName = this.createCourseName.bind(this);
     this.createCourseDescription = this.createCourseDescription.bind(this);
@@ -207,11 +203,7 @@ class MyCourses extends React.Component {
 
     return (
       <Paper className={classes.paper} square>
-        <Header
-          title={"My Courses"}
-          workerInfo={workerInfo}
-          userInfo={userInfo}
-        />
+        <Header title={"My Courses"} workerInfo={workerInfo} userInfo={userInfo} />
         <AppBar
           className={this.props.classes.searchBar}
           position="static"
@@ -219,54 +211,39 @@ class MyCourses extends React.Component {
           elevation={0}
         >
           <Grid container={true} spacing={3} className={classes.container}>
-            {this.state.myClasses.map(
-              ({ id, course, description, path }, index) => (
-                <Grid item={true} xs={12} sm={6} md={4} key={index}>
-                  <Card className={classes.root} id={"courseCard"}>
-                    <Link to={path} id={"courseLink"}>
-                      <CardActionArea id={"cardInfo"}>
-                        <CardContent>
-                          <Typography gutterBottom variant="h5" component="h2">
-                            {course}
-                          </Typography>
-                          <Typography
-                            variant="body2"
-                            color="textSecondary"
-                            component="p"
-                          >
-                            {description}
-                          </Typography>
-                        </CardContent>
-                      </CardActionArea>
-                    </Link>
-                    <CardActions className={"courseOptions"}>
-                      <Tooltip title={"Edit"}>
-                        <IconButton
-                          aria-label={"settings"}
-                          onClick={() =>
-                            this.handleClickOpenEditCourse(
-                              index,
-                              course,
-                              description
-                            )
-                          }
-                        >
-                          <MoreVertIcon />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title={"Remove"}>
-                        <IconButton
-                          aria-label="settings"
-                          onClick={() => this.deleteClass(index)}
-                        >
-                          <DeleteIcon />
-                        </IconButton>
-                      </Tooltip>
-                    </CardActions>
-                  </Card>
-                </Grid>
-              )
-            )}
+            {this.state.myClasses.map(({ id, course, description, path }, index) => (
+              <Grid item={true} xs={12} sm={6} md={4} key={index}>
+                <Card className={classes.root} id={"courseCard"}>
+                  <Link to={path} id={"courseLink"}>
+                    <CardActionArea id={"cardInfo"}>
+                      <CardContent>
+                        <Typography gutterBottom variant="h5" component="h2">
+                          {course}
+                        </Typography>
+                        <Typography variant="body2" color="textSecondary" component="p">
+                          {description}
+                        </Typography>
+                      </CardContent>
+                    </CardActionArea>
+                  </Link>
+                  <CardActions className={"courseOptions"}>
+                    <Tooltip title={"Edit"}>
+                      <IconButton
+                        aria-label={"settings"}
+                        onClick={() => this.handleClickOpenEditCourse(index, course, description)}
+                      >
+                        <MoreVertIcon />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title={"Remove"}>
+                      <IconButton aria-label="settings" onClick={() => this.deleteClass(index)}>
+                        <DeleteIcon />
+                      </IconButton>
+                    </Tooltip>
+                  </CardActions>
+                </Card>
+              </Grid>
+            ))}
 
             <Grid item={true} xs={12} sm={6} md={4}>
               <Card className={classes.root} id={"courseCard"}>
@@ -277,9 +254,7 @@ class MyCourses extends React.Component {
                     </Typography>
                     <Tooltip title={"Click to add course"}>
                       {/*<IconButton aria-label="settings">*/}
-                      <AddIcon
-                        onClick={() => this.handleClickOpenDialogueNewCourse()}
-                      />
+                      <AddIcon onClick={() => this.handleClickOpenDialogueNewCourse()} />
                       {/*</IconButton>*/}
                     </Tooltip>
                   </CardContent>
@@ -295,9 +270,7 @@ class MyCourses extends React.Component {
         >
           <DialogTitle id="form-dialog-title">Create New Course</DialogTitle>
           <DialogContent>
-            <DialogContentText>
-              To create new course fill in these fields
-            </DialogContentText>
+            <DialogContentText>To create new course fill in these fields</DialogContentText>
             <TextField
               margin="dense"
               id="newCourseName"
@@ -316,16 +289,10 @@ class MyCourses extends React.Component {
             />
           </DialogContent>
           <DialogActions>
-            <Button
-              onClick={() => this.handleCloseDialogueNewCourse(false)}
-              color="primary"
-            >
+            <Button onClick={() => this.handleCloseDialogueNewCourse(false)} color="primary">
               Cancel
             </Button>
-            <Button
-              onClick={() => this.handleCloseDialogueNewCourse(true)}
-              color="primary"
-            >
+            <Button onClick={() => this.handleCloseDialogueNewCourse(true)} color="primary">
               Create Course
             </Button>
           </DialogActions>
@@ -337,9 +304,7 @@ class MyCourses extends React.Component {
         >
           <DialogTitle id="form-dialog-title">Edit Your Course</DialogTitle>
           <DialogContent>
-            <DialogContentText>
-              Make your changes and click save
-            </DialogContentText>
+            <DialogContentText>Make your changes and click save</DialogContentText>
             <TextField
               margin="dense"
               id="newCourseName"
@@ -360,16 +325,10 @@ class MyCourses extends React.Component {
             />
           </DialogContent>
           <DialogActions>
-            <Button
-              onClick={() => this.handleCloseEditCourse(false)}
-              color="primary"
-            >
+            <Button onClick={() => this.handleCloseEditCourse(false)} color="primary">
               Cancel
             </Button>
-            <Button
-              onClick={() => this.handleCloseEditCourse(true)}
-              color="primary"
-            >
+            <Button onClick={() => this.handleCloseEditCourse(true)} color="primary">
               Save Changes
             </Button>
           </DialogActions>

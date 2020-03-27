@@ -14,7 +14,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  DialogContentText
+  DialogContentText,
 } from "@material-ui/core";
 import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
 import LockOpenOutlineIcon from "@material-ui/icons/LockOpenOutlined";
@@ -24,24 +24,24 @@ const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
     root: {
       width: "100vw",
-      height: "100vh"
+      height: "100vh",
     },
     paper: {
       margin: theme.spacing(10, 4),
       display: "flex",
       flexDirection: "column",
-      alignItems: "center"
+      alignItems: "center",
     },
     avatar: {
       margin: theme.spacing(1),
-      backgroundColor: theme.palette.secondary.main
+      backgroundColor: theme.palette.secondary.main,
     },
     form: {
       width: "100%", // Fix IE 11 issue.
-      marginTop: theme.spacing(1)
+      marginTop: theme.spacing(1),
     },
     submit: {
-      margin: theme.spacing(3, 0, 2)
+      margin: theme.spacing(3, 0, 2),
     },
     image: {
       backgroundImage:
@@ -49,8 +49,8 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundRepeat: "no-repeat",
       backgroundColor: theme.palette.grey[50],
       backgroundSize: "cover",
-      backgroundPosition: "center"
-    }
+      backgroundPosition: "center",
+    },
   });
 });
 
@@ -73,19 +73,19 @@ export default function LoginPage() {
 
   function submit(event: FormEvent) {
     if (login) {
-      AUTH.signInWithEmailAndPassword(email, password).catch(err => {
+      AUTH.signInWithEmailAndPassword(email, password).catch((err) => {
         setError(err);
       });
     } else {
       AUTH.createUserWithEmailAndPassword(email, password)
-        .then(result => {
+        .then((result) => {
           if (result && result.user) {
             result.user.updateProfile({
-              displayName: name
+              displayName: name,
             });
           }
         })
-        .catch(err => {
+        .catch((err) => {
           setError(err);
         });
     }
@@ -111,15 +111,7 @@ export default function LoginPage() {
       </Dialog>
 
       <Grid item={true} xs={false} sm={4} md={7} className={classes.image} />
-      <Grid
-        item={true}
-        xs={12}
-        sm={8}
-        md={5}
-        component={Paper}
-        elevation={10}
-        square={true}
-      >
+      <Grid item={true} xs={12} sm={8} md={5} component={Paper} elevation={10} square={true}>
         <div className={classes.paper}>
           <Avatar className={classes.avatar}>
             {login ? <LockOpenOutlineIcon /> : <LockOutlinedIcon />}
@@ -138,7 +130,7 @@ export default function LoginPage() {
                 autoComplete="email"
                 autoFocus={true}
                 value={name}
-                onChange={event => {
+                onChange={(event) => {
                   setName(event.target.value);
                 }}
               />
@@ -152,7 +144,7 @@ export default function LoginPage() {
               autoComplete="email"
               autoFocus={true}
               value={email}
-              onChange={event => {
+              onChange={(event) => {
                 setEmail(event.target.value);
               }}
             />
@@ -165,7 +157,7 @@ export default function LoginPage() {
               type="password"
               autoComplete="current-password"
               value={password}
-              onChange={event => {
+              onChange={(event) => {
                 setPassword(event.target.value);
               }}
             />
