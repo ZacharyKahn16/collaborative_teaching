@@ -44,7 +44,6 @@ class UploadCard extends Component {
 
   uploadFile = () => {
     const { user, network } = this.context;
-    console.log(this.state.uploadedFile);
     network.writeNewFile(this.state.uploadedFile, user.uid);
     this.props.closeModal();
   };

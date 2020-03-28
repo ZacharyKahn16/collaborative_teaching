@@ -1,13 +1,11 @@
 import * as fs from './Firebase';
 import admin from 'firebase-admin';
+import { getDb } from './Firebase';
 
 // Collection constants
 const FILE_COLLECTION = 'File';
 const CLIENT_COLLECTION = 'Client';
 const COURSE_COLLECTION = 'Course';
-
-// File Collection Fields
-const OWNDER_ID_KEY = 'ownerId';
 
 // fileId created by firestore.
 export function insertedFile(
@@ -134,9 +132,22 @@ export function deleteReadOnlyId(fileId: string, readOnlyId: string) {
 // Get all files from the files collection
 export async function getAllFiles() {
   const fileCollection = await fs.getCollection(FILE_COLLECTION);
+  const clientCollection = await fs.getCollection(CLIENT_COLLECTION);
+
+  const clientMap: any = {};
+
+  for (const client of clientCollection.docs) {
+    clientMap[client.id] = client.data();
+  }
 
   return fileCollection.docs.map((doc: any) => {
-    return doc.data();
+    const data = doc.data();
+    const owner = clientMap[data.ownerId];
+
+    return {
+      ...data,
+      ownerName: owner ? owner.name : '',
+    };
   });
 }
 
@@ -225,4 +236,12 @@ export function getAllCourses() {
 
 export async function getFile(docId: string) {
   return fs.getDocument(FILE_COLLECTION, docId);
+}
+
+export function setClient(client: any) {
+  getDb()
+    .collection(CLIENT_COLLECTION)
+    .doc(client.uid)
+    .set(client, { merge: true })
+    .then();
 }

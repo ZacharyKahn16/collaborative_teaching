@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import PropTypes from "prop-types";
 import {
   Table,
   TableBody,
@@ -69,19 +70,18 @@ class ContentBank extends Component {
 
   render() {
     const { allFiles } = this.context;
+    const { searchTerm } = this.props;
 
     const files = allFiles
-      .map((file) => {
-        return {
-          fileName: file.name,
-          fileType: file.name.split(".")[1],
-          fileId: file.docId,
-          owner: file.ownerId,
-          dateUploaded: file.lastUpdated,
-        };
+      .filter((file) => {
+        return (
+          file.name.includes(searchTerm) ||
+          file.ownerName.includes(searchTerm) ||
+          file.courseIds.includes(searchTerm)
+        );
       })
       .sort((a, b) => {
-        return b.dateUploaded - a.dateUploaded;
+        return b.lastUpdated - a.lastUpdated;
       });
 
     if (files.length === 0) {
@@ -119,24 +119,24 @@ class ContentBank extends Component {
           </TableHead>
           <TableBody>
             {files.map((row) => (
-              <TableRow key={row.fileId}>
+              <TableRow key={row.docId}>
                 <TableCell align="left">
                   <Typography variant="body2">
                     <Link
                       color="primary"
                       href="#"
                       onClick={() => {
-                        this.updateSelectedFile(row.fileId);
+                        this.updateSelectedFile(row.docId);
                       }}
                     >
-                      {row.fileName}
+                      {row.name}
                     </Link>
                   </Typography>
                 </TableCell>
-                <TableCell align="left">{row.fileId}</TableCell>
-                <TableCell align="left">{row.fileType.toUpperCase()}</TableCell>
-                <TableCell align="left">{row.owner}</TableCell>
-                <TableCell align="left">{moment(row.dateUploaded).format("lll")}</TableCell>
+                <TableCell align="left">{row.docId}</TableCell>
+                <TableCell align="left">{row.name.split(".")[1].toUpperCase()}</TableCell>
+                <TableCell align="left">{row.ownerName}</TableCell>
+                <TableCell align="left">{moment(row.lastUpdated).format("lll")}</TableCell>
                 <TableCell align="center">
                   <IconButton
                     className="action-button"
@@ -167,5 +167,13 @@ class ContentBank extends Component {
     );
   }
 }
+
+ContentBank.propTypes = {
+  searchTerm: PropTypes.string,
+};
+
+ContentBank.defaultProps = {
+  searchTerm: "",
+};
 
 export default ContentBank;

@@ -49,6 +49,9 @@
     "require-jsdoc": "off",
     "valid-jsdoc": "off",
     "spaced-comment": "off",
-    "@typescript-eslint/no-explicit-any": "off"
+    "@typescript-eslint/no-explicit-any": "off",
+    "new-cap": "off",
+    "@typescript-eslint/camelcase": "off",
+    "@typescript-eslint/ban-ts-ignore": "off"
   }
 }

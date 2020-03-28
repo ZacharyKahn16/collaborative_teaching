@@ -6,11 +6,16 @@ import { SHA256 } from "crypto-js";
 import { MASTER_STATIC_IPS, WORKER_SOCKET_PORT } from "./ServerConfig";
 import { AUTH } from "./Firebase";
 
+// incoming
 const SERVER_RESP = "Server Response";
 const ALL_FILES = "All Files";
+
+// outgoing
 const RETRIEVE_FILE = "Retrieve File";
 const INSERT_FILE = "Insert File";
 const UPDATE_FILE = "Update File";
+const DELETE_FILE = "Delete File";
+const SET_CLIENT = "Set Client";
 
 function backOffForRetry(retryNum: number) {
   // Exp between 9 and 18 (corresponds to 512 ms to 262144 ms)
@@ -229,6 +234,12 @@ export class NetworkInstance {
         });
     }
   }
+
+  setUser(user: any) {
+    if (this.socket) {
+      this.socket.emit(SET_CLIENT, user);
+    }
+  }
 }
 
 const NETWORK_INSTANCE = new NetworkInstance();
@@ -279,6 +290,12 @@ const GlobalContextProvider = (props: any) => {
   useEffect(() => {
     NETWORK_INSTANCE.setupCallback({ setIsLoaded, setWorkerInfo, setAllFiles, setResponses });
   }, []);
+
+  useEffect(() => {
+    if (isLoaded && user) {
+      NETWORK_INSTANCE.setUser(user);
+    }
+  }, [isLoaded, user]);
 
   return (
     <GlobalContext.Provider

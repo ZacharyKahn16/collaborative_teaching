@@ -1,6 +1,6 @@
 import { AccessFDB } from './HelperFunctions/workerToFDBConnection';
 import { LOGGER } from './Logger';
-import { insertedFile, getAllFiles } from './MCDB';
+import { insertedFile, getAllFiles, setClient } from './MCDB';
 import {
   shuffle,
   findFdbUsingIp,
@@ -25,11 +25,11 @@ let fdbList: AccessFDB[] = [];
 
 // Client events
 const CONNECTION_EVENT = 'connection';
-const GET_ALL_FILES_META = 'Get All Files';
 const RETRIEVE_FILE = 'Retrieve File';
 const INSERT_FILE = 'Insert File';
 const UPDATE_FILE = 'Update File';
 const DELETE_FILE = 'Delete File';
+const SET_CLIENT = 'Set Client';
 
 // Server message constants
 const SERVER_RESP = 'Server Response';
@@ -78,6 +78,11 @@ async function broadcastAllFilesToClients() {
 
 socketServer.on(CONNECTION_EVENT, function(socket) {
   sendAllFilesToClient(socket);
+
+  socket.on(SET_CLIENT, (req) => {
+    setClient(req);
+  });
+
   /**
    * Retrieves a File
    *

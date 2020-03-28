@@ -1,8 +1,8 @@
+import deepCopy from 'rfdc';
 import { AccessFDB } from './workerToFDBConnection';
 import { LOGGER } from '../Logger';
 import { addFdbLocation, getFile } from '../MCDB';
 
-import deepCopy from 'rfdc';
 const deepCopyFunc = deepCopy({ proto: true });
 
 export function shuffle(array: any) {

@@ -52,11 +52,19 @@ class MyFiles extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      searchTerm: "",
       uploadModalOpen: false,
     };
 
     this.handleOpenUploadModal = this.handleOpenUploadModal.bind(this);
     this.handleCloseUploadModal = this.handleCloseUploadModal.bind(this);
+    this.updateSearchTerm = this.updateSearchTerm.bind(this);
+  }
+
+  updateSearchTerm(event) {
+    this.setState({
+      searchTerm: event.target.value,
+    });
   }
 
   handleOpenUploadModal() {
@@ -85,8 +93,9 @@ class MyFiles extends React.Component {
               </Grid>
               <Grid item xs>
                 <TextField
-                  fullWidth
+                  fullWidth={true}
                   placeholder="Search by course or file name."
+                  onChange={this.updateSearchTerm}
                   InputProps={{
                     disableUnderline: true,
                     className: classes.searchInput,
@@ -117,7 +126,7 @@ class MyFiles extends React.Component {
           </Toolbar>
         </AppBar>
         <div className={classes.contentWrapper}>
-          <FileList />
+          <FileList searchTerm={this.state.searchTerm} />
         </div>
       </Paper>
     );

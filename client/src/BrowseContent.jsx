@@ -43,14 +43,17 @@ class BrowseContent extends React.Component {
   constructor(props) {
     super(props);
 
+    this.state = {
+      searchTerm: "",
+    };
+
     this.handleSearchOnChange = this.handleSearchOnChange.bind(this);
   }
 
   handleSearchOnChange(e) {
-    console.log(e.key);
-    if (e.key === "Enter") {
-      console.log(e.target.value);
-    }
+    this.setState({
+      searchTerm: e.target.value,
+    });
   }
 
   render() {
@@ -88,7 +91,7 @@ class BrowseContent extends React.Component {
         </AppBar>
         <div className={classes.contentWrapper}>
           {/*No users for this project yet*/}
-          <ContentBank />
+          <ContentBank searchTerm={this.state.searchTerm} />
         </div>
       </Paper>
     );

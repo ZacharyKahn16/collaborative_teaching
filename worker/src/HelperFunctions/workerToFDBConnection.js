@@ -3,7 +3,7 @@
  **/
 
 const MongoClient = require('mongodb').MongoClient;
-const ObjectID = require('mongodb').ObjectID;
+import { LOGGER } from '../Logger';
 // TODO(zacharykahn): Add code to get appropriate url of worker to connect to.
 // This will involve query Metadata Cloud Database, figuring out which
 // worker has the file of interest, and choosing one of them.
@@ -131,7 +131,7 @@ export class AccessFDB {
           return dbo.collection(_fileCollectionName);
         },
         function(err) {
-          console.log('ERROR CONNECTING TO DB');
+          LOGGER.error('ERROR CONNECTING TO DB', err);
           throw err;
         },
       )
@@ -140,16 +140,15 @@ export class AccessFDB {
           return collection.find(query).toArray();
         },
         function(err) {
-          console.log('ERROR RETRIEVING DATA FROM DB');
+          LOGGER.error('ERROR RETRIEVING DATA FROM DB', err);
           throw err;
         },
       )
       .then(function(items) {
-        return items;
+        return items.length > 0 ? items[0] : items;
       })
       .catch(function(err) {
-        console.log('ERROR: Something went wrong with retrieval.');
-        console.log(err);
+        LOGGER.error('ERROR: Something went wrong with retrieval.', err);
         throw err;
       })
       .finally(function() {
@@ -190,7 +189,7 @@ export class AccessFDB {
           return dbo.collection(_fileCollectionName);
         },
         function(err) {
-          console.log('ERROR CONNECTING TO DB');
+          LOGGER.error('ERROR CONNECTING TO DB', err);
           throw err;
         },
       )
@@ -199,7 +198,7 @@ export class AccessFDB {
           return collection.insertOne(fDBInsertInfo);
         },
         function(err) {
-          console.log('ERROR INSERTING INTO DB');
+          LOGGER.error('ERROR INSERTING INTO DB', err);
           throw err;
         },
       )
@@ -207,8 +206,7 @@ export class AccessFDB {
         return resp;
       })
       .catch(function(err) {
-        console.log('ERROR: Something went wrong with insertion.');
-        console.log(err);
+        LOGGER.error('ERROR: Something went wrong with insertion.', err);
         throw err;
       })
       .finally(function() {
@@ -249,7 +247,7 @@ export class AccessFDB {
           return dbo.collection(_fileCollectionName);
         },
         function(err) {
-          console.log('ERROR CONNECTING TO DB');
+          LOGGER.error('ERROR CONNECTING TO DB', err);
           throw err;
         },
       )
@@ -259,7 +257,7 @@ export class AccessFDB {
           return collection.updateOne(query, newUpdate, { upsert: true });
         },
         function(err) {
-          console.log('ERROR UPDATING DOCUMENT.');
+          LOGGER.error('ERROR UPDATING DOCUMENT.', err);
           throw err;
         },
       )
@@ -267,8 +265,7 @@ export class AccessFDB {
         return resp;
       })
       .catch(function(err) {
-        console.log('ERROR: Something went wrong with update.');
-        console.log(err);
+        LOGGER.error('ERROR: Something went wrong with update.', err);
         throw err;
       })
       .finally(function() {
@@ -297,7 +294,7 @@ export class AccessFDB {
           return dbo.collection(_fileCollectionName);
         },
         function(err) {
-          console.log('ERROR CONNECTING TO DB');
+          LOGGER.error('ERROR CONNECTING TO DB', err);
           throw err;
         },
       )
@@ -306,7 +303,7 @@ export class AccessFDB {
           return collection.deleteOne(query);
         },
         function(err) {
-          console.log('ERROR DELETING DATA FROM DB');
+          LOGGER.error('ERROR DELETING DATA FROM DB', err);
           throw err;
         },
       )
@@ -314,8 +311,7 @@ export class AccessFDB {
         return items;
       })
       .catch(function(err) {
-        console.log('ERROR: Something went wrong with deletion.');
-        console.log(err);
+        LOGGER.error('ERROR: Something went wrong with deletion.', err);
         throw err;
       })
       .finally(function() {

@@ -75,8 +75,8 @@ const FileViewModal = () => {
         }, 30 * 1000);
         setTimeout(id);
 
-        if (resp.status === "success" && resp.message.length === 1) {
-          const message = resp.message[0];
+        if (resp.status === "success") {
+          const message = resp.message;
 
           if (message.docId === selectedFileId) {
             setFileName(message.fileName);
