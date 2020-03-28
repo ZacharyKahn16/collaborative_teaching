@@ -1,6 +1,8 @@
 import * as fs from './Firebase';
 import admin from 'firebase-admin';
+import { getDb } from './Firebase';
 
+// Collection constants
 const FILE_COLLECTION = 'File';
 const CLIENT_COLLECTION = 'Client';
 const COURSE_COLLECTION = 'Course';
@@ -38,6 +40,7 @@ export function insertFileWithSpecifiedFileId(
   ownerId: string,
 ) {
   return fs.setDocument(FILE_COLLECTION, fileId, {
+    docId: fileId,
     lastUpdated: timestamp,
     fdbLocations: fdbLocations,
     courseIds: courseIds,
@@ -127,12 +130,42 @@ export function deleteReadOnlyId(fileId: string, readOnlyId: string) {
   });
 }
 
-// Get all files
+// Get all files from the files collection
+export async function getAllFiles() {
+  const fileCollection = await fs.getCollection(FILE_COLLECTION);
+  const clientCollection = await fs.getCollection(CLIENT_COLLECTION);
+
+  const clientMap: any = {};
+
+  for (const client of clientCollection.docs) {
+    clientMap[client.id] = client.data();
+  }
+
+  return fileCollection.docs.map((doc: any) => {
+    const data = doc.data();
+    const owner = clientMap[data.ownerId];
+
+    return {
+      ...data,
+      ownerName: owner ? owner.name : '',
+    };
+  });
+}
+
+// Get all files, used by MC
 // returns: [{docId, docData}]
 // Refer to: https://firebase.google.com/docs/reference/js/firebase.firestore.QuerySnapshot#docs
-export function getAllFiles() {
+export function getAllFilesForMC() {
   return fs.getCollection(FILE_COLLECTION).then((snapshot) => {
     return snapshot.docs;
+  });
+}
+
+// Get all files by ownerId
+// returns [{docId, docData}]
+export function getAllFilesForOwner(ownerId: string) {
+  return fs.getCollection(FILE_COLLECTION).then((snapshot) => {
+    return snapshot.docs.filter((doc) => doc.data().ownerId === ownerId);
   });
 }
 
@@ -221,4 +254,12 @@ export function getAllCourses() {
 
 export async function getFile(docId: string) {
   return fs.getDocument(FILE_COLLECTION, docId);
+}
+
+export function setClient(client: any) {
+  getDb()
+    .collection(CLIENT_COLLECTION)
+    .doc(client.uid)
+    .set(client, { merge: true })
+    .then();
 }

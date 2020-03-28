@@ -1,4 +1,4 @@
-// Test all functionality for the masterCoordinator.
+// TEST CLASS FOR MC.
 
 // TODO: Update this to correct directory.
 import * as mcdb from '../src/MCDB';
@@ -6,9 +6,7 @@ const MasterCoordinator = require('../src/masterCoordinator.js');
 
 const MongoClient = require('mongodb').MongoClient;
 // TODO: MAKE A TEST COLLECTION FOR INSERTING FAKE FILES.
-// TODO: require this when running on gcp, or leave it out if you want to use
-// console.info
-// const { LOGGER } = require('../src/Logger');
+const { LOGGER } = require('../src/Logger');
 
 class CreateMockDataForMC {
   /**
@@ -40,29 +38,29 @@ class CreateMockDataForMC {
           let fdbIp = fdbIps[i];
           insertPromises.push(
             _this.testMc.insertFile(
-              i,
+              i.toString(),
               fdbIp,
               `${i}.txt`,
               `Hello world for ${i}`,
               `hash${i}`,
               'txt',
-              Date.now(),
-              i, // ownerId = fileId here, but not necessary.
+              999999999,
+              i.toString(), // ownerId = fileId here, but not necessary.
             ),
           );
         }
         // Create replicas.
         Promise.all(insertPromises).then(
           (vals) => {
-            console.info('SUCCESSFULLY CREATED FAKE DATA');
+            LOGGER.info('SUCCESSFULLY CREATED FAKE DATA');
           },
           (err) => {
-            console.error('ERROR WHEN CREATED FAKE DATA.', err);
+            LOGGER.error('ERROR WHEN CREATED FAKE DATA.', err);
           },
         );
         return 0;
       } catch (err) {
-        console.error(err);
+        LOGGER.error(err);
       }
     })();
   }
@@ -79,8 +77,8 @@ class CreateMockDataForMC {
 
     (async () => {
       try {
-        let copyId = 99;
-        let ts = Date.now();
+        let copyId = '99';
+        let ts = 999999999;
         for (let i = 0; i < numfdbs; i++) {
           let fdbIp = fdbIps[i];
           insertPromises.push(
@@ -99,15 +97,15 @@ class CreateMockDataForMC {
         // Create replicas.
         Promise.all(insertPromises).then(
           (vals) => {
-            console.info('SUCCESSFULLY CREATED FAKE DATA');
+            LOGGER.info('SUCCESSFULLY CREATED FAKE DATA');
           },
           (err) => {
-            console.error('ERROR WHEN CREATED FAKE DATA.', err);
+            LOGGER.error('ERROR WHEN CREATED FAKE DATA.', err);
           },
         );
         return 0;
       } catch (err) {
-        console.error(err);
+        LOGGER.error(err);
       }
     })();
   }
@@ -124,8 +122,8 @@ class CreateMockDataForMC {
 
     (async () => {
       try {
-        let copyId = 50;
-        let ts = Date.now();
+        let copyId = '50';
+        let ts = 999999999;
         let ts_correct = ts + 3600;
         for (let i = 0; i < numfdbs; i++) {
           // Make the last one inserted the correct one.
@@ -149,15 +147,15 @@ class CreateMockDataForMC {
         // Create replicas.
         Promise.all(insertPromises).then(
           (vals) => {
-            console.info('SUCCESSFULLY MADE INCONSITENT FAKE DATA');
+            LOGGER.info('SUCCESSFULLY MADE INCONSITENT FAKE DATA');
           },
           (err) => {
-            console.error('ERROR WHEN CREATED INCONSISTENT FAKE DATA.', err);
+            LOGGER.error('ERROR WHEN CREATED INCONSISTENT FAKE DATA.', err);
           },
         );
         return 0;
       } catch (err) {
-        console.error(err);
+        LOGGER.error(err);
       }
     })();
   }
@@ -183,15 +181,15 @@ class CreateMockDataForMC {
         // Create replicas.
         return Promise.all(retrievePromises).then(
           (vals) => {
-            console.info('SUCCESSFULLY RETRIEVED FAKE DATA');
+            LOGGER.info('SUCCESSFULLY RETRIEVED FAKE DATA');
             return vals;
           },
           (err) => {
-            console.error('ERROR WHEN RETRIEVING FAKE DATA.', err);
+            LOGGER.error('ERROR WHEN RETRIEVING FAKE DATA.', err);
           },
         );
       } catch (err) {
-        consocle.error(err);
+        LOGGER.error(err);
       }
     })();
   }
@@ -217,7 +215,7 @@ class CreateMockDataForMC {
           return dbo.collection(_fileCollectionName);
         },
         function(err) {
-          console.info('ERROR CONNECTING TO DB');
+          LOGGER.info('ERROR CONNECTING TO DB');
           throw err;
         },
       )
@@ -226,7 +224,7 @@ class CreateMockDataForMC {
           return collection.drop();
         },
         function(err) {
-          console.info('ERROR DELETING DATA FROM DB');
+          LOGGER.info('ERROR DELETING DATA FROM DB');
           throw err;
         },
       )
@@ -234,8 +232,8 @@ class CreateMockDataForMC {
         return items;
       })
       .catch(function(err) {
-        console.info('ERROR: Something went wrong with deletion.');
-        console.info(err);
+        LOGGER.info('ERROR: Something went wrong with deletion.');
+        LOGGER.info(err);
         throw err;
       })
       .finally(function() {
@@ -255,6 +253,12 @@ class CreateMockDataForMC {
 
     (async () => {
       try {
+        const data = await _this.retrieveAllData(fdbIps);
+
+        if (data.flat().length === 0) {
+          LOGGER.info('No files in FDBs, therefore nothing to delete.');
+          return 0;
+        }
         for (let i = 0; i < numfdbs; i++) {
           let fdbIp = fdbIps[i];
           deletePromises.push(_this.clearFdb(fdbIp));
@@ -262,20 +266,22 @@ class CreateMockDataForMC {
         // Create replicas.
         Promise.all(deletePromises).then(
           (vals) => {
-            console.info('SUCCESSFULLY DELETED FAKE DATA');
-            // console.info(vals);
+            LOGGER.info('SUCCESSFULLY DELETED FAKE DATA');
+            // LOGGER.info(vals);
           },
           (err) => {
-            console.error('ERROR WHEN DELETING FAKE DATA.', err);
+            LOGGER.error('ERROR WHEN DELETING FAKE DATA.', err);
           },
         );
-        return 0;
+        // return 0;
       } catch (err) {
-        console.error(err);
+        LOGGER.error(err);
       }
     })();
   }
 
+  // TODO: Check why this causes:
+  // Error: Value for argument "documentPath" is not a valid resource path. Path must be a non-empty string.
   insertFakeInconsistentMcdbData() {
     // Insert some entries that the FDBs have.
     (async () => {
@@ -286,30 +292,30 @@ class CreateMockDataForMC {
         for (let i = 0; i < 2; i++) {
           mcdbPromises.push(
             mcdb.insertFileWithSpecifiedFileId(
-              i,
-              Date.now(),
+              i.toString(),
+              999999999,
               [], // defualt to no fdbs.
               [],
               [],
               `${i}.txt`,
               'some incorrect hash',
-              i,
+              i.toString(),
             ),
           );
         }
         // Insert some entries into MCDB that will not be in MCDB, namely for this
         // example, have fileIds > 3.
-        for (let i = 8; i < 10; i++) {
+        for (let i = 8; i < 12; i++) {
           mcdbPromises.push(
             mcdb.insertFileWithSpecifiedFileId(
-              i,
-              Date.now(),
+              i.toString(),
+              999999999,
               [], // defualt to no fdbs.
               [],
               [],
               `${i}.txt`,
               'some nonexistent file hash',
-              i,
+              i.toString(),
             ),
           );
         }
@@ -317,15 +323,15 @@ class CreateMockDataForMC {
         // Insert MCDB data.
         Promise.all(mcdbPromises).then(
           (vals) => {
-            console.info('SUCCESSFULLY INSERTED FAKE MCDB DATA');
+            LOGGER.info('SUCCESSFULLY INSERTED FAKE MCDB DATA');
           },
           (err) => {
-            console.error('ERROR WHEN INSERTING FAKE MCDB DATA.', err);
+            LOGGER.error('ERROR WHEN INSERTING FAKE MCDB DATA.', err);
           },
         );
         return 0;
       } catch (err) {
-        console.error(err);
+        LOGGER.error(err);
       }
     })();
   }
@@ -334,11 +340,63 @@ class CreateMockDataForMC {
 // let myArgs = process.argv.slice(2);
 // const fdbIps = myArgs[0];
 // Manually copy past in from gcloud console.
-const fdbIps = ['35.193.171.27', '35.222.45.75', '35.223.205.69', '104.198.215.78'];
-let mc = new MasterCoordinator();
+const fdbIps = ['35.224.201.131', '35.223.131.225', '35.223.196.247', '35.226.93.142'];
+let mc = new MasterCoordinator.MasterCoordinator();
 let mockDataCreater = new CreateMockDataForMC(mc);
-// TODO: Could put tests below into a script instead of just running each
-// individually.
+
+// *** AUTOMATED TESTING OF ENTIRE MC *** //
+// Can be flaky depending on connection.
+async function entireAutoMcTest(fdbIps, mc, mockDataCreater) {
+  try {
+    // Delete all data from FDBs.
+    setTimeout(function() {
+      LOGGER.info('CLEAR FDBs.');
+      mockDataCreater.deleteAllData(fdbIps);
+    }, 500);
+    // Run all MC functions and make sure they work when FDBs are empty.
+    setTimeout(function() {
+      LOGGER.info('RUN MC WITH EMPTY FDBs.');
+      mc.makeAllFileCopiesConsistent(fdbIps)
+        .then((result) => mc.makeCorrectNumberOfReplicas(fdbIps))
+        .then((result) => mc.makeMCDBWithCorrectInfo(fdbIps))
+        .finally((result) => LOGGER.info('DONE PART 1'));
+    }, 2500);
+
+    // Insert mock data into FDBs and MCDB.
+    setTimeout(function() {
+      LOGGER.info('PUT IN MOCK DATA.');
+      mockDataCreater.insertOneCopyPerFdb(fdbIps);
+      mockDataCreater.insertTooManyCopies(fdbIps);
+      mockDataCreater.createInconsistentCopies(fdbIps);
+      mockDataCreater.insertFakeInconsistentMcdbData();
+    }, 4500);
+
+    // Run MC.
+    setTimeout(function() {
+      LOGGER.info('RUN MC WITH INCONSISTENT DATA.');
+      mc.makeAllFileCopiesConsistent(fdbIps)
+        .then((result) => mc.makeCorrectNumberOfReplicas(fdbIps))
+        .then((result) => mc.makeMCDBWithCorrectInfo(fdbIps))
+        .finally((result) => LOGGER.info('DONE PART 2'));
+    }, 8000);
+
+    // Run MC after everything has been cleaned up.
+    setTimeout(function() {
+      LOGGER.info('RUN MC WITH CONSISTENT DATA.');
+      mc.makeAllFileCopiesConsistent(fdbIps)
+        .then((result) => mc.makeCorrectNumberOfReplicas(fdbIps))
+        .then((result) => mc.makeMCDBWithCorrectInfo(fdbIps))
+        .finally((result) => LOGGER.info('DONE PART 3'));
+    }, 15000);
+  } catch (err) {
+    LOGGER.error(err);
+  }
+}
+
+entireAutoMcTest(fdbIps, mc, mockDataCreater);
+
+// *** MANUAL SET UP *** //
+// Use manual testing for debugging individual funcitons.
 
 // Insert single copy of each file mock data
 // mockDataCreater.insertOneCopyPerFdb(fdbIps);
@@ -355,10 +413,10 @@ let mockDataCreater = new CreateMockDataForMC(mc);
 // Retrieve fake data.
 // mockDataCreater.retrieveAllData(fdbIps).then(
 //   function(items) {
-//     console.info("The promise was fulfilled with items!", items);
+//     LOGGER.info("The promise was fulfilled with items!", items);
 //   },
 //   function(err) {
-//     console.error(
+//     LOGGER.error(
 //       "*******\nTHE PROMISE WAS REJECTED\n*******\n",
 //       err,
 //       err.stack
@@ -369,7 +427,7 @@ let mockDataCreater = new CreateMockDataForMC(mc);
 // Delete fake data.
 // mockDataCreater.deleteAllData(fdbIps);
 
-// *** Tests for MC *** //
+// *** Manual Tests for MC *** //
 
 // Retrieve File --> Tested with retrieve fake data.
 // Insert File --> Tested with insertOne and TooMany file functions.
@@ -378,10 +436,10 @@ let mockDataCreater = new CreateMockDataForMC(mc);
 // Test organizeByDocId
 // mc.organizeByDocId(fdbIps[0]).then(
 //   function(items) {
-//     console.info("The promise was fulfilled with items!", items);
+//     LOGGER.info("The promise was fulfilled with items!", items);
 //   },
 //   function(err) {
-//     console.error(
+//     LOGGER.error(
 //       "*******\nTHE PROMISE WAS REJECTED\n*******\n",
 //       err,
 //       err.stack
@@ -392,10 +450,10 @@ let mockDataCreater = new CreateMockDataForMC(mc);
 // Test getAllFDBsOrganizedByDocId
 // mc.getAllFDBsOrganizedByDocId(fdbIps).then(
 //   function(items) {
-//     console.info("The promise was fulfilled with items!", items);
+//     LOGGER.info("The promise was fulfilled with items!", items);
 //   },
 //   function(err) {
-//     console.error(
+//     LOGGER.error(
 //       "*******\nTHE PROMISE WAS REJECTED\n*******\n",
 //       err,
 //       err.stack
@@ -406,10 +464,10 @@ let mockDataCreater = new CreateMockDataForMC(mc);
 // Test getCorrectFileInfo
 // mc.getCorrectFileInfo(fdbIps).then(
 //   function(items) {
-//     console.info("The promise was fulfilled with items!", items);
+//     LOGGER.info("The promise was fulfilled with items!", items);
 //   },
 //   function(err) {
-//     console.error(
+//     LOGGER.error(
 //       "*******\nTHE PROMISE WAS REJECTED\n*******\n",
 //       err,
 //       err.stack
@@ -420,10 +478,10 @@ let mockDataCreater = new CreateMockDataForMC(mc);
 // Test getUpdatesForEachFile
 // mc.getUpdatesForEachFile(fdbIps).then(
 //   function(items) {
-//     console.info("The promise was fulfilled with items!", items);
+//     LOGGER.info("The promise was fulfilled with items!", items);
 //   },
 //   function(err) {
-//     console.error(
+//     LOGGER.error(
 //       "*******\nTHE PROMISE WAS REJECTED\n*******\n",
 //       err,
 //       err.stack
@@ -434,10 +492,10 @@ let mockDataCreater = new CreateMockDataForMC(mc);
 // Test makeAllFileCopiesConsistent
 // mc.makeAllFileCopiesConsistent(fdbIps).then(
 //   function(items) {
-//     console.info("The promise was fulfilled with items!", items);
+//     LOGGER.info("The promise was fulfilled with items!", items);
 //   },
 //   function(err) {
-//     console.error(
+//     LOGGER.error(
 //       "*******\nTHE PROMISE WAS REJECTED\n*******\n",
 //       err,
 //       err.stack
@@ -448,10 +506,10 @@ let mockDataCreater = new CreateMockDataForMC(mc);
 // Test getReplicaUpdateInfo
 // mc.getReplicaUpdateInfo(fdbIps).then(
 //   function(items) {
-//     console.info("The promise was fulfilled with items!", items);
+//     LOGGER.info("The promise was fulfilled with items!", items);
 //   },
 //   function(err) {
-//     console.error(
+//     LOGGER.error(
 //       "*******\nTHE PROMISE WAS REJECTED\n*******\n",
 //       err,
 //       err.stack
@@ -464,20 +522,20 @@ let mockDataCreater = new CreateMockDataForMC(mc);
 // Addition works.
 // mc.makeCorrectNumberOfReplicas(fdbIps).then(
 //   function(items) {
-//     console.info('The promise was fulfilled with items!', items);
+//     LOGGER.info('The promise was fulfilled with items!', items);
 //   },
 //   function(err) {
-//     console.error('*******\nTHE PROMISE WAS REJECTED\n*******\n', err, err.stack);
+//     LOGGER.error('*******\nTHE PROMISE WAS REJECTED\n*******\n', err, err.stack);
 //   },
 // );
 
-// Test updateMCDBWithCorrectFDBInfo
+// Test makeMCDBWithCorrectInfo
 // This should make MCDB match what is presented in the FDBs.
-// mc.updateMCDBWithCorrectFDBInfo(fdbIps).then(
+// mc.makeMCDBWithCorrectInfo(fdbIps).then(
 //   function(items) {
-//     console.info('The promise was fulfilled with items!', items);
+//     LOGGER.info('The promise was fulfilled with items!', items);
 //   },
 //   function(err) {
-//     console.error('*******\nTHE PROMISE WAS REJECTED\n*******\n', err, err.stack);
+//     LOGGER.error('*******\nTHE PROMISE WAS REJECTED\n*******\n', err, err.stack);
 //   },
 // );

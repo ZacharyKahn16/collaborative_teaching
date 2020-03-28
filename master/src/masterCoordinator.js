@@ -5,8 +5,6 @@ import * as mcdb from './MCDB';
 const MongoClient = require('mongodb').MongoClient;
 const { LOGGER } = require('./Logger');
 
-// TODO: Make sure to put note that fbdIps must be passed in.
-// TODO: Using LOGGER.info changer to Logger.
 // TODO: MAKE SURE OWNERID IS ADDED TO WORKERS.
 // TODO: DECIDE IF fileId is inserted as string or int into FDB.
 
@@ -24,7 +22,7 @@ export class MasterCoordinator {
   /**
    * Retrieve file with given document id from an FDB.
    *
-   * @param {number} docId ID of document.
+   * @param {String} docId ID of document.
    * @param {String} fdbIp IP of FDB node.
    *
    * @return {Promise} Promise that returns document on success, error otherwise.
@@ -74,7 +72,7 @@ export class MasterCoordinator {
   /**
    * Insert new file.
    *
-   * @param {number}  docId ID of document.
+   * @param {String}  docId ID of document.
    * @param {String} fdbIp IP of FDB.
    * @param {String} fileName name of file.
    * @param {String} fileContents TODO (zacharykahn): Do we want to store file in binary?
@@ -95,7 +93,7 @@ export class MasterCoordinator {
       fileContents: fileContents,
       fileHash: fileHash,
       fileType: fileType,
-      fileCreationTime: ts,
+      lastUpdated: ts,
       ownerId: ownerId,
     };
 
@@ -136,17 +134,18 @@ export class MasterCoordinator {
   /**
    * Updates a file.
    *
-   * @param {number}  docId _id of document.
+   * @param {String}  docId _id of document.
    * @param {String} fdbIp IP of FDB node.
    * @param {String} fileName name of file.
    * @param {Binary} fileContents File contents.
-   * @param fileHash
+   * @param {String} fileHash
    * @param {String} fileType Type of file.
    * @param {number} ts Timestamp.
+   * @param {String} ownerId Owner of file.
    *
    * @return {Promise} Promise that returns if insertion was a success, error otherwise.
    **/
-  updateFile(docId, fdbIp, fileName, fileContents, fileHash, fileType, ts) {
+  updateFile(docId, fdbIp, fileName, fileContents, fileHash, fileType, ts, ownerId) {
     const _dbName = this.dbName;
     const _fileCollectionName = this.fileCollectionName;
     const query = { docId: docId };
@@ -155,7 +154,8 @@ export class MasterCoordinator {
       fileContents: fileContents,
       fileHash: fileHash,
       fileType: fileType,
-      fileCreationTime: ts,
+      lastUpdated: ts,
+      ownerId: ownerId,
     };
 
     const url = `mongodb://${fdbIp}:80`;
@@ -197,8 +197,8 @@ export class MasterCoordinator {
   /**
    * Delete file with given document id.
    *
-   * @param {number} docId ID of document.
-   * @param {number} fdbIp IP of fdb with file to delete.
+   * @param {String} docId ID of document.
+   * @param {String} fdbIp IP of fdb with file to delete.
    *
    * @return {Promise} Promise that returns documents on success, error otherwise.
    **/
@@ -270,14 +270,14 @@ export class MasterCoordinator {
       .then(
         function(collection) {
           // Only need to return the docId, fileName, fileHash, and
-          // fileCreationTime for each FDB.
+          // lastUpdated for each FDB.
           return collection
             .find()
             .project({
               docId: 1,
               fileName: 1,
               fileHash: 1,
-              fileCreationTime: 1,
+              lastUpdated: 1,
               ownerId: 1,
             })
             .toArray();
@@ -305,7 +305,7 @@ export class MasterCoordinator {
    * For an FDB in network, query ot and store the resulting information
    * to use for updating out of sync files.
    * Data structure has following format:
-   * organizedDocData = { docId : [[fdbIp, fileHash, fileCreationTime, ownerId, fileName]] }
+   * organizedDocData = { docId : [[fdbIp, fileHash, lastUpdated, ownerId, fileName]] }
    *
    * @param {String} fdbIp IP of FDB node.
    *
@@ -316,23 +316,21 @@ export class MasterCoordinator {
   organizeByDocId(fdbIp) {
     // Go through each FDB in network, call getFDBInfo and then store the info.
     let organizedDocData = {};
-    let _id, docId, fileName, fileHash, fileCreationTime, ownerId;
+    let _id, docId, fileName, fileHash, lastUpdated, ownerId;
 
     return this.getFDBInfo(fdbIp).then(
       function(items) {
         for (let i = 0; i < items.length; i++) {
-          LOGGER.info(items[i]);
-
           docId = items[i].docId;
           fileName = items[i].fileName;
           fileHash = items[i].fileHash;
-          fileCreationTime = items[i].fileCreationTime;
+          lastUpdated = items[i].lastUpdated;
           ownerId = items[i].ownerId;
 
           if (docId in organizedDocData) {
-            organizedDocData[docId].push([fdbIp, fileHash, fileCreationTime, ownerId, fileName]);
+            organizedDocData[docId].push([fdbIp, fileHash, lastUpdated, ownerId, fileName]);
           } else {
-            organizedDocData[docId] = [[fdbIp, fileHash, fileCreationTime, ownerId, fileName]];
+            organizedDocData[docId] = [[fdbIp, fileHash, lastUpdated, ownerId, fileName]];
           }
         }
 
@@ -351,7 +349,7 @@ export class MasterCoordinator {
    * For each FDB in network, query them and store the resulting information
    * to use for updating out of sync files.
    * Data structure has following format:
-   * organizedDocData = { docId : [[fdbIp, fileHash, fileCreationTime, ownerId, fileName]] }
+   * organizedDocData = { docId : [[fdbIp, fileHash, lastUpdated, ownerId, fileName]] }
    *
    * @param {Array} fdbIps List of fdbIps, eg. ['1.1.1.1']
    *
@@ -425,7 +423,6 @@ export class MasterCoordinator {
         // Number of replicas dynamically to n/3 + 1.
         let replicaUpdateInfo = {};
         const desiredReplicas = Math.floor(fdbIps.length / 3) + 1;
-        LOGGER.info('GET REPLICA UPDATE INFO');
         for (let fileId in organizedDocData) {
           // Positive difference indicates how many replicas need to be added
           // for a given docId. Negative difference tells us how many replicas
@@ -460,46 +457,42 @@ export class MasterCoordinator {
 
     return this.getReplicaUpdateInfo(fdbIpList).then(
       async function({ organizedDocData, replicaUpdateInfo }) {
+        // If organizedDocData is empty, no data in FDBs yet.
+        if (
+          Object.entries(organizedDocData).length === 0 &&
+          organizedDocData.constructor === Object
+        ) {
+          LOGGER.info('No data in any FDBs yet. No further work required.');
+          return 0;
+        }
+
         for (let fileId in organizedDocData) {
           let rep = replicaUpdateInfo[fileId];
           // Make following object: {docId : [fdbIp]}
           const fdbsForFile = organizedDocData[fileId].map((ele) => ele[0]);
 
           if (rep > 0) {
-            LOGGER.info('MAKE ' + rep + ' more replicas');
             // Choose rep fdbIPs that don't already have the given fileId.
             // Only add file to FDBs that don't already have the file.
             const newFdbChoices = fdbIpList.filter((ele) => !fdbsForFile.includes(ele));
 
-            LOGGER.info('REPLICAS TO CHOOSE', newFdbChoices);
-
             // Get list of FDBs to add fileId to.
             const replicationList = _this._getRandomFDBs(newFdbChoices, rep);
-            LOGGER.info('FileID: ' + fileId);
-            LOGGER.info('Replication list: ', replicationList);
 
             // Retrieve correct replica and copy to other FDBs.
-
             try {
               const resp = await _this._retrieveAndInsert(fileId, fdbsForFile, replicationList);
-              LOGGER.info('RESPONSE FROM NEW FUNC: ' + resp);
             } catch (err) {
               LOGGER.error(err);
             }
           } else if (rep < 0) {
-            LOGGER.info('REMOVE ' + -1 * rep + ' replicas');
-
             const deletions = -1 * rep;
             // Get list of FDBs to delete fileId from.
             const deletionList = _this._getRandomFDBs(fdbsForFile, deletions);
-            LOGGER.info('DELETION LIST');
-            LOGGER.info(deletionList);
 
             // Delete extra file copies.
-
             try {
               const resp = await _this._deleteExtraFiles(fileId, deletionList);
-              LOGGER.info('RESPONSE FROM NEW FUNC: ' + resp);
             } catch (err) {
               LOGGER.error(err);
             }
@@ -565,12 +558,12 @@ export class MasterCoordinator {
     try {
       const randCopyFDB = fdbsForFile[Math.floor(Math.random() * Math.floor(fdbsForFile.length))];
       // Get copy of file.
-      let docIdInt = parseInt(fileId);
-      let retData = await _this.retrieveFile(docIdInt, randCopyFDB);
+      let retData = await _this.retrieveFile(fileId, randCopyFDB);
       let correctFileName = retData.fileName;
       let correctFileContents = retData.fileContents;
+      let correctHash = retData.fileHash;
       let correctFileType = retData.fileType;
-      let lastestTs = parseInt(retData.fileCreationTime);
+      let lastestTs = parseInt(retData.lastUpdated);
       let correctOwnerId = retData.ownerId;
       let updatePromises = [];
 
@@ -578,13 +571,14 @@ export class MasterCoordinator {
       for (let j = 0; j < replicationList.length; j++) {
         let updateFdbIp = replicationList[j];
         // Make update.
-        // docId, fdbIp, fileName, fileContents, fileHash, fileType, ts
+        // docId, fdbIp, fileName, fileContents, fileHash, fileType, ts, ownerId
         updatePromises.push(
           _this.insertFile(
-            docIdInt,
+            fileId,
             updateFdbIp,
             correctFileName,
             correctFileContents,
+            correctHash,
             correctFileType,
             lastestTs,
             correctOwnerId,
@@ -619,10 +613,9 @@ export class MasterCoordinator {
     const _this = this;
     try {
       let updatePromises = [];
-      let docIdInt = parseInt(fileId);
       for (let j = 0; j < deletionList.length; j++) {
         let deletionFdbIp = deletionList[j];
-        updatePromises.push(_this.deleteFile(docIdInt, deletionFdbIp));
+        updatePromises.push(_this.deleteFile(fileId, deletionFdbIp));
       }
 
       // Delete replicas.
@@ -648,7 +641,7 @@ export class MasterCoordinator {
    * for each file queried.
    *
    * Data structures returned:
-   * organizedDocData = { docId : [[fdbIp, fileHash, fileCreationTime, ownerId, fileName]] }
+   * organizedDocData = { docId : [[fdbIp, fileHash, lastUpdated, ownerId, fileName]] }
    * updateInfoPerFile = {docId: [fdbIpWithCorrectFile, corretHash, latestTs]}
    *
    * @param {Array} fdbIps List of fdbIps, eg. ['1.1.1.1']
@@ -697,6 +690,8 @@ export class MasterCoordinator {
    *
    * Goes through all files and returns list of files that need to be updated.
    * updateList structure: {docId: [outOfDateFdbIp ...]}
+   *
+   * @param {Array} fdbIps List of fdbIps, eg. ['1.1.1.1']
    *
    * @returns {Promise} Promise contains updateInfoPerFile and updateList objects.
    **/
@@ -774,19 +769,15 @@ export class MasterCoordinator {
       })
       .then(
         async function(status) {
-          LOGGER.info('STATUS: ' + status);
           if (status === 0) {
             return 0;
           }
           // Need to update inconsistencies.
-          // Go through each file and make updates to out of date FDBs
-          LOGGER.info('UPDATE INFO PER FILE', _updateInfoPerFile);
-
+          // Go through each file and make updates to out of date FDBs.
           // Loop through each docId in _updateList and for each docId
           // retrieve the correct update date file and
           // for each outOfDateFdbIp in _updateList[docId]
           // make the update.
-
           try {
             for (let docId in _updateList) {
               // Get fdbIp with correct file.
@@ -794,12 +785,12 @@ export class MasterCoordinator {
               let correctHash = _updateInfoPerFile[docId][1];
 
               // Grab correct data for file.
-              let docIdInt = parseInt(docId);
-              let retData = await _this.retrieveFile(docIdInt, fdbIpCorrect);
+              let retData = await _this.retrieveFile(docId, fdbIpCorrect);
               let correctFileName = retData.fileName;
               let correctFileContents = retData.fileContents;
               let correctFileType = retData.fileType;
-              let lastestTs = parseInt(retData.fileCreationTime);
+              let lastestTs = parseInt(retData.lastUpdated);
+              let correctOwnerId = retData.ownerId;
               let updatePromises = [];
 
               // Write this data to all files.
@@ -808,13 +799,14 @@ export class MasterCoordinator {
                 // Make update.
                 updatePromises.push(
                   _this.updateFile(
-                    docIdInt,
+                    docId,
                     updateFdbIp,
                     correctFileName,
                     correctFileContents,
                     correctHash,
                     correctFileType,
                     lastestTs,
+                    correctOwnerId,
                   ),
                 );
               }
@@ -865,8 +857,41 @@ export class MasterCoordinator {
     // organizedDocData structure: {docId: [[fdbIp, hash, ts, ownerId, fileName]]}
     return this.getAllFDBsOrganizedByDocId(fdbIps).then(
       function(organizedDocData) {
+        // If organizedDocData is empty, no data in FDBs yet.
+        if (
+          Object.entries(organizedDocData).length === 0 &&
+          organizedDocData.constructor === Object
+        ) {
+          // TODO: Could delete collection if anything there.
+          LOGGER.info(
+            'No data in any FDBs yet. Clearing MCDB File collection, but this should already be empty.',
+          );
+
+          // Delete all files, if any, from File collection in MCDB since, FDBs are empty.
+          mcdb.getAllFilesForMC().then(
+            async function(mcdbFiles) {
+              const mcdbFileIds = new Set(
+                mcdbFiles.map((doc) => {
+                  return doc.id;
+                }),
+              );
+
+              try {
+                await _this.deleteExtras(mcdbFileIds);
+              } catch (err) {
+                LOGGER.error(err);
+              }
+            },
+            function(err) {
+              LOGGER.error(err);
+              throw err;
+            },
+          );
+
+          return 0;
+        }
         // Read all MCDB info in.
-        mcdb.getAllFiles().then(
+        mcdb.getAllFilesForMC().then(
           // mcdbFiles: [{docId: str_id, docData: {all file data}}]
           async function(mcdbFiles) {
             const mcdbFileIds = new Set(
@@ -1029,7 +1054,6 @@ export class MasterCoordinator {
     try {
       // mcdbFiles: [{docId: str_id, docData: {all file data}}]
       let mcdbFastLookUp = {};
-      // LOGGER.debug(mcdbFiles);
       for (let i = 0; i < mcdbFiles.length; i++) {
         let doc = mcdbFiles[i];
         mcdbFastLookUp[doc.id] = doc.data();
@@ -1049,7 +1073,7 @@ export class MasterCoordinator {
         // Get MCDB data
         let mcdbData = mcdbFastLookUp[fileId];
         let fileHashMcdb = mcdbData.fileHash;
-        let timestampMcdb = mcdbData.fileCreationTime;
+        let timestampMcdb = mcdbData.lastUpdated;
         let ownerIdMcdb = mcdbData.ownerId;
         let fileNameMcdb = mcdbData.name;
         let fdbLocationsMcdb = mcdbData.fdbLocations;

@@ -40,6 +40,7 @@ export function insertFileWithSpecifiedFileId(
   ownerId: string,
 ) {
   return fs.setDocument(FILE_COLLECTION, fileId, {
+    docId: fileId,
     lastUpdated: timestamp,
     fdbLocations: fdbLocations,
     courseIds: courseIds,
@@ -148,6 +149,23 @@ export async function getAllFiles() {
       ...data,
       ownerName: owner ? owner.name : '',
     };
+  });
+}
+
+// Get all files, used by MC
+// returns: [{docId, docData}]
+// Refer to: https://firebase.google.com/docs/reference/js/firebase.firestore.QuerySnapshot#docs
+export function getAllFilesForMC() {
+  return fs.getCollection(FILE_COLLECTION).then((snapshot) => {
+    return snapshot.docs;
+  });
+}
+
+// Get all files by ownerId
+// returns [{docId, docData}]
+export function getAllFilesForOwner(ownerId: string) {
+  return fs.getCollection(FILE_COLLECTION).then((snapshot) => {
+    return snapshot.docs.filter((doc) => doc.data().ownerId === ownerId);
   });
 }
 
