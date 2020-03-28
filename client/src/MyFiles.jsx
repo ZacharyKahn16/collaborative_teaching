@@ -1,25 +1,23 @@
 import React from "react";
-import PropTypes from "prop-types";
-import AppBar from "@material-ui/core/AppBar";
-import Toolbar from "@material-ui/core/Toolbar";
-import Paper from "@material-ui/core/Paper";
-import Grid from "@material-ui/core/Grid";
-import Button from "@material-ui/core/Button";
-import TextField from "@material-ui/core/TextField";
-import Tooltip from "@material-ui/core/Tooltip";
-import IconButton from "@material-ui/core/IconButton";
-import { withStyles } from "@material-ui/core/styles";
+import {
+  AppBar,
+  Toolbar,
+  Paper,
+  Grid,
+  Button,
+  TextField,
+  Tooltip,
+  IconButton,
+  withStyles,
+  Dialog,
+} from "@material-ui/core";
 import SearchIcon from "@material-ui/icons/Search";
 import RefreshIcon from "@material-ui/icons/Refresh";
-import Header from "./Header";
 import PublishIcon from "@material-ui/icons/Publish";
+import Header from "./Header";
 import FileList from "./FileList";
 import UploadCard from "./UploadCard";
-import Modal from "@material-ui/core/Modal";
-import Backdrop from "@material-ui/core/Backdrop";
-import Fade from "@material-ui/core/Fade";
-import LoadingScreen from "./LoadingScreen";
-import { UserContext } from "./UserContext";
+import { GlobalContext } from "./GlobalContext";
 
 const styles = (theme) => ({
   paper: {
@@ -49,7 +47,7 @@ const styles = (theme) => ({
 });
 
 class MyFiles extends React.Component {
-  static contextType = UserContext;
+  static contextType = GlobalContext;
 
   constructor(props) {
     super(props);
@@ -73,19 +71,12 @@ class MyFiles extends React.Component {
     }));
   }
 
-  componentDidMount() {
-    // mounted
-  }
-
   render() {
-    const { classes, workerInfo, socket } = this.props;
-    if (socket === null) {
-      return <LoadingScreen />;
-    }
+    const { classes } = this.props;
 
     return (
       <Paper className={classes.paper} square={true}>
-        <Header title={"My Files"} workerInfo={workerInfo} />
+        <Header title={"My Files"} />
         <AppBar className={classes.searchBar} position="static" color="default" elevation={0}>
           <Toolbar>
             <Grid container spacing={2} alignItems="center">
@@ -120,35 +111,17 @@ class MyFiles extends React.Component {
                 </Tooltip>
               </Grid>
             </Grid>
-            <Modal
-              aria-labelledby="transition-modal-title"
-              aria-describedby="transition-modal-description"
-              className="modal"
-              open={this.state.uploadModalOpen}
-              onClose={this.handleCloseUploadModal}
-              closeAfterTransition
-              BackdropComponent={Backdrop}
-              BackdropProps={{
-                timeout: 500,
-                style: { backgroundColor: "rgba(0,0,0,0.7)" },
-              }}
-            >
-              <Fade in={this.state.uploadModalOpen}>
-                <UploadCard closeModal={this.handleCloseUploadModal} socket={socket} />
-              </Fade>
-            </Modal>
+            <Dialog open={this.state.uploadModalOpen} onClose={this.handleCloseUploadModal}>
+              <UploadCard closeModal={this.handleCloseUploadModal} />
+            </Dialog>
           </Toolbar>
         </AppBar>
         <div className={classes.contentWrapper}>
-          <FileList socket={socket} classes={classes} />
+          <FileList />
         </div>
       </Paper>
     );
   }
 }
-
-MyFiles.propTypes = {
-  classes: PropTypes.object.isRequired,
-};
 
 export default withStyles(styles)(MyFiles);

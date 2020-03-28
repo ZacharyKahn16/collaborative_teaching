@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from "prop-types";
 import AppBar from "@material-ui/core/AppBar";
 import Avatar from "@material-ui/core/Avatar";
 import Grid from "@material-ui/core/Grid";
@@ -6,7 +7,7 @@ import IconButton from "@material-ui/core/IconButton";
 import Toolbar from "@material-ui/core/Toolbar";
 import Typography from "@material-ui/core/Typography";
 import { withStyles } from "@material-ui/core/styles";
-import { UserContext } from "./UserContext";
+import { GlobalContext } from "./GlobalContext";
 
 const styles = (theme) => ({
   appBar: {
@@ -23,11 +24,11 @@ const styles = (theme) => ({
 });
 
 class Header extends React.Component {
-  static contextType = UserContext;
+  static contextType = GlobalContext;
 
   render() {
-    const { classes, title, workerInfo } = this.props;
-    const { user } = this.context;
+    const { classes, title } = this.props;
+    const { workerInfo, user } = this.context;
 
     return (
       <AppBar
@@ -58,5 +59,9 @@ class Header extends React.Component {
     );
   }
 }
+
+Header.propTypes = {
+  title: PropTypes.string.isRequired,
+};
 
 export default withStyles(styles)(Header);

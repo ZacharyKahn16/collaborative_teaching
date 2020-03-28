@@ -84,7 +84,7 @@ function Navigator(props) {
   const { classes, ...other } = props;
 
   function setActiveTab() {
-    categories[0].children.forEach(function(element) {
+    categories[0].children.forEach((element) => {
       element.active = window.location.href.includes(element.path);
     });
   }

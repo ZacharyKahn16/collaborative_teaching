@@ -1,15 +1,16 @@
 import React, { Component } from "react";
+import PropTypes from "prop-types";
 import Card from "@material-ui/core/Card";
 import CardContent from "@material-ui/core/CardContent";
 import Typography from "@material-ui/core/Typography";
 import Grid from "@material-ui/core/Grid";
 import Button from "@material-ui/core/Button";
 import "./Styles/Card.css";
-import { writeNewFile, listen, retrieveFile } from "./service";
-import { UserContext } from "./UserContext";
+import { GlobalContext } from "./GlobalContext";
 
 class UploadCard extends Component {
-  static contextType = UserContext;
+  static contextType = GlobalContext;
+
   constructor(props) {
     super(props);
 
@@ -23,16 +24,8 @@ class UploadCard extends Component {
     this.uploadFile = this.uploadFile.bind(this);
   }
 
-  componentDidMount() {
-    const { socket } = this.props;
-
-    listen(socket, (msg) => {
-      console.log(msg);
-    });
-  }
-
   onBrowseChange = (e) => {
-    let files = e.target.files;
+    const files = e.target.files;
 
     this.setState(() => ({
       fileDisplayName: files[0].name,
@@ -50,10 +43,10 @@ class UploadCard extends Component {
   };
 
   uploadFile = () => {
-    const { socket } = this.props;
-    const { user } = this.context;
+    const { user, network } = this.context;
     console.log(this.state.uploadedFile);
-    writeNewFile(socket, this.state.uploadedFile, user.name);
+    network.writeNewFile(this.state.uploadedFile, user.uid);
+    this.props.closeModal();
   };
 
   render() {
@@ -98,5 +91,9 @@ class UploadCard extends Component {
     );
   }
 }
+
+UploadCard.propTypes = {
+  closeModal: PropTypes.func.isRequired,
+};
 
 export default UploadCard;

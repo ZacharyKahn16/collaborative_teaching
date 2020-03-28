@@ -54,7 +54,7 @@ const styles = (theme) => ({
   },
 });
 
-let categories = [
+const categories = [
   {
     id: 0,
     course: "CPSC 559",
@@ -170,7 +170,7 @@ class MyCourses extends React.Component {
 
   editCourse() {
     console.log("test edit");
-    let temp = this.state.myClasses;
+    const temp = this.state.myClasses;
     temp[this.state.courseIndex].course = this.state.courseName;
     temp[this.state.courseIndex].description = this.state.courseDescription;
     this.setState({
@@ -179,18 +179,19 @@ class MyCourses extends React.Component {
   }
 
   addNewCourse(name, desc) {
-    console.log("test add");
-    console.log(name);
-    let temp = this.state.myClasses;
+    console.log("test add", name);
+    const temp = this.state.myClasses;
+
     temp.push({
       id: this.state.myClasses.length,
       course: name,
       description: desc,
-      path: "/course-page/" + name.replace(/ /g, ""),
+      path: `/course-page/${name.replace(/ /g, "")}`,
     });
     this.setState({
       myClasses: temp,
     });
+
     console.log(this.state.myClasses);
   }
 
@@ -199,11 +200,11 @@ class MyCourses extends React.Component {
   }
 
   render() {
-    const { classes, workerInfo, userInfo } = this.props;
+    const { classes } = this.props;
 
     return (
       <Paper className={classes.paper} square>
-        <Header title={"My Courses"} workerInfo={workerInfo} userInfo={userInfo} />
+        <Header title={"My Courses"} />
         <AppBar
           className={this.props.classes.searchBar}
           position="static"

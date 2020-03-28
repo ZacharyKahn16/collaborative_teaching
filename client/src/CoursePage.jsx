@@ -1,23 +1,22 @@
 import React from "react";
 import PropTypes from "prop-types";
-import AppBar from "@material-ui/core/AppBar";
-import Toolbar from "@material-ui/core/Toolbar";
-// import Typography from "@material-ui/core/Typography";
-import Paper from "@material-ui/core/Paper";
-import Grid from "@material-ui/core/Grid";
-import TextField from "@material-ui/core/TextField";
-import Tooltip from "@material-ui/core/Tooltip";
-import IconButton from "@material-ui/core/IconButton";
-import { withStyles } from "@material-ui/core/styles";
+import {
+  AppBar,
+  Toolbar,
+  Paper,
+  Grid,
+  TextField,
+  IconButton,
+  withStyles,
+  Tooltip,
+  Button,
+  Dialog,
+} from "@material-ui/core";
 import SearchIcon from "@material-ui/icons/Search";
 import RefreshIcon from "@material-ui/icons/Refresh";
+import PublishIcon from "@material-ui/icons/Publish";
 import Header from "./Header";
 import FileList from "./FileList";
-import Button from "@material-ui/core/Button";
-import PublishIcon from "@material-ui/icons/Publish";
-import Modal from "@material-ui/core/Modal";
-import Backdrop from "@material-ui/core/Backdrop";
-import Fade from "@material-ui/core/Fade";
 
 const styles = (theme) => ({
   paper: {
@@ -42,21 +41,6 @@ const styles = (theme) => ({
     margin: "40px 16px",
   },
 });
-
-const listOfFiles = [
-  {
-    filename: "book",
-    author: "daniel",
-  },
-  {
-    filename: "book2",
-    author: "john",
-  },
-  {
-    filename: "book3",
-    author: "mike",
-  },
-];
 
 class CoursePage extends React.Component {
   constructor(props) {
@@ -85,11 +69,11 @@ class CoursePage extends React.Component {
   }
 
   render() {
-    const { classes, workerInfo, userInfo } = this.props;
+    const { classes } = this.props;
 
     return (
       <Paper className={classes.paper} square>
-        <Header title={"List of Courses"} workerInfo={workerInfo} userInfo={userInfo} />
+        <Header title={"List of Courses"} />
         <AppBar className={classes.searchBar} position="static" color="default" elevation={0}>
           <Toolbar>
             <Grid container spacing={2} alignItems="center">
@@ -124,27 +108,13 @@ class CoursePage extends React.Component {
                 </Tooltip>
               </Grid>
             </Grid>
-            <Modal
-              aria-labelledby="transition-modal-title"
-              aria-describedby="transition-modal-description"
-              className="modal"
-              open={this.state.uploadModalOpen}
-              onClose={this.handleCloseUploadModal}
-              closeAfterTransition
-              BackdropComponent={Backdrop}
-              BackdropProps={{
-                timeout: 500,
-                style: { backgroundColor: "rgba(0,0,0,0.7)" },
-              }}
-            >
-              <Fade in={this.state.uploadModalOpen}>
-                <div>{/*TODO: Conditional card for either editing or deleting*/}</div>
-              </Fade>
-            </Modal>
+            <Dialog open={this.state.uploadModalOpen} onClose={this.handleCloseUploadModal}>
+              <div>{/*TODO: Conditional card for either editing or deleting*/}</div>
+            </Dialog>
           </Toolbar>
         </AppBar>
         <div className={classes.contentWrapper}>
-          <FileList classes={classes} />
+          <FileList />
         </div>
       </Paper>
     );

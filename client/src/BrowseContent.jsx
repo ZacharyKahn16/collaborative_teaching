@@ -1,8 +1,6 @@
 import React from "react";
-import PropTypes from "prop-types";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
-import Typography from "@material-ui/core/Typography";
 import Paper from "@material-ui/core/Paper";
 import Grid from "@material-ui/core/Grid";
 import TextField from "@material-ui/core/TextField";
@@ -13,8 +11,7 @@ import SearchIcon from "@material-ui/icons/Search";
 import RefreshIcon from "@material-ui/icons/Refresh";
 import Header from "./Header";
 import ContentBank from "./ContentBank";
-import FileList from "./FileList";
-import LoadingScreen from "./LoadingScreen";
+import { GlobalContext } from "./GlobalContext";
 
 const styles = (theme) => ({
   paper: {
@@ -41,6 +38,8 @@ const styles = (theme) => ({
 });
 
 class BrowseContent extends React.Component {
+  static contextType = GlobalContext;
+
   constructor(props) {
     super(props);
 
@@ -48,7 +47,6 @@ class BrowseContent extends React.Component {
   }
 
   handleSearchOnChange(e) {
-    // if (e.target.value
     console.log(e.key);
     if (e.key === "Enter") {
       console.log(e.target.value);
@@ -56,13 +54,11 @@ class BrowseContent extends React.Component {
   }
 
   render() {
-    const { classes, workerInfo, socket } = this.props;
-    if (socket === null) {
-      return <LoadingScreen />;
-    }
+    const { classes } = this.props;
+
     return (
       <Paper className={classes.paper} square>
-        <Header title={"Content Bank"} workerInfo={workerInfo} />
+        <Header title={"Content Bank"} />
         <AppBar className={classes.searchBar} position="static" color="default" elevation={0}>
           <Toolbar>
             <Grid container spacing={2} alignItems="center">
@@ -91,18 +87,12 @@ class BrowseContent extends React.Component {
           </Toolbar>
         </AppBar>
         <div className={classes.contentWrapper}>
-          <Typography color="textSecondary" align="center">
-            {/*No users for this project yet*/}
-            <ContentBank socket={socket} />
-          </Typography>
+          {/*No users for this project yet*/}
+          <ContentBank />
         </div>
       </Paper>
     );
   }
 }
-
-BrowseContent.propTypes = {
-  classes: PropTypes.object.isRequired,
-};
 
 export default withStyles(styles)(BrowseContent);

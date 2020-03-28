@@ -5,9 +5,11 @@ import Typography from "@material-ui/core/Typography";
 import Grid from "@material-ui/core/Grid";
 import Button from "@material-ui/core/Button";
 import "./Styles/Card.css";
-import { updateFile, listen } from "./service";
+import { GlobalContext } from "./GlobalContext";
 
 class UpdateCard extends Component {
+  static contextType = GlobalContext;
+
   constructor(props) {
     super(props);
 
@@ -21,15 +23,8 @@ class UpdateCard extends Component {
     this.updateFileBtn = this.updateFileBtn.bind(this);
   }
 
-  componentDidMount() {
-    const { socket } = this.props;
-    listen(socket, (msg) => {
-      console.log(msg);
-    });
-  }
-
   onBrowseChange = (e) => {
-    let files = e.target.files;
+    const files = e.target.files;
 
     this.setState(() => ({
       fileDisplayName: files[0].name,
@@ -47,11 +42,12 @@ class UpdateCard extends Component {
   };
 
   updateFileBtn = () => {
-    const { socket } = this.props;
+    const { user, network } = this.context;
+
     console.log(this.props.fileInfo.fileId);
     console.log(this.state.uploadedFile);
-    updateFile(socket, this.state.uploadedFile, this.props.fileInfo.fileId);
-    console.log("uploading");
+
+    network.updateExistingFile(this.state.uploadedFile, user.uid);
   };
 
   render() {
