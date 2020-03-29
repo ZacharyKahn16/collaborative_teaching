@@ -25,7 +25,7 @@
     "prefer-const": "error",
     "object-curly-newline": ["error", { "consistent": true }],
     "curly": ["error", "all"],
-    "no-unused-vars": "warn",
+    "no-unused-vars": "off",
     "prefer-template": "error",
     "no-useless-concat": "error",
     "import/no-extraneous-dependencies": [
