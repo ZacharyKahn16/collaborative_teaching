@@ -39,7 +39,7 @@ class DeleteCard extends Component {
       <Card className="card-body">
         <CardContent>
           <Typography variant="h5" color="textSecondary" gutterBottom>
-            Update File
+            Delete File
           </Typography>
           <Typography variant="body2" className="mb-2" component="p" paragraph gutterBottom>
             Are you sure you want to delete {this.props.fileInfo.name}?
@@ -47,11 +47,10 @@ class DeleteCard extends Component {
           <Button
             className="mr-1"
             variant="contained"
-            color={this.state.uploadedFile ? "primary" : ""}
-            disabled={!this.state.uploadedFile}
+            color={""}
             onClick={this.deleteFile}
           >
-            Upload
+            Delete
           </Button>
           <Button variant="contained" onClick={this.cancelDelete}>
             Cancel
