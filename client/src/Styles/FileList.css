@@ -1,17 +1,17 @@
 .bold {
-    font-weight: 700 !important;
+  font-weight: 700 !important;
 }
 
 .action-button {
-    border-radius: 15% !important;
+  border-radius: 15% !important;
 }
 
 .modal {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .file-row {
-    height: 75px;
+  height: 75px;
 }
