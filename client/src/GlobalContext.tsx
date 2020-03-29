@@ -44,6 +44,10 @@ interface WorkerInstance {
   instanceServing?: boolean;
 }
 
+interface Doc extends File {
+  docId: string;
+}
+
 export class NetworkInstance {
   workerInfo: WorkerInstance | undefined = undefined;
   socket: SocketIOClient.Socket | undefined = undefined;
@@ -179,7 +183,7 @@ export class NetworkInstance {
     });
   }
 
-  readFileAsDataUrl(file: File) {
+  readFileAsDataUrl(file: Doc) {
     return new Promise<string>((resolve, reject) => {
       const reader = new FileReader();
 
@@ -209,7 +213,7 @@ export class NetworkInstance {
     }
   }
 
-  writeNewFile(file: File, ownerId: string) {
+  writeNewFile(file: Doc, ownerId: string) {
     if (this.socket) {
       this.readFileAsDataUrl(file)
         .then((dataUrl) => {
@@ -232,7 +236,7 @@ export class NetworkInstance {
     }
   }
 
-  updateExistingFile(file: File, ownerId: string) {
+  updateExistingFile(file: Doc, ownerId: string) {
     if (this.socket) {
       this.readFileAsDataUrl(file)
         .then((dataUrl) => {
@@ -241,6 +245,7 @@ export class NetworkInstance {
 
           // @ts-ignore
           this.socket.emit(UPDATE_FILE, {
+            docId: file.docId,
             ownerId: ownerId,
             requestId: v4(),
             fileName: file.name,
@@ -254,6 +259,14 @@ export class NetworkInstance {
         });
     }
   }
+
+  // deleteExistingFile(file: File, ownerId: string) {
+  //   if (this.socket) {
+  //     console.log("deleting file: " + file.name);
+  //
+  //     this.socket.emit(DELETE_FILE, {});
+  //   }
+  // }
 
   setUser(user: any) {
     if (this.socket) {

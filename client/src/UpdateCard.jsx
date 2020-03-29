@@ -24,7 +24,10 @@ class UpdateCard extends Component {
   }
 
   onBrowseChange = (e) => {
+    const { fileInfo } = this.props;
     const files = e.target.files;
+    const uploadedFile = files[0];
+    uploadedFile.docId = fileInfo.docId;
 
     this.setState(() => ({
       fileDisplayName: files[0].name,
@@ -43,11 +46,8 @@ class UpdateCard extends Component {
 
   updateFileBtn = () => {
     const { user, network } = this.context;
-
-    console.log(this.props.fileInfo.fileId);
-    console.log(this.state.uploadedFile);
-
     network.updateExistingFile(this.state.uploadedFile, user.uid);
+    this.props.closeModal();
   };
 
   render() {
@@ -60,7 +60,8 @@ class UpdateCard extends Component {
           <Typography variant="body2" component="p" paragraph gutterBottom>
             Browse for a file on your computer to update this file.
             <br />
-            File to Update: {this.props.fileInfo.fileName}
+            <br />
+            File to Update: {this.props.fileInfo.name}
           </Typography>
           <Grid className="upload-box-container" container spacing={0}>
             <Grid className="upload-box-left" item xs={9}>

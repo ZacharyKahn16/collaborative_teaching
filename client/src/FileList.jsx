@@ -28,16 +28,18 @@ class FileList extends Component {
     this.state = {
       editModalOpen: false,
       deleteModalOpen: false,
+      selectedFile: null,
     };
 
     this.handleEditModalOpen = this.handleEditModalOpen.bind(this);
     this.handleDeleteModalOpen = this.handleDeleteModalOpen.bind(this);
+    this.handleModalClose = this.handleModalClose.bind(this);
     this.updateSelectedFile = this.updateSelectedFile.bind(this);
   }
 
   handleEditModalOpen = (file) => {
-    console.log(file);
     this.setState(() => ({
+      selectedFile: file,
       editModalOpen: true,
     }));
   };
@@ -45,6 +47,13 @@ class FileList extends Component {
   handleDeleteModalOpen = () => {
     this.setState(() => ({
       deleteModalOpen: true,
+    }));
+  };
+
+  handleModalClose = () => {
+    this.setState(() => ({
+      editModalOpen: false,
+      deleteModalOpen: false,
     }));
   };
 
@@ -138,7 +147,6 @@ class FileList extends Component {
           </TableBody>
         </Table>
         <Dialog open={this.state.editModalOpen} onClose={this.handleModalClose}>
-          {/*TODO: Conditional card for either editing or deleting*/}
           <UpdateCard
             closeModal={this.handleModalClose}
             socket={this.props.socket}

@@ -12,8 +12,8 @@ import {
   IconButton,
   Dialog,
 } from "@material-ui/core";
-import DeleteIcon from "@material-ui/icons/Delete";
-import AddIcon from "@material-ui/icons/Add";
+import DeleteIcon from "@material-ui/icons/Delete"
+import EditIcon from "@material-ui/icons/Edit";
 import moment from "moment-timezone";
 import UpdateCard from "./UpdateCard";
 import "./Styles/FileList.css";
@@ -43,10 +43,15 @@ class ContentBank extends Component {
 
   handleEditModalOpen = (file) => {
     console.log(file);
-    this.setState(() => ({
-      editModalOpen: true,
-      selectedFile: file,
-    }));
+    this.setState(
+      () => ({
+        editModalOpen: true,
+        selectedFile: file,
+      }),
+      () => {
+        console.log(this.state.selectedFile);
+      },
+    );
   };
 
   handleDeleteModalOpen = () => {
@@ -64,7 +69,6 @@ class ContentBank extends Component {
 
   updateSelectedFile = (fileId) => {
     const { setSelectedFileId } = this.context;
-
     setSelectedFileId(fileId);
   };
 
@@ -84,6 +88,7 @@ class ContentBank extends Component {
   render() {
     const { allFiles } = this.context;
     const { searchTerm } = this.props;
+    const { user } = this.context;
 
     const files = allFiles
       .filter((file) => {
@@ -132,7 +137,7 @@ class ContentBank extends Component {
           </TableHead>
           <TableBody>
             {files.map((row) => (
-              <TableRow key={row.docId}>
+              <TableRow key={row.docId} className="file-row">
                 <TableCell align="left">
                   <Typography variant="body2">
                     <Link
@@ -150,25 +155,28 @@ class ContentBank extends Component {
                 <TableCell align="left">{row.name.split(".")[1].toUpperCase()}</TableCell>
                 <TableCell align="left">{row.ownerName}</TableCell>
                 <TableCell align="left">{moment(row.lastUpdated).format("lll")}</TableCell>
-                <TableCell align="center">
-                  <IconButton
-                    className="action-button"
-                    key={row.fileName}
-                    onClick={() => this.handleEditModalOpen(row)}
-                  >
-                    <AddIcon color="inherit" />
-                  </IconButton>
-                  <IconButton className="action-button" onClick={this.handleDeleteModalOpen}>
-                    <DeleteIcon color="inherit" />
-                  </IconButton>
-                </TableCell>
+                {row.ownerId === user.uid ? (
+                  <TableCell align="center">
+                    <IconButton
+                      className="action-button"
+                      key={row.fileName}
+                      onClick={() => this.handleEditModalOpen(row)}
+                    >
+                      <EditIcon color="inherit" />
+                    </IconButton>
+                    <IconButton className="action-button" onClick={this.handleDeleteModalOpen}>
+                      <DeleteIcon color="inherit" />
+                    </IconButton>
+                  </TableCell>
+                ) : (
+                  <TableCell align="center" />
+                )}
               </TableRow>
             ))}
           </TableBody>
         </Table>
         <Dialog open={this.state.editModalOpen} onClose={this.handleModalClose}>
           <div>
-            {/*TODO: Conditional card for either editing or deleting*/}
             <UpdateCard
               closeModal={this.handleModalClose}
               socket={this.props.socket}
