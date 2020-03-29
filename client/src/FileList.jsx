@@ -140,7 +140,10 @@ class FileList extends Component {
                   >
                     <EditIcon color="inherit" />
                   </IconButton>
-                  <IconButton className="action-button" onClick={() => this.handleDeleteModalOpen(row)}>
+                  <IconButton
+                    className="action-button"
+                    onClick={() => this.handleDeleteModalOpen(row)}
+                  >
                     <DeleteIcon color="inherit" />
                   </IconButton>
                 </TableCell>
