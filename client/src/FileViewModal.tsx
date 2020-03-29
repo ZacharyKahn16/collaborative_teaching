@@ -8,6 +8,7 @@ import {
   createStyles,
   IconButton,
   makeStyles,
+  DialogContentText,
 } from "@material-ui/core";
 import CloseIcon from "@material-ui/icons/Close";
 import { GlobalContext } from "./GlobalContext";
@@ -49,6 +50,16 @@ const FileViewModal = () => {
     window.clearTimeout(timeout);
   }
 
+  function renderContent() {
+    if (!fileContent) {
+      return <DialogContentText>Trying to retrieve file...</DialogContentText>;
+    } else if (!fileContent.startsWith("data:")) {
+      return <DialogContentText>Invalid file format.</DialogContentText>;
+    } else {
+      return <iframe src={fileContent} className={classes.iFrame} title="File Content" />;
+    }
+  }
+
   const getFile = useCallback(() => {
     if (selectedFileId) {
       const rId = v4();
@@ -72,7 +83,7 @@ const FileViewModal = () => {
 
         const id = window.setTimeout(() => {
           getFile();
-        }, 30 * 1000);
+        }, 10 * 1000);
         setTimeout(id);
 
         if (resp.status === "success") {
@@ -88,7 +99,7 @@ const FileViewModal = () => {
     }
   }, [reqId, responses, getFile, selectedFileId]);
 
-  if (!fileContent) {
+  if (!selectedFileId) {
     return null;
   }
 
@@ -105,9 +116,7 @@ const FileViewModal = () => {
         <CloseIcon />
       </IconButton>
       <DialogTitle>{fileName}</DialogTitle>
-      <DialogContent>
-        <iframe src={fileContent} className={classes.iFrame} title="File Content" />
-      </DialogContent>
+      <DialogContent>{renderContent()}</DialogContent>
     </Dialog>
   );
 };

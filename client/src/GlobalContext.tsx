@@ -9,6 +9,7 @@ import { AUTH } from "./Firebase";
 // incoming
 const SERVER_RESP = "Server Response";
 const ALL_FILES = "All Files";
+const ALL_COURSES = "All Courses";
 
 // outgoing
 const RETRIEVE_FILE = "Retrieve File";
@@ -16,6 +17,10 @@ const INSERT_FILE = "Insert File";
 const UPDATE_FILE = "Update File";
 const DELETE_FILE = "Delete File";
 const SET_CLIENT = "Set Client";
+const ADD_COURSE = "Add Course";
+const UPDATE_COURSE = "Update Course";
+const ADD_FILE_TO_COURSE = "Add File To Course";
+const REMOVE_FILE_FROM_COURSE = "Remove File From Course";
 
 function backOffForRetry(retryNum: number) {
   // Exp between 9 and 18 (corresponds to 512 ms to 262144 ms)
@@ -46,8 +51,9 @@ export class NetworkInstance {
   connectionAttempts = 0;
   isLoaded = false;
 
-  allFiles: any[] = [];
-  messages: any[] = [];
+  allFiles: Record<string, any>[] = [];
+  allCourses: Record<string, any>[] = [];
+  messages: Record<string, any>[] = [];
 
   callbacks: any = undefined;
 
@@ -74,12 +80,19 @@ export class NetworkInstance {
 
   update() {
     if (this.callbacks) {
-      const { setIsLoaded, setWorkerInfo, setAllFiles, setResponses } = this.callbacks;
+      const {
+        setIsLoaded,
+        setWorkerInfo,
+        setAllFiles,
+        setResponses,
+        setAllCourses,
+      } = this.callbacks;
 
       setIsLoaded(this.isLoaded);
       setWorkerInfo(this.workerInfo);
       setAllFiles(this.allFiles);
       setResponses(this.messages);
+      setAllCourses(this.allCourses);
     }
   }
 
@@ -133,14 +146,21 @@ export class NetworkInstance {
       this.update();
     });
 
-    this.socket.on(SERVER_RESP, (resp: any) => {
+    this.socket.on(SERVER_RESP, (resp: Record<string, any>) => {
+      console.log("Last Response", resp);
       this.messages = [...this.messages, resp];
       this.update();
     });
 
-    this.socket.on(ALL_FILES, (resp: any[]) => {
+    this.socket.on(ALL_FILES, (resp: Record<string, any>[]) => {
       this.allFiles = resp;
       console.log(ALL_FILES, resp);
+      this.update();
+    });
+
+    this.socket.on(ALL_COURSES, (resp: Record<string, any>[]) => {
+      this.allCourses = resp;
+      console.log(ALL_COURSES, resp);
       this.update();
     });
 
@@ -240,6 +260,55 @@ export class NetworkInstance {
       this.socket.emit(SET_CLIENT, user);
     }
   }
+
+  addNewCourse(ownerId: string, courseName: string, courseDesc: string) {
+    if (this.socket) {
+      // @ts-ignore
+      this.socket.emit(ADD_COURSE, {
+        ownerId,
+        courseName,
+        courseDesc,
+        requestId: v4(),
+      });
+    }
+  }
+
+  updateExistingCourse(ownerId: string, courseId: string, courseName: string, courseDesc: string) {
+    if (this.socket) {
+      // @ts-ignore
+      this.socket.emit(UPDATE_COURSE, {
+        ownerId,
+        courseId,
+        courseName,
+        courseDesc,
+        requestId: v4(),
+      });
+    }
+  }
+
+  addFileToCourse(ownerId: string, courseId: string, fileId: string) {
+    if (this.socket) {
+      // @ts-ignore
+      this.socket.emit(ADD_FILE_TO_COURSE, {
+        ownerId,
+        courseId,
+        fileId,
+        requestId: v4(),
+      });
+    }
+  }
+
+  removeFileFromCourse(ownerId: string, courseId: string, fileId: string) {
+    if (this.socket) {
+      // @ts-ignore
+      this.socket.emit(REMOVE_FILE_FROM_COURSE, {
+        ownerId,
+        courseId,
+        fileId,
+        requestId: v4(),
+      });
+    }
+  }
 }
 
 const NETWORK_INSTANCE = new NetworkInstance();
@@ -247,30 +316,32 @@ const NETWORK_INSTANCE = new NetworkInstance();
 export const GlobalContext = createContext<{
   network: NetworkInstance;
   isLoaded: boolean;
+  user: firebase.User | null;
   workerInfo: WorkerInstance | null;
   allFiles: Record<string, any>[];
+  allCourses: Record<string, any>[];
   responses: Record<string, any>[];
-  user: firebase.User | null;
   selectedFileId: string;
   setSelectedFileId: Dispatch<SetStateAction<string>>;
 }>({
   network: NETWORK_INSTANCE,
   isLoaded: false,
+  user: null,
   workerInfo: null,
   allFiles: [],
+  allCourses: [],
   responses: [],
-  user: null,
   selectedFileId: "",
   setSelectedFileId: () => {},
 });
 
 const GlobalContextProvider = (props: any) => {
-  const [user, setUser] = useState<any>(null);
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
+  const [user, setUser] = useState<any>(null);
   const [workerInfo, setWorkerInfo] = useState<WorkerInstance | null>(null);
-  const [allFiles, setAllFiles] = useState<any[]>([]);
-  const [responses, setResponses] = useState<any[]>([]);
-
+  const [allFiles, setAllFiles] = useState<Record<string, any>[]>([]);
+  const [allCourses, setAllCourses] = useState<Record<string, any>[]>([]);
+  const [responses, setResponses] = useState<Record<string, any>[]>([]);
   const [selectedFileId, setSelectedFileId] = useState("");
 
   useEffect(() => {
@@ -288,7 +359,13 @@ const GlobalContextProvider = (props: any) => {
   }, []);
 
   useEffect(() => {
-    NETWORK_INSTANCE.setupCallback({ setIsLoaded, setWorkerInfo, setAllFiles, setResponses });
+    NETWORK_INSTANCE.setupCallback({
+      setIsLoaded,
+      setWorkerInfo,
+      setAllFiles,
+      setResponses,
+      setAllCourses,
+    });
   }, []);
 
   useEffect(() => {
@@ -302,10 +379,11 @@ const GlobalContextProvider = (props: any) => {
       value={{
         network: NETWORK_INSTANCE,
         isLoaded,
+        user,
         workerInfo,
         allFiles,
+        allCourses,
         responses,
-        user,
         selectedFileId,
         setSelectedFileId,
       }}

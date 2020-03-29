@@ -61,14 +61,11 @@ class Home extends React.Component {
         <div className={this.props.classes.app}>
           <main className={this.props.classes.main}>
             <Switch>
-              <Redirect exact from="/" to="my-courses" />
-              <Route exact path={"/my-courses"} render={(props) => <Courses />} />
-              <Route path={"/my-files"} render={(props) => <MyFiles />} />
-              <Route path={"/browse-content"} render={(props) => <BrowseContent />} />
-              <Route
-                path={"/course-page/"}
-                render={(props) => <ViewCourse {...props} workerInfo={"this.state.workerInfo"} />}
-              />
+              <Route exact path={"/courses"} render={(props) => <Courses />} />
+              <Route exact path={"/my-files"} render={(props) => <MyFiles />} />
+              <Route exact path={"/content-bank"} render={(props) => <BrowseContent />} />
+              <Route path={"/course-page/"} render={(props) => <ViewCourse {...props} />} />
+              <Redirect to="courses" />
             </Switch>
           </main>
         </div>

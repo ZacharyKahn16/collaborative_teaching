@@ -1,32 +1,37 @@
 import React from "react";
 import PropTypes from "prop-types";
-import AppBar from "@material-ui/core/AppBar";
-import Typography from "@material-ui/core/Typography";
-import Paper from "@material-ui/core/Paper";
-import Button from "@material-ui/core/Button";
-import TextField from "@material-ui/core/TextField";
-import Tooltip from "@material-ui/core/Tooltip";
-import IconButton from "@material-ui/core/IconButton";
-import { withStyles } from "@material-ui/core/styles";
-import Header from "./Header";
-import Card from "@material-ui/core/Card";
-import CardActionArea from "@material-ui/core/CardActionArea";
-import CardActions from "@material-ui/core/CardActions";
-import CardContent from "@material-ui/core/CardContent";
+import { Link } from "react-router-dom";
+import {
+  Grid,
+  Divider,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Dialog,
+  CardContent,
+  Card,
+  CardActionArea,
+  CardActions,
+  withStyles,
+  Tooltip,
+  IconButton,
+  TextField,
+  Button,
+  Paper,
+  Typography,
+  AppBar,
+} from "@material-ui/core";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
 import DeleteIcon from "@material-ui/icons/Delete";
 import AddIcon from "@material-ui/icons/Add";
-import Dialog from "@material-ui/core/Dialog";
-import DialogActions from "@material-ui/core/DialogActions";
-import DialogContent from "@material-ui/core/DialogContent";
-import DialogContentText from "@material-ui/core/DialogContentText";
-import DialogTitle from "@material-ui/core/DialogTitle";
-import { Link } from "react-router-dom";
-import { Grid } from "@material-ui/core";
+import { GlobalContext } from "./GlobalContext";
+import Header from "./Header";
 
 const styles = (theme) => ({
   container: {
-    padding: "10px",
+    margin: "5px 12px 5px 0",
+    width: "100%",
   },
   paper: {
     margin: "auto",
@@ -50,60 +55,28 @@ const styles = (theme) => ({
     margin: "40px 16px",
   },
   root: {
-    height: 250,
+    maxHeight: 250,
+    height: "100%",
+  },
+  cardActions: {
+    justifyContent: "flex-end",
   },
 });
 
-const categories = [
-  {
-    id: 0,
-    course: "CPSC 559",
-    description: "Distributed systems..............",
-    path: "/course-page/CPSC559",
-  },
-  {
-    id: 1,
-    course: "CPSC 471",
-    description: "Database management systems..............",
-    path: "/course-page/CPSC471",
-  },
-  {
-    id: 2,
-    course: "CPSC 565",
-    description: "Emergent Computing..............",
-    path: "/course-page/CPSC565",
-  },
-  {
-    id: 3,
-    course: "CPSC 413",
-    description: "Algorithms..............",
-    path: "/course-page/CPSC413",
-  },
-  {
-    id: 4,
-    course: "CPSC 405",
-    description: "Entreupernship.............",
-    path: "/course-page/CPSC405",
-  },
-  {
-    id: 5,
-    course: "SENG 513",
-    description: "Web based systems..............",
-    path: "/course-page/SENG513",
-  },
-];
-
 class MyCourses extends React.Component {
+  static contextType = GlobalContext;
+
   constructor(props) {
     super(props);
+
     this.state = {
-      myClasses: categories,
       courseName: "",
       courseDescription: "",
       courseIndex: 0,
       openDialogueNewCourse: false,
       openEditCourse: false,
     };
+
     this.handleClickOpenEditCourse = this.handleClickOpenEditCourse.bind(this);
     this.handleCloseEditCourse = this.handleCloseEditCourse.bind(this);
     this.handleClickOpenDialogueNewCourse = this.handleClickOpenDialogueNewCourse.bind(this);
@@ -111,8 +84,6 @@ class MyCourses extends React.Component {
     this.deleteClass = this.deleteClass.bind(this);
     this.createCourseName = this.createCourseName.bind(this);
     this.createCourseDescription = this.createCourseDescription.bind(this);
-    // this.handleChange = this.handleChange.bind(this);
-    // this.handleSubmit = this.handleSubmit.bind(this);
   }
 
   handleClickOpenEditCourse(index, courseName, courseDescription) {
@@ -121,12 +92,14 @@ class MyCourses extends React.Component {
       courseDescription: courseDescription,
       courseIndex: index,
       openEditCourse: true,
+      openDialogueNewCourse: false,
     });
   }
 
   handleClickOpenDialogueNewCourse() {
     this.setState({
       openDialogueNewCourse: true,
+      openEditCourse: false,
     });
   }
 
@@ -155,8 +128,6 @@ class MyCourses extends React.Component {
   }
 
   createCourseName(e) {
-    console.log(e);
-    console.log(e.target.value);
     this.setState({
       courseName: e.target.value,
     });
@@ -179,20 +150,14 @@ class MyCourses extends React.Component {
   }
 
   addNewCourse(name, desc) {
-    console.log("test add", name);
-    const temp = this.state.myClasses;
+    const { user, network } = this.context;
+    network.addNewCourse(user.uid, name, desc);
 
-    temp.push({
-      id: this.state.myClasses.length,
-      course: name,
-      description: desc,
-      path: `/course-page/${name.replace(/ /g, "")}`,
-    });
     this.setState({
-      myClasses: temp,
+      openDialogueNewCourse: false,
+      courseName: "",
+      courseDescription: "",
     });
-
-    console.log(this.state.myClasses);
   }
 
   componentDidMount() {
@@ -201,43 +166,64 @@ class MyCourses extends React.Component {
 
   render() {
     const { classes } = this.props;
+    const { user, allCourses } = this.context;
+
+    const myCourses = allCourses
+      .filter((course) => {
+        return course.ownerId === user.uid;
+      })
+      .sort((a, b) => {
+        return a.courseName.localeCompare(b.courseName);
+      });
+
+    const otherCourses = allCourses
+      .filter((course) => {
+        return course.ownerId !== user.uid;
+      })
+      .sort((a, b) => {
+        return a.courseName.localeCompare(b.courseName);
+      });
 
     return (
       <Paper className={classes.paper} square>
-        <Header title={"My Courses"} />
-        <AppBar
-          className={this.props.classes.searchBar}
-          position="static"
-          color="default"
-          elevation={0}
-        >
+        <Header title={"Courses"} />
+        <AppBar className={classes.searchBar} position="static" color="default" elevation={0}>
           <Grid container={true} spacing={3} className={classes.container}>
-            {this.state.myClasses.map(({ id, course, description, path }, index) => (
-              <Grid item={true} xs={12} sm={6} md={4} key={index}>
-                <Card className={classes.root} id={"courseCard"}>
-                  <Link to={path} id={"courseLink"}>
-                    <CardActionArea id={"cardInfo"}>
+            <Grid item={true} xs={12}>
+              <Typography variant="button">My Courses</Typography>
+            </Grid>
+
+            {myCourses.map((course, index) => (
+              <Grid item={true} xs={12} sm={4} key={index}>
+                <Card className={classes.root}>
+                  <Link to={`/course-page/${course.docId}`} id={"courseLink"}>
+                    <CardActionArea>
                       <CardContent>
                         <Typography gutterBottom variant="h5" component="h2">
-                          {course}
+                          {course.courseName}
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
-                          {description}
+                          {course.courseDesc}
                         </Typography>
                       </CardContent>
                     </CardActionArea>
                   </Link>
-                  <CardActions className={"courseOptions"}>
+                  <CardActions className={classes.cardActions}>
                     <Tooltip title={"Edit"}>
                       <IconButton
-                        aria-label={"settings"}
-                        onClick={() => this.handleClickOpenEditCourse(index, course, description)}
+                        onClick={() =>
+                          this.handleClickOpenEditCourse(
+                            index,
+                            course.courseName,
+                            course.courseDesc,
+                          )
+                        }
                       >
                         <MoreVertIcon />
                       </IconButton>
                     </Tooltip>
                     <Tooltip title={"Remove"}>
-                      <IconButton aria-label="settings" onClick={() => this.deleteClass(index)}>
+                      <IconButton onClick={() => this.deleteClass(index)}>
                         <DeleteIcon />
                       </IconButton>
                     </Tooltip>
@@ -246,18 +232,69 @@ class MyCourses extends React.Component {
               </Grid>
             ))}
 
-            <Grid item={true} xs={12} sm={6} md={4}>
-              <Card className={classes.root} id={"courseCard"}>
-                <CardActionArea id={"addNewCard"}>
+            <Grid item={true} xs={12}>
+              <Divider variant="middle" />
+            </Grid>
+
+            <Grid item={true} xs={12}>
+              <Typography variant="button">Other Courses</Typography>
+            </Grid>
+
+            {otherCourses.map((course, index) => (
+              <Grid item={true} xs={12} sm={4} key={index}>
+                <Card className={classes.root}>
+                  <Link to={`/course-page/${course.docId}`} id={"courseLink"}>
+                    <CardActionArea>
+                      <CardContent>
+                        <Typography gutterBottom variant="h5" component="h2">
+                          {course.courseName}
+                        </Typography>
+                        <Typography variant="body2" color="textSecondary" component="p">
+                          {course.courseDesc}
+                        </Typography>
+                      </CardContent>
+                    </CardActionArea>
+                  </Link>
+                  <CardActions className={classes.cardActions}>
+                    <Tooltip title={"Edit"}>
+                      <IconButton
+                        onClick={() =>
+                          this.handleClickOpenEditCourse(
+                            index,
+                            course.courseName,
+                            course.courseDesc,
+                          )
+                        }
+                      >
+                        <MoreVertIcon />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title={"Remove"}>
+                      <IconButton onClick={() => this.deleteClass(index)}>
+                        <DeleteIcon />
+                      </IconButton>
+                    </Tooltip>
+                  </CardActions>
+                </Card>
+              </Grid>
+            ))}
+            <Grid item={true} xs={12}>
+              <Divider variant="middle" />
+            </Grid>
+
+            <Grid item={true} xs={12} sm={4}>
+              <Card className={classes.root}>
+                <CardActionArea
+                  id={"addNewCard"}
+                  onClick={() => this.handleClickOpenDialogueNewCourse()}
+                >
                   <CardContent>
+                    <Tooltip title={"Click to add a new course"}>
+                      <AddIcon />
+                    </Tooltip>
                     <Typography gutterBottom variant="h5" component="h2">
                       Add New Course
                     </Typography>
-                    <Tooltip title={"Click to add course"}>
-                      {/*<IconButton aria-label="settings">*/}
-                      <AddIcon onClick={() => this.handleClickOpenDialogueNewCourse()} />
-                      {/*</IconButton>*/}
-                    </Tooltip>
                   </CardContent>
                 </CardActionArea>
               </Card>
@@ -267,14 +304,11 @@ class MyCourses extends React.Component {
         <Dialog
           open={this.state.openDialogueNewCourse}
           onClose={() => this.handleCloseDialogueNewCourse(false)}
-          aria-labelledby="form-dialog-title"
         >
-          <DialogTitle id="form-dialog-title">Create New Course</DialogTitle>
+          <DialogTitle>Create New Course</DialogTitle>
           <DialogContent>
-            <DialogContentText>To create new course fill in these fields</DialogContentText>
             <TextField
               margin="dense"
-              id="newCourseName"
               label="Course Name"
               type="text"
               fullWidth
@@ -282,7 +316,6 @@ class MyCourses extends React.Component {
             />
             <TextField
               margin="dense"
-              id="newCourseDescription"
               label="Course Description"
               type="text"
               fullWidth
@@ -301,14 +334,12 @@ class MyCourses extends React.Component {
         <Dialog
           open={this.state.openEditCourse}
           onClose={() => this.handleCloseDialogueNewCourse(false)}
-          aria-labelledby="form-dialog-title"
         >
-          <DialogTitle id="form-dialog-title">Edit Your Course</DialogTitle>
+          <DialogTitle>Edit Your Course</DialogTitle>
           <DialogContent>
             <DialogContentText>Make your changes and click save</DialogContentText>
             <TextField
               margin="dense"
-              id="newCourseName"
               label="Course Name"
               type="text"
               fullWidth
@@ -317,7 +348,6 @@ class MyCourses extends React.Component {
             />
             <TextField
               margin="dense"
-              id="newCourseDescription"
               label="Course Description"
               type="text"
               fullWidth

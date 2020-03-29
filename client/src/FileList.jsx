@@ -76,7 +76,7 @@ class FileList extends Component {
     if (files.length === 0) {
       return (
         <Typography color="textSecondary" align="center">
-          You don't have any uploaded files
+          No files available
         </Typography>
       );
     }

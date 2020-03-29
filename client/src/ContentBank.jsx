@@ -68,6 +68,19 @@ class ContentBank extends Component {
     setSelectedFileId(fileId);
   };
 
+  getCourseNamesFromId = (courseIds) => {
+    const { allCourses } = this.context;
+
+    return allCourses
+      .filter((course) => {
+        return courseIds.includes(course.docId);
+      })
+      .map((course) => {
+        return course.courseName;
+      })
+      .join(", ");
+  };
+
   render() {
     const { allFiles } = this.context;
     const { searchTerm } = this.props;
@@ -87,7 +100,7 @@ class ContentBank extends Component {
     if (files.length === 0) {
       return (
         <Typography color="textSecondary" align="center">
-          No documents in the content bank
+          No files in the content bank
         </Typography>
       );
     }
@@ -101,7 +114,7 @@ class ContentBank extends Component {
                 File Name
               </TableCell>
               <TableCell className="bold" align="left">
-                Course
+                Courses
               </TableCell>
               <TableCell className="bold" align="left">
                 File Type
@@ -133,7 +146,7 @@ class ContentBank extends Component {
                     </Link>
                   </Typography>
                 </TableCell>
-                <TableCell align="left">{row.docId}</TableCell>
+                <TableCell align="left">{this.getCourseNamesFromId(row.courseIds)}</TableCell>
                 <TableCell align="left">{row.name.split(".")[1].toUpperCase()}</TableCell>
                 <TableCell align="left">{row.ownerName}</TableCell>
                 <TableCell align="left">{moment(row.lastUpdated).format("lll")}</TableCell>

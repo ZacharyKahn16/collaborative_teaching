@@ -18,9 +18,9 @@ const categories = [
   {
     children: [
       {
-        id: "My Courses",
+        id: "Courses",
         icon: <SchoolIcon />,
-        path: "/my-courses",
+        path: "/courses",
         numIndex: 0,
       },
       {
@@ -30,9 +30,9 @@ const categories = [
         numIndex: 1,
       },
       {
-        id: "Browse Content Bank",
+        id: "Content Bank",
         icon: <AccountBalanceIcon />,
-        path: "/browse-content",
+        path: "/content-bank",
         numIndex: 2,
       },
     ],

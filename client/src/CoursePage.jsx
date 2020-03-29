@@ -1,22 +1,24 @@
 import React from "react";
 import PropTypes from "prop-types";
+import { withRouter } from "react-router-dom";
 import {
   AppBar,
-  Toolbar,
-  Paper,
-  Grid,
-  TextField,
-  IconButton,
-  withStyles,
-  Tooltip,
   Button,
   Dialog,
+  Grid,
+  IconButton,
+  Paper,
+  TextField,
+  Toolbar,
+  Tooltip,
+  withStyles,
 } from "@material-ui/core";
 import SearchIcon from "@material-ui/icons/Search";
 import RefreshIcon from "@material-ui/icons/Refresh";
 import PublishIcon from "@material-ui/icons/Publish";
 import Header from "./Header";
 import FileList from "./FileList";
+import { GlobalContext } from "./GlobalContext";
 
 const styles = (theme) => ({
   paper: {
@@ -43,6 +45,8 @@ const styles = (theme) => ({
 });
 
 class CoursePage extends React.Component {
+  static contextType = GlobalContext;
+
   constructor(props) {
     super(props);
     this.state = {
@@ -68,12 +72,27 @@ class CoursePage extends React.Component {
     // console.log("mounted")
   }
 
+  getCourseFromPath = () => {
+    const { location } = this.props;
+    const { allCourses } = this.context;
+    const courseId = location.pathname.split("/")[2];
+
+    return allCourses.find((c) => {
+      return c.docId === courseId;
+    });
+  };
+
   render() {
     const { classes } = this.props;
 
+    const course = this.getCourseFromPath();
+    if (!course) {
+      window.open(window.location.origin, "_self");
+    }
+
     return (
       <Paper className={classes.paper} square>
-        <Header title={"List of Courses"} />
+        <Header title={course.courseName} />
         <AppBar className={classes.searchBar} position="static" color="default" elevation={0}>
           <Toolbar>
             <Grid container spacing={2} alignItems="center">
@@ -125,4 +144,4 @@ CoursePage.propTypes = {
   classes: PropTypes.object.isRequired,
 };
 
-export default withStyles(styles)(CoursePage);
+export default withStyles(styles)(withRouter(CoursePage));
