@@ -44,12 +44,7 @@ class DeleteCard extends Component {
           <Typography variant="body2" className="mb-2" component="p" paragraph gutterBottom>
             Are you sure you want to delete {this.props.fileInfo.name}?
           </Typography>
-          <Button
-            className="mr-1"
-            variant="contained"
-            color={""}
-            onClick={this.deleteFile}
-          >
+          <Button className="mr-1" variant="contained" color={""} onClick={this.deleteFile}>
             Delete
           </Button>
           <Button variant="contained" onClick={this.cancelDelete}>

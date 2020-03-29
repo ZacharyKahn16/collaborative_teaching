@@ -22,7 +22,7 @@ import {
   Typography,
   AppBar,
 } from "@material-ui/core";
-import MoreVertIcon from "@material-ui/icons/MoreVert";
+import EditIcon from "@material-ui/icons/Edit";
 import DeleteIcon from "@material-ui/icons/Delete";
 import AddIcon from "@material-ui/icons/Add";
 import { GlobalContext } from "./GlobalContext";
@@ -55,10 +55,22 @@ const styles = (theme) => ({
     margin: "40px 16px",
   },
   root: {
+    display: "flex",
+    flexDirection: "column",
     maxHeight: 250,
     height: "100%",
+    justifyContent: "space-between",
+  },
+  desc: {
+    display: "-webkit-box",
+    "-webkit-line-clamp": 3,
+    "-webkit-box-orient": "vertical",
+    overflow: "hidden",
   },
   cardActions: {
+    maxHeight: "45px",
+    height: "45px",
+    flexBasis: "45px",
     justifyContent: "flex-end",
   },
 });
@@ -72,7 +84,7 @@ class MyCourses extends React.Component {
     this.state = {
       courseName: "",
       courseDescription: "",
-      courseIndex: 0,
+      editCourseSelected: null,
       openDialogueNewCourse: false,
       openEditCourse: false,
     };
@@ -86,11 +98,11 @@ class MyCourses extends React.Component {
     this.createCourseDescription = this.createCourseDescription.bind(this);
   }
 
-  handleClickOpenEditCourse(index, courseName, courseDescription) {
+  handleClickOpenEditCourse(course) {
     this.setState({
-      courseName: courseName,
-      courseDescription: courseDescription,
-      courseIndex: index,
+      editCourseSelected: course,
+      courseName: course.courseName,
+      courseDescription: course.courseDesc,
       openEditCourse: true,
       openDialogueNewCourse: false,
     });
@@ -98,6 +110,9 @@ class MyCourses extends React.Component {
 
   handleClickOpenDialogueNewCourse() {
     this.setState({
+      editCourseSelected: null,
+      courseName: "",
+      courseDescription: "",
       openDialogueNewCourse: true,
       openEditCourse: false,
     });
@@ -105,10 +120,13 @@ class MyCourses extends React.Component {
 
   handleCloseEditCourse(editedCourse) {
     if (editedCourse) {
-      console.log("somerthing");
       this.editCourse();
     }
+
     this.setState({
+      editCourseSelected: null,
+      courseName: "",
+      courseDescription: "",
       openEditCourse: false,
     });
   }
@@ -117,14 +135,14 @@ class MyCourses extends React.Component {
     if (addedCourse) {
       this.addNewCourse(this.state.courseName, this.state.courseDescription);
     }
+
     this.setState({
       openDialogueNewCourse: false,
     });
   }
 
-  deleteClass(index) {
-    console.log(index);
-    console.log(this.state.courseIndex);
+  deleteClass(course) {
+    console.log(course);
   }
 
   createCourseName(e) {
@@ -140,12 +158,23 @@ class MyCourses extends React.Component {
   }
 
   editCourse() {
-    console.log("test edit");
-    const temp = this.state.myClasses;
-    temp[this.state.courseIndex].course = this.state.courseName;
-    temp[this.state.courseIndex].description = this.state.courseDescription;
+    const course = this.state.editCourseSelected;
+
+    if (course) {
+      const { user, network } = this.context;
+      network.updateExistingCourse(
+        user.uid,
+        course.docId,
+        this.state.courseName,
+        this.state.courseDescription,
+      );
+    }
+
     this.setState({
-      myClasses: temp,
+      openDialogueNewCourse: false,
+      editCourseSelected: null,
+      courseName: "",
+      courseDescription: "",
     });
   }
 
@@ -202,7 +231,12 @@ class MyCourses extends React.Component {
                         <Typography gutterBottom variant="h5" component="h2">
                           {course.courseName}
                         </Typography>
-                        <Typography variant="body2" color="textSecondary" component="p">
+                        <Typography
+                          variant="body2"
+                          color="textSecondary"
+                          component="p"
+                          className={classes.desc}
+                        >
                           {course.courseDesc}
                         </Typography>
                       </CardContent>
@@ -210,20 +244,12 @@ class MyCourses extends React.Component {
                   </Link>
                   <CardActions className={classes.cardActions}>
                     <Tooltip title={"Edit"}>
-                      <IconButton
-                        onClick={() =>
-                          this.handleClickOpenEditCourse(
-                            index,
-                            course.courseName,
-                            course.courseDesc,
-                          )
-                        }
-                      >
-                        <MoreVertIcon />
+                      <IconButton onClick={() => this.handleClickOpenEditCourse(course)}>
+                        <EditIcon />
                       </IconButton>
                     </Tooltip>
                     <Tooltip title={"Remove"}>
-                      <IconButton onClick={() => this.deleteClass(index)}>
+                      <IconButton onClick={() => this.deleteClass(course)}>
                         <DeleteIcon />
                       </IconButton>
                     </Tooltip>
@@ -249,32 +275,17 @@ class MyCourses extends React.Component {
                         <Typography gutterBottom variant="h5" component="h2">
                           {course.courseName}
                         </Typography>
-                        <Typography variant="body2" color="textSecondary" component="p">
+                        <Typography
+                          variant="body2"
+                          color="textSecondary"
+                          component="p"
+                          className={classes.desc}
+                        >
                           {course.courseDesc}
                         </Typography>
                       </CardContent>
                     </CardActionArea>
                   </Link>
-                  <CardActions className={classes.cardActions}>
-                    <Tooltip title={"Edit"}>
-                      <IconButton
-                        onClick={() =>
-                          this.handleClickOpenEditCourse(
-                            index,
-                            course.courseName,
-                            course.courseDesc,
-                          )
-                        }
-                      >
-                        <MoreVertIcon />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title={"Remove"}>
-                      <IconButton onClick={() => this.deleteClass(index)}>
-                        <DeleteIcon />
-                      </IconButton>
-                    </Tooltip>
-                  </CardActions>
                 </Card>
               </Grid>
             ))}
@@ -319,6 +330,8 @@ class MyCourses extends React.Component {
               label="Course Description"
               type="text"
               fullWidth
+              multiline={true}
+              rows={3}
               onChange={this.createCourseDescription}
             />
           </DialogContent>
@@ -332,7 +345,7 @@ class MyCourses extends React.Component {
           </DialogActions>
         </Dialog>
         <Dialog
-          open={this.state.openEditCourse}
+          open={this.state.openEditCourse && this.state.editCourseSelected !== null}
           onClose={() => this.handleCloseDialogueNewCourse(false)}
         >
           <DialogTitle>Edit Your Course</DialogTitle>
@@ -351,6 +364,8 @@ class MyCourses extends React.Component {
               label="Course Description"
               type="text"
               fullWidth
+              multiline={true}
+              rows={3}
               onChange={this.createCourseDescription}
               value={this.state.courseDescription}
             />

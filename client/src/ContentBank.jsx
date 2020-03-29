@@ -12,7 +12,7 @@ import {
   IconButton,
   Dialog,
 } from "@material-ui/core";
-import DeleteIcon from "@material-ui/icons/Delete"
+import DeleteIcon from "@material-ui/icons/Delete";
 import EditIcon from "@material-ui/icons/Edit";
 import moment from "moment-timezone";
 import UpdateCard from "./UpdateCard";

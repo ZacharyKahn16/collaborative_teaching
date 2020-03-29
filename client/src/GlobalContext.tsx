@@ -183,7 +183,7 @@ export class NetworkInstance {
     });
   }
 
-  readFileAsDataUrl(file: Doc) {
+  readFileAsDataUrl(file: Doc | File) {
     return new Promise<string>((resolve, reject) => {
       const reader = new FileReader();
 
@@ -204,7 +204,7 @@ export class NetworkInstance {
     });
   }
 
-  getFileFromWorker(docId: string, requestId: string) {
+  getFileFromWorker(docId: string, requestId: string = v4()) {
     if (this.socket) {
       this.socket.emit(RETRIEVE_FILE, {
         docId: docId,
@@ -213,51 +213,47 @@ export class NetworkInstance {
     }
   }
 
-  writeNewFile(file: Doc, ownerId: string) {
-    if (this.socket) {
-      this.readFileAsDataUrl(file)
-        .then((dataUrl) => {
-          const hash = SHA256(dataUrl).toString();
-          console.log("sending file with hash: ", hash);
+  writeNewFile(file: File, ownerId: string, requestId: string = v4()) {
+    this.readFileAsDataUrl(file)
+      .then((dataUrl) => {
+        const hash = SHA256(dataUrl).toString();
 
-          // @ts-ignore
+        if (this.socket) {
           this.socket.emit(INSERT_FILE, {
-            ownerId: ownerId,
-            requestId: v4(),
+            ownerId,
+            requestId,
             fileName: file.name,
             fileContents: dataUrl,
             fileHash: hash,
             fileType: file.type,
           });
-        })
-        .catch((err) => {
-          console.error(err);
-        });
-    }
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+      });
   }
 
-  updateExistingFile(file: Doc, ownerId: string) {
-    if (this.socket) {
-      this.readFileAsDataUrl(file)
-        .then((dataUrl) => {
-          const hash = SHA256(dataUrl).toString();
-          console.log("updating file with hash: ", hash);
+  updateExistingFile(file: Doc, ownerId: string, requestId: string = v4()) {
+    this.readFileAsDataUrl(file)
+      .then((dataUrl) => {
+        const hash = SHA256(dataUrl).toString();
 
-          // @ts-ignore
+        if (this.socket) {
           this.socket.emit(UPDATE_FILE, {
             docId: file.docId,
             ownerId: ownerId,
-            requestId: v4(),
+            requestId,
             fileName: file.name,
             fileContents: dataUrl,
             fileHash: hash,
             fileType: file.type,
           });
-        })
-        .catch((err) => {
-          console.error(err);
-        });
-    }
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+      });
   }
 
   // deleteExistingFile(file: File, ownerId: string) {
@@ -274,51 +270,58 @@ export class NetworkInstance {
     }
   }
 
-  addNewCourse(ownerId: string, courseName: string, courseDesc: string) {
+  addNewCourse(ownerId: string, courseName: string, courseDesc: string, requestId: string = v4()) {
     if (this.socket) {
-      // @ts-ignore
       this.socket.emit(ADD_COURSE, {
         ownerId,
         courseName,
         courseDesc,
-        requestId: v4(),
+        requestId,
       });
     }
   }
 
-  updateExistingCourse(ownerId: string, courseId: string, courseName: string, courseDesc: string) {
+  updateExistingCourse(
+    ownerId: string,
+    courseId: string,
+    courseName: string,
+    courseDesc: string,
+    requestId: string = v4(),
+  ) {
     if (this.socket) {
-      // @ts-ignore
       this.socket.emit(UPDATE_COURSE, {
         ownerId,
         courseId,
         courseName,
         courseDesc,
-        requestId: v4(),
+        requestId,
       });
     }
   }
 
-  addFileToCourse(ownerId: string, courseId: string, fileId: string) {
+  addFileToCourse(ownerId: string, courseId: string, fileId: string, requestId: string = v4()) {
     if (this.socket) {
-      // @ts-ignore
       this.socket.emit(ADD_FILE_TO_COURSE, {
         ownerId,
         courseId,
         fileId,
-        requestId: v4(),
+        requestId,
       });
     }
   }
 
-  removeFileFromCourse(ownerId: string, courseId: string, fileId: string) {
+  removeFileFromCourse(
+    ownerId: string,
+    courseId: string,
+    fileId: string,
+    requestId: string = v4(),
+  ) {
     if (this.socket) {
-      // @ts-ignore
       this.socket.emit(REMOVE_FILE_FROM_COURSE, {
         ownerId,
         courseId,
         fileId,
-        requestId: v4(),
+        requestId,
       });
     }
   }
