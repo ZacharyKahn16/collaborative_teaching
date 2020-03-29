@@ -10,6 +10,14 @@ import {
   IconButton,
   withStyles,
   Dialog,
+  Typography,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  Link,
+  TableContainer,
 } from "@material-ui/core";
 import SearchIcon from "@material-ui/icons/Search";
 import RefreshIcon from "@material-ui/icons/Refresh";
@@ -18,6 +26,11 @@ import Header from "./Header";
 import FileList from "./FileList";
 import UploadCard from "./UploadCard";
 import { GlobalContext } from "./GlobalContext";
+import moment from "moment-timezone";
+import EditIcon from "@material-ui/icons/Edit";
+import DeleteIcon from "@material-ui/icons/Delete";
+import UpdateCard from "./UpdateCard";
+import DeleteCard from "./DeleteCard";
 
 const styles = (theme) => ({
   paper: {
@@ -54,11 +67,18 @@ class MyFiles extends React.Component {
     this.state = {
       searchTerm: "",
       uploadModalOpen: false,
+      editModalOpen: false,
+      deleteModalOpen: false,
+      selectedFile: null,
     };
 
     this.handleOpenUploadModal = this.handleOpenUploadModal.bind(this);
     this.handleCloseUploadModal = this.handleCloseUploadModal.bind(this);
     this.updateSearchTerm = this.updateSearchTerm.bind(this);
+    this.handleEditModalOpen = this.handleEditModalOpen.bind(this);
+    this.handleDeleteModalOpen = this.handleDeleteModalOpen.bind(this);
+    this.handleModalClose = this.handleModalClose.bind(this);
+    this.updateSelectedFile = this.updateSelectedFile.bind(this);
   }
 
   updateSearchTerm(event) {
@@ -79,8 +99,51 @@ class MyFiles extends React.Component {
     }));
   }
 
+  handleEditModalOpen = (file) => {
+    this.setState(() => ({
+      selectedFile: file,
+      editModalOpen: true,
+    }));
+  };
+
+  handleDeleteModalOpen = (file) => {
+    this.setState(() => ({
+      selectedFile: file,
+      deleteModalOpen: true,
+    }));
+  };
+
+  handleModalClose = () => {
+    this.setState(() => ({
+      editModalOpen: false,
+      deleteModalOpen: false,
+    }));
+  };
+
+  updateSelectedFile = (fileId) => {
+    const { setSelectedFileId } = this.context;
+
+    setSelectedFileId(fileId);
+  };
+
   render() {
+    const { allFiles, user } = this.context;
     const { classes } = this.props;
+
+    const files = allFiles
+      .filter((file) => {
+        return user.uid === file.ownerId;
+      })
+      .filter((file) => {
+        return (
+          file.name.includes(this.state.searchTerm) ||
+          file.ownerName.includes(this.state.searchTerm) ||
+          file.courseIds.includes(this.state.searchTerm)
+        );
+      })
+      .sort((a, b) => {
+        return b.lastUpdated - a.lastUpdated;
+      });
 
     return (
       <Paper className={classes.paper} square={true}>
@@ -126,7 +189,86 @@ class MyFiles extends React.Component {
           </Toolbar>
         </AppBar>
         <div className={classes.contentWrapper}>
-          <FileList searchTerm={this.state.searchTerm} />
+          {/*<FileList searchTerm={this.state.searchTerm} />*/}
+          {files.length === 0 ? (
+            <Typography color="textSecondary" align="center">
+              No files available
+            </Typography>
+          ) : (
+            <TableContainer>
+              <Table aria-label="simple table">
+                <TableHead>
+                  <TableRow className="bold">
+                    <TableCell className="bold" align="left">
+                      File Name
+                    </TableCell>
+                    <TableCell className="bold" align="left">
+                      Course
+                    </TableCell>
+                    <TableCell className="bold" align="left">
+                      File Type
+                    </TableCell>
+                    <TableCell className="bold" align="left">
+                      Last Updated
+                    </TableCell>
+                    <TableCell className="bold" align="center">
+                      Actions
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {files.map((row) => (
+                    <TableRow key={row.docId}>
+                      <TableCell align="left">
+                        <Typography variant="body2">
+                          <Link
+                            color="primary"
+                            href="#"
+                            onClick={() => {
+                              this.updateSelectedFile(row.docId);
+                            }}
+                          >
+                            {row.name}
+                          </Link>
+                        </Typography>
+                      </TableCell>
+                      <TableCell align="left">{row.docId}</TableCell>
+                      <TableCell align="left">{row.name.split(".")[1].toUpperCase()}</TableCell>
+                      <TableCell align="left">{moment(row.lastUpdated).format("lll")}</TableCell>
+                      <TableCell align="center">
+                        <IconButton
+                          className="action-button"
+                          onClick={() => this.handleEditModalOpen(row)}
+                        >
+                          <EditIcon color="inherit" />
+                        </IconButton>
+                        <IconButton
+                          className="action-button"
+                          onClick={() => this.handleDeleteModalOpen(row)}
+                        >
+                          <DeleteIcon color="inherit" />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+              <Dialog open={this.state.editModalOpen} onClose={this.handleModalClose}>
+                <UpdateCard
+                  closeModal={this.handleModalClose}
+                  socket={this.props.socket}
+                  fileInfo={this.state.selectedFile}
+                />
+              </Dialog>
+              <Dialog open={this.state.deleteModalOpen} onClose={this.handleModalClose}>
+                <DeleteCard
+                  closeModal={this.handleModalClose}
+                  socket={this.props.socket}
+                  fileInfo={this.state.selectedFile}
+                />
+              </Dialog>
+            </TableContainer>
+          )}
         </div>
       </Paper>
     );
