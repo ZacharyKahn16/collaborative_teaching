@@ -103,7 +103,7 @@ export function updateDocument(
   documentID: string,
   document: any,
 ): Promise<FirebaseFirestore.WriteResult> {
-  LOGGER.debug('Update Doc', collection, documentID, documentID);
+  LOGGER.debug('Update Doc', collection, documentID, document);
   return getDb()
     .collection(collection)
     .doc(documentID)
