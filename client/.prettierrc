@@ -7,6 +7,7 @@
   "bracketSpacing": true,
   "semi": true,
   "arrowParens": "always",
+  "endOfLine": "lf",
   "overrides": [
     {
       "files": ["src/Styles/*"],
