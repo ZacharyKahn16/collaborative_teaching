@@ -17,6 +17,7 @@ import "./Styles/FileList.css";
 import EditIcon from "@material-ui/icons/Edit";
 import DeleteIcon from "@material-ui/icons/Delete";
 import UpdateCard from "./UpdateCard";
+import DeleteCard from "./DeleteCard";
 import { GlobalContext } from "./GlobalContext";
 
 class FileList extends Component {
@@ -44,8 +45,9 @@ class FileList extends Component {
     }));
   };
 
-  handleDeleteModalOpen = () => {
+  handleDeleteModalOpen = (file) => {
     this.setState(() => ({
+      selectedFile: file,
       deleteModalOpen: true,
     }));
   };
@@ -138,7 +140,7 @@ class FileList extends Component {
                   >
                     <EditIcon color="inherit" />
                   </IconButton>
-                  <IconButton className="action-button" onClick={this.handleDeleteModalOpen}>
+                  <IconButton className="action-button" onClick={() => this.handleDeleteModalOpen(row)}>
                     <DeleteIcon color="inherit" />
                   </IconButton>
                 </TableCell>
@@ -148,6 +150,13 @@ class FileList extends Component {
         </Table>
         <Dialog open={this.state.editModalOpen} onClose={this.handleModalClose}>
           <UpdateCard
+            closeModal={this.handleModalClose}
+            socket={this.props.socket}
+            fileInfo={this.state.selectedFile}
+          />
+        </Dialog>
+        <Dialog open={this.state.deleteModalOpen} onClose={this.handleModalClose}>
+          <DeleteCard
             closeModal={this.handleModalClose}
             socket={this.props.socket}
             fileInfo={this.state.selectedFile}

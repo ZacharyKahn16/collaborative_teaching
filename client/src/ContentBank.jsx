@@ -12,10 +12,11 @@ import {
   IconButton,
   Dialog,
 } from "@material-ui/core";
-import DeleteIcon from "@material-ui/icons/Delete"
+import DeleteIcon from "@material-ui/icons/Delete";
 import EditIcon from "@material-ui/icons/Edit";
 import moment from "moment-timezone";
 import UpdateCard from "./UpdateCard";
+import DeleteCard from "./DeleteCard";
 import "./Styles/FileList.css";
 import { GlobalContext } from "./GlobalContext";
 
@@ -43,20 +44,16 @@ class ContentBank extends Component {
 
   handleEditModalOpen = (file) => {
     console.log(file);
-    this.setState(
-      () => ({
-        editModalOpen: true,
-        selectedFile: file,
-      }),
-      () => {
-        console.log(this.state.selectedFile);
-      },
-    );
+    this.setState(() => ({
+      editModalOpen: true,
+      selectedFile: file,
+    }));
   };
 
-  handleDeleteModalOpen = () => {
+  handleDeleteModalOpen = (file) => {
     this.setState(() => ({
       deleteModalOpen: true,
+      selectedFile: file,
     }));
   };
 
@@ -164,7 +161,10 @@ class ContentBank extends Component {
                     >
                       <EditIcon color="inherit" />
                     </IconButton>
-                    <IconButton className="action-button" onClick={this.handleDeleteModalOpen}>
+                    <IconButton
+                      className="action-button"
+                      onClick={() => this.handleDeleteModalOpen(row)}
+                    >
                       <DeleteIcon color="inherit" />
                     </IconButton>
                   </TableCell>
@@ -178,6 +178,15 @@ class ContentBank extends Component {
         <Dialog open={this.state.editModalOpen} onClose={this.handleModalClose}>
           <div>
             <UpdateCard
+              closeModal={this.handleModalClose}
+              socket={this.props.socket}
+              fileInfo={this.state.selectedFile}
+            />
+          </div>
+        </Dialog>
+        <Dialog open={this.state.deleteModalOpen} onClose={this.handleModalClose}>
+          <div>
+            <DeleteCard
               closeModal={this.handleModalClose}
               socket={this.props.socket}
               fileInfo={this.state.selectedFile}

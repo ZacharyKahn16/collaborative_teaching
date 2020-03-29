@@ -35,6 +35,8 @@ class DeleteCard extends Component {
   };
 
   render() {
+    const { fileInfo } = this.props;
+
     return (
       <Card className="card-body">
         <CardContent>
@@ -42,14 +44,9 @@ class DeleteCard extends Component {
             Delete File
           </Typography>
           <Typography variant="body2" className="mb-2" component="p" paragraph gutterBottom>
-            Are you sure you want to delete {this.props.fileInfo.name}?
+            Are you sure you want to delete {fileInfo.name}?
           </Typography>
-          <Button
-            className="mr-1"
-            variant="contained"
-            color={""}
-            onClick={this.deleteFile}
-          >
+          <Button className="mr-1" variant="contained" onClick={this.deleteFile}>
             Delete
           </Button>
           <Button variant="contained" onClick={this.cancelDelete}>
