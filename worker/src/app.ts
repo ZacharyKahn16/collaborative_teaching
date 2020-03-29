@@ -1,6 +1,21 @@
 import { AccessFDB } from './HelperFunctions/workerToFDBConnection';
 import { LOGGER } from './Logger';
-import { insertedFile, getAllFiles, setClient } from './MCDB';
+import {
+  insertedFile,
+  getAllFiles,
+  setClient,
+  verifyClientExists,
+  createNewCourse,
+  getAllCourses,
+  verifyCourseExists,
+  verifyFileExists,
+  getCourse,
+  addCourseIdToFile,
+  addFileToCourse,
+  removeFileFromCourse,
+  removeCourseIdFromFile,
+  updateCourse,
+} from './MCDB';
 import {
   shuffle,
   findFdbUsingIp,
@@ -31,9 +46,15 @@ const UPDATE_FILE = 'Update File';
 const DELETE_FILE = 'Delete File';
 const SET_CLIENT = 'Set Client';
 
+const ADD_COURSE = 'Add Course';
+const UPDATE_COURSE = 'Update Course';
+const ADD_FILE_TO_COURSE = 'Add File To Course';
+const REMOVE_FILE_FROM_COURSE = 'Remove File From Course';
+
 // Server message constants
 const SERVER_RESP = 'Server Response';
 const SEND_ALL_FILES = 'All Files';
+const SEND_ALL_COURSES = 'All Courses';
 const SUCCESS = 'success';
 const FAILED = 'failed';
 
@@ -64,20 +85,26 @@ function sendSuccessMessage(socket: any, requestId: string, message: any) {
   });
 }
 
-// Send all files to a single client
-async function sendAllFilesToClient(socket: any) {
+// Send all metadata to a single client
+async function sendAllMetadataToClient(socket: any) {
   const allFiles = await getAllFiles();
+  const allCourses = await getAllCourses();
+
   socket.emit(SEND_ALL_FILES, allFiles);
+  socket.emit(SEND_ALL_COURSES, allCourses);
 }
 
-// Broadcast all files to all clients in network
-async function broadcastAllFilesToClients() {
+// Broadcast all metadata to all clients in network
+async function broadcastAllMetadataToClients() {
   const allFiles = await getAllFiles();
+  const allCourses = await getAllCourses();
+
   socketServer.emit(SEND_ALL_FILES, allFiles);
+  socketServer.emit(SEND_ALL_COURSES, allCourses);
 }
 
 socketServer.on(CONNECTION_EVENT, function(socket) {
-  sendAllFilesToClient(socket);
+  sendAllMetadataToClient(socket);
 
   socket.on(SET_CLIENT, (req) => {
     setClient(req);
@@ -218,7 +245,7 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
       sendErrorMessage(socket, requestId, `Unable to create replicas because: ${err}`);
     }
 
-    broadcastAllFilesToClients();
+    broadcastAllMetadataToClients();
   });
 
   /**
@@ -356,7 +383,7 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
       }
     }
 
-    broadcastAllFilesToClients();
+    broadcastAllMetadataToClients();
   });
 
   // TODO: Retrieve list of files from Firebase
@@ -380,6 +407,228 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
   //   );
   // });
 
+  socket.on(ADD_COURSE, async (req) => {
+    const { ownerId, courseName, courseDesc, requestId } = req;
+
+    if (!ownerId) {
+      sendErrorMessage(socket, requestId, 'Missing owner id');
+      return;
+    }
+
+    if (!courseName) {
+      sendErrorMessage(socket, requestId, 'Missing course name');
+      return;
+    }
+
+    if (!courseDesc) {
+      sendErrorMessage(socket, requestId, 'Missing course description');
+      return;
+    }
+
+    const clientExists = await verifyClientExists(ownerId);
+
+    if (!clientExists) {
+      sendErrorMessage(socket, requestId, 'Client does not exist');
+      return;
+    }
+
+    const result = createNewCourse(courseName, courseDesc, ownerId);
+
+    try {
+      await result[1];
+      sendSuccessMessage(socket, requestId, `Created course with id ${result[0]}`);
+      broadcastAllMetadataToClients();
+      return;
+    } catch (err) {
+      LOGGER.error('Failed to create course', err);
+      sendErrorMessage(socket, requestId, 'Could not create course');
+      return;
+    }
+  });
+
+  socket.on(UPDATE_COURSE, async (req) => {
+    const { ownerId, courseId, courseName, courseDesc, requestId } = req;
+
+    if (!ownerId) {
+      sendErrorMessage(socket, requestId, 'Missing owner id');
+      return;
+    }
+
+    if (!courseId) {
+      sendErrorMessage(socket, requestId, 'Missing course id');
+      return;
+    }
+
+    if (!courseName) {
+      sendErrorMessage(socket, requestId, 'Missing course name');
+      return;
+    }
+
+    if (!courseDesc) {
+      sendErrorMessage(socket, requestId, 'Missing course description');
+      return;
+    }
+
+    const clientExists = await verifyClientExists(ownerId);
+    const courseExists = await verifyCourseExists(courseId);
+
+    if (!clientExists) {
+      sendErrorMessage(socket, requestId, 'Client does not exist');
+      return;
+    }
+
+    if (!courseExists) {
+      sendErrorMessage(socket, requestId, 'Course does not exist');
+      return;
+    }
+
+    const courseData = await getCourse(courseId);
+    if (!courseData) {
+      sendErrorMessage(socket, requestId, 'Could not get course data');
+      return;
+    }
+
+    if (courseData.ownerId !== ownerId) {
+      sendErrorMessage(socket, requestId, 'You are not owner of this course');
+      return;
+    }
+
+    try {
+      await updateCourse(courseId, courseName, courseDesc);
+      sendSuccessMessage(socket, requestId, `Updated course with id ${courseId}`);
+      broadcastAllMetadataToClients();
+      return;
+    } catch (err) {
+      LOGGER.error('Failed to update course', err);
+      sendErrorMessage(socket, requestId, 'Could not update course');
+      return;
+    }
+  });
+
+  socket.on(ADD_FILE_TO_COURSE, async (req) => {
+    const { ownerId, courseId, fileId, requestId } = req;
+
+    if (!ownerId) {
+      sendErrorMessage(socket, requestId, 'Missing owner id');
+      return;
+    }
+
+    if (!courseId) {
+      sendErrorMessage(socket, requestId, 'Missing course id');
+      return;
+    }
+
+    if (!fileId) {
+      sendErrorMessage(socket, requestId, 'Missing file id');
+      return;
+    }
+
+    const clientExists = await verifyClientExists(ownerId);
+    const courseExists = await verifyCourseExists(courseId);
+    const fileExists = await verifyFileExists(fileId);
+
+    if (!clientExists) {
+      sendErrorMessage(socket, requestId, 'Client does not exist');
+      return;
+    }
+
+    if (!courseExists) {
+      sendErrorMessage(socket, requestId, 'Course does not exist');
+      return;
+    }
+
+    if (!fileExists) {
+      sendErrorMessage(socket, requestId, 'File does not exist');
+      return;
+    }
+
+    const courseData = await getCourse(courseId);
+    if (!courseData) {
+      sendErrorMessage(socket, requestId, 'Could not get course data');
+      return;
+    }
+
+    if (courseData.ownerId !== ownerId) {
+      sendErrorMessage(socket, requestId, 'You are not owner of this course');
+      return;
+    }
+
+    try {
+      await addCourseIdToFile(fileId, courseId);
+      await addFileToCourse(courseId, fileId);
+
+      sendSuccessMessage(socket, requestId, 'Added file to the course');
+      broadcastAllMetadataToClients();
+      return;
+    } catch (err) {
+      LOGGER.error('Failed to add file to course', err);
+      sendErrorMessage(socket, requestId, 'Could not add file to course');
+      return;
+    }
+  });
+
+  socket.on(REMOVE_FILE_FROM_COURSE, async (req) => {
+    const { ownerId, courseId, fileId, requestId } = req;
+
+    if (!ownerId) {
+      sendErrorMessage(socket, requestId, 'Missing owner id');
+      return;
+    }
+
+    if (!courseId) {
+      sendErrorMessage(socket, requestId, 'Missing course id');
+      return;
+    }
+
+    if (!fileId) {
+      sendErrorMessage(socket, requestId, 'Missing file id');
+      return;
+    }
+
+    const clientExists = await verifyClientExists(ownerId);
+    const courseExists = await verifyCourseExists(courseId);
+    const fileExists = await verifyFileExists(fileId);
+
+    if (!clientExists) {
+      sendErrorMessage(socket, requestId, 'Client does not exist');
+      return;
+    }
+
+    if (!courseExists) {
+      sendErrorMessage(socket, requestId, 'Course does not exist');
+      return;
+    }
+
+    if (!fileExists) {
+      sendErrorMessage(socket, requestId, 'File does not exist');
+      return;
+    }
+
+    const courseData = await getCourse(courseId);
+    if (!courseData) {
+      sendErrorMessage(socket, requestId, 'Could not get course data');
+      return;
+    }
+
+    if (courseData.ownerId !== ownerId) {
+      sendErrorMessage(socket, requestId, 'You are not owner of this course');
+      return;
+    }
+
+    try {
+      await removeCourseIdFromFile(fileId, courseId);
+      await removeFileFromCourse(courseId, fileId);
+
+      sendSuccessMessage(socket, requestId, 'Removed file from the course');
+      broadcastAllMetadataToClients();
+      return;
+    } catch (err) {
+      LOGGER.error('Failed to file from course', err);
+      sendErrorMessage(socket, requestId, 'Could not remove file from course');
+      return;
+    }
+  });
+
   // Master Handlers
   socket.on(DATABASE_LIST, function(req) {
     socket.emit('health-response', 'I am alive');
@@ -401,6 +650,6 @@ const PORT = process.env.PORT || 4001;
 httpServer.listen(PORT, () => {
   LOGGER.debug(`Server started at http://localhost:${PORT}`);
   setInterval(() => {
-    broadcastAllFilesToClients();
+    broadcastAllMetadataToClients();
   }, 1000 * 60);
 });
