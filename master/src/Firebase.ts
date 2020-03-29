@@ -1,4 +1,5 @@
 import admin from 'firebase-admin';
+import { LOGGER } from './Logger';
 
 /**
  * Initializes Firebase instance
@@ -102,6 +103,7 @@ export function updateDocument(
   documentID: string,
   document: any,
 ): Promise<FirebaseFirestore.WriteResult> {
+  LOGGER.debug('Update Doc', collection, documentID, documentID);
   return getDb()
     .collection(collection)
     .doc(documentID)

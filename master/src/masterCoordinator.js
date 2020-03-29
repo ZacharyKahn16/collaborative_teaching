@@ -615,6 +615,7 @@ export class MasterCoordinator {
       let updatePromises = [];
       for (let j = 0; j < deletionList.length; j++) {
         let deletionFdbIp = deletionList[j];
+        LOGGER.debug('Delete extra files', fileId, deletionFdbIp);
         updatePromises.push(_this.deleteFile(fileId, deletionFdbIp));
       }
 
