@@ -286,19 +286,20 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
       return;
     }
 
-    try {
-      const mcdbOwnerEntry = await verifyOwner(docId, ownerId);
+    const fileExists = await verifyFileExists(docId);
+    const userIsOwner = await verifyOwner(docId, ownerId);
 
-      if (!mcdbOwnerEntry) {
-        sendErrorMessage(
-          socket,
-          requestId,
-          'Invalid operation: This user is not the owner of this file',
-        );
-        return;
-      }
-    } catch (err) {
-      sendErrorMessage(socket, requestId, `Error getting document: ${err}`);
+    if (!fileExists) {
+      sendErrorMessage(socket, requestId, 'File does not exist');
+      return;
+    }
+
+    if (!userIsOwner) {
+      sendErrorMessage(
+        socket,
+        requestId,
+        'Invalid operation: This user is not the owner of this file',
+      );
       return;
     }
 
@@ -348,6 +349,7 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
           fileContents,
           fileHash,
           fileType,
+          ownerId,
           timeStamp,
           requestId,
         );
@@ -417,6 +419,22 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
   // TODO: Retrieve list of files from Firebase
   // socket.on(DELETE_FILE, function(req) {
   //   const docId = req.docId;
+  // const fileExists = await verifyFileExists(docId);
+  // const userIsOwner = await verifyOwner(docId, ownerId);
+  //
+  // if (!fileExists) {
+  //   sendErrorMessage(socket, requestId, 'File does not exist');
+  //   return;
+  // }
+  //
+  // if (!userIsOwner) {
+  //   sendErrorMessage(
+  //       socket,
+  //       requestId,
+  //       'Invalid operation: This user is not the owner of this file',
+  //   );
+  //   return;
+  // }
   //
   //   accessFDB.deleteFile(docId).then(
   //     function(resp) {
