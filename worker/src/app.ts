@@ -17,6 +17,7 @@ import {
   updateCourse,
   verifyOwner,
   updateFile,
+  deleteFile,
 } from './MCDB';
 import {
   shuffle,
@@ -31,6 +32,7 @@ import { Server } from 'http';
 import io from 'socket.io';
 import cors from 'cors';
 import { SHA256 } from 'crypto-js';
+import * as fs from './Firebase';
 
 const app = express();
 app.use(cors());
@@ -382,6 +384,8 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
       fileHash: fileHash,
       lastUpdated: timeStamp,
       name: fileName,
+    }).catch((err) => {
+      sendErrorMessage(socket, requestId, `Unable to update entry in the MCDB: ${err}`);
     });
 
     // If the MCDBs entry for FDB FileLocations of a file has a mismatch
@@ -423,42 +427,77 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
     broadcastAllMetadataToClients();
   });
 
-  // TODO: Retrieve list of files from Firebase
-  // socket.on(DELETE_FILE, function(req) {
-  //   const docId = req.docId;
-  // const fileExists = await verifyFileExists(docId);
-  // const userIsOwner = await verifyOwner(docId, ownerId);
-  //
-  // if (!fileExists) {
-  //   sendErrorMessage(socket, requestId, 'File does not exist');
-  //   return;
-  // }
-  //
-  // if (!userIsOwner) {
-  //   sendErrorMessage(
-  //       socket,
-  //       requestId,
-  //       'Invalid operation: This user is not the owner of this file',
-  //   );
-  //   return;
-  // }
-  //
-  //   accessFDB.deleteFile(docId).then(
-  //     function(resp) {
-  //       socket.emit(SERVER_RESP, {
-  //         // TODO: Add a client request ID
-  //         message: resp,
-  //       });
-  //     },
-  //     function(err) {
-  //       socket.emit(SERVER_RESP, {
-  //         // TODO: Add a client request ID
-  //         message: `Error deleting file ${err}`,
-  //       });
-  //       throw err;
-  //     },
-  //   );
-  // });
+  /**
+   * Deletes a file
+   *
+   * Sample request JSON
+   {
+    "docId": "Event name 2",
+    "ownerId": "James Peralta",
+    "requestId": "XCJ321CSAD"
+   }
+   */
+  socket.on(DELETE_FILE, async function(req) {
+    const docId = req.docId;
+    const ownerId = req.ownerId;
+    const requestId = req.requestId;
+
+    const fileExists = await verifyFileExists(docId);
+    const userIsOwner = await verifyOwner(docId, ownerId);
+
+    if (!fileExists) {
+      sendErrorMessage(socket, requestId, 'File does not exist');
+      return;
+    }
+
+    if (!userIsOwner) {
+      sendErrorMessage(
+        socket,
+        requestId,
+        'Invalid operation: This user is not the owner of this file',
+      );
+      return;
+    }
+
+    let fdbLocations: any[];
+    try {
+      fdbLocations = await retrieveFdbLocations(docId);
+      if (!fdbLocations) {
+        sendErrorMessage(socket, requestId, 'Error finding FDB locations in the MCDB');
+        return;
+      }
+    } catch (err) {
+      sendErrorMessage(socket, requestId, `Error getting document: ${err}`);
+      return;
+    }
+
+    const successfulDeletes: AccessFDB[] = [];
+    for (let i = 0; i < fdbLocations.length; i++) {
+      const fdbRef = findFdbUsingIp(fdbLocations[i], fdbList);
+      if (!fdbRef) {
+        continue;
+      }
+
+      await fdbRef.deleteFile(docId).then(
+        function(resp: any) {
+          successfulDeletes.push(fdbRef);
+        },
+        function(err: any) {
+          throw err;
+        },
+      );
+    }
+
+    if (successfulDeletes.length <= 0) {
+      sendErrorMessage(socket, requestId, 'No successful deletes from FDBs');
+      LOGGER.debug('No successful deletes from FDBs');
+      return;
+    }
+
+    deleteFile(docId).catch((err) => {
+      sendErrorMessage(socket, requestId, `Unable to delete entry in the MCDB: ${err}`);
+    });
+  });
 
   socket.on(ADD_COURSE, async (req) => {
     const { ownerId, courseName, courseDesc, requestId } = req;
