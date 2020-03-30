@@ -52,21 +52,8 @@ export function insertFileWithSpecifiedFileId(
 }
 
 // Update file
-export function updateFile(
-  fileId: string,
-  timestamp: number,
-  fdbLocations: string[],
-  fileName: string,
-  fileHash: string,
-  ownerId: string,
-) {
-  return fs.updateDocument(FILE_COLLECTION, fileId, {
-    lastUpdated: timestamp,
-    fdbLocations: fdbLocations,
-    name: fileName,
-    fileHash: fileHash,
-    ownerId: ownerId,
-  });
+export function updateFile(fileId: string, document: any) {
+  return fs.updateDocument(FILE_COLLECTION, fileId, document);
 }
 
 // Delete file

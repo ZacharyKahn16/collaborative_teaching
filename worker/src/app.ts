@@ -16,6 +16,7 @@ import {
   removeCourseIdFromFile,
   updateCourse,
   verifyOwner,
+  updateFile,
 } from './MCDB';
 import {
   shuffle,
@@ -376,6 +377,12 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
       requestId,
       `Successful updates into ${successfulUpdates.map((elem) => elem.getIp()).join()}`,
     );
+
+    updateFile(docId, {
+      fileHash: fileHash,
+      lastUpdated: timeStamp,
+      name: fileName,
+    });
 
     // If the MCDBs entry for FDB FileLocations of a file has a mismatch
     // between the current FDBs that are alive in the system, populate
