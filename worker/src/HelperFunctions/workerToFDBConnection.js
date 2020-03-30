@@ -20,20 +20,22 @@ export class FileDatabase {
    *
    * @param {Integer}  docId ID of document.
    * @param {String} fileName name of file.
-   * @param {String} fileContents TODO (zacharykahn): Do we want to store file in binary?
+   * @param {String} fileContents
    * @param {String} fileHash Hash of the file.
    * @param {String} fileType Type of file.
+   * @param {String} ownerId Id of the owner of this file
    * @param {Integer} ts Timestamp.
    *
    * @return {Object} Structure of document.
    **/
-  insertDocumentStructure(docId, fileName, fileContents, fileHash, fileType, ts) {
+  insertDocumentStructure(docId, fileName, fileContents, fileHash, fileType, ownerId, ts) {
     return {
       docId: docId,
       fileName: fileName,
       fileContents: fileContents,
       fileHash: fileHash,
       fileType: fileType,
+      ownerId: ownerId,
       lastUpdated: ts,
     };
   }
@@ -43,7 +45,7 @@ export class FileDatabase {
    *
    * @param {Integer}  docId ID of document.
    * @param {String} fileName name of file.
-   * @param {Binary} fileContents TODO (zacharykahn): Do we want to store file in binary?
+   * @param {Binary} fileContents
    * @param {String} fileHash Hash of the file.
    * @param {String} fileType Type of file.
    * @param {Integer} ts Timestamp.
@@ -161,14 +163,15 @@ export class AccessFDB {
    *
    * @param {String}  docId ID of document.
    * @param {String} fileName name of file.
-   * @param {String} fileContents TODO (zacharykahn): Do we want to store file in binary?
+   * @param {String} fileContents
    * @param {String} fileHash Hash of the file.
    * @param {String} fileType Type of file.
+   * @param {String} ownerId Id of user who created this file
    * @param {Integer} ts Timestamp.
    *
    * @return {Promise} Promise that returns if insertion was a success, error otherwise.
    **/
-  insertFile(docId, fileName, fileContents, fileHash, fileType, ts) {
+  insertFile(docId, fileName, fileContents, fileHash, fileType, ownerId, ts) {
     const _dbName = this.dbName;
     const _fileCollectionName = this.fileCollectionName;
     const fDBInsertInfo = new FileDatabase().insertDocumentStructure(
@@ -177,6 +180,7 @@ export class AccessFDB {
       fileContents,
       fileHash,
       fileType,
+      ownerId,
       ts,
     );
 

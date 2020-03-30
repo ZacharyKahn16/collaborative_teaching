@@ -48,6 +48,7 @@ export async function createReplicas(
   fileContents: string,
   fileHash: string,
   fileType: string,
+  ownerId: string,
   timeStamp: number,
   fdbsToAvoid: AccessFDB[] = [],
 ) {
@@ -74,14 +75,16 @@ export async function createReplicas(
 
     const fdbRef = fdbList[i];
 
-    await fdbRef.insertFile(docId, fileName, fileContents, fileHash, fileType, timeStamp).then(
-      function(resp: any) {
-        successfulInserts.push(fdbRef);
-      },
-      function(err: any) {
-        LOGGER.debug('Unable to insert file into FDB');
-      },
-    );
+    await fdbRef
+      .insertFile(docId, fileName, fileContents, fileHash, fileType, ownerId, timeStamp)
+      .then(
+        function(resp: any) {
+          successfulInserts.push(fdbRef);
+        },
+        function(err: any) {
+          LOGGER.debug('Unable to insert file into FDB');
+        },
+      );
   }
 
   for (let i = 0; i < successfulInserts.length; i++) {

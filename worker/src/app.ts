@@ -15,6 +15,7 @@ import {
   removeFileFromCourse,
   removeCourseIdFromFile,
   updateCourse,
+  verifyOwner,
 } from './MCDB';
 import {
   shuffle,
@@ -168,8 +169,8 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
     "fileName": "Event name 2",
     "fileContents": "Hello World",
     "fileType": String,
-    "requestId": "XCJ321CSAD",
     "ownerId": "192.168.12.0",
+    "requestId": "XCJ321CSAD",
     "fileHash": "XXADFAFDAASD"
    }
    */
@@ -227,6 +228,7 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
         fileContents,
         fileHash,
         fileType,
+        ownerId,
         timeStamp,
       );
 
@@ -257,21 +259,46 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
     "fileName": "Event name 2",
     "fileContents": "Hello World",
     "fileType": String,
+    "ownerId": "192.168.12.0",
     "requestId": "XCJ321CSAD",
     "fileHash": "XXADFAFDAASD"
    }
    */
   socket.on(UPDATE_FILE, async function(req) {
-    const docId = req.docId;
     const timeStamp = Date.now();
+    const docId = req.docId;
     const fileName = req.fileName;
     const fileContents = req.fileContents;
     const fileType = req.fileType; // Infer type later
+    const ownerId = req.ownerId;
     const requestId = req.requestId;
     const fileHash = req.fileHash; // Generate File hash later
 
     if (!docId || !fileName || !fileContents || !fileType || !requestId || !fileHash) {
       sendErrorMessage(socket, requestId, 'Missing request parameters');
+      return;
+    }
+
+    const newHash = SHA256(fileContents).toString();
+
+    if (newHash !== fileHash) {
+      sendErrorMessage(socket, requestId, 'File hashes do not match');
+      return;
+    }
+
+    try {
+      const mcdbOwnerEntry = await verifyOwner(docId, ownerId);
+
+      if (!mcdbOwnerEntry) {
+        sendErrorMessage(
+          socket,
+          requestId,
+          'Invalid operation: This user is not the owner of this file',
+        );
+        return;
+      }
+    } catch (err) {
+      sendErrorMessage(socket, requestId, `Error getting document: ${err}`);
       return;
     }
 
@@ -363,6 +390,7 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
           fileContents,
           fileHash,
           fileType,
+          ownerId,
           timeStamp,
           successfulUpdates, // Avoid the previous successful updates
         );

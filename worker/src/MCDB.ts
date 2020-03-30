@@ -221,6 +221,13 @@ export async function verifyFileExists(fileId: string): Promise<boolean> {
   });
 }
 
+export async function verifyOwner(fileId: string, ownerId: string): Promise<boolean> {
+  return fs.getDocument(FILE_COLLECTION, fileId).then((doc) => {
+    const docData = doc.data();
+    return docData != undefined && docData['ownerId'] === ownerId;
+  });
+}
+
 export function getCourse(courseId: string) {
   return fs.getDocument(COURSE_COLLECTION, courseId).then((doc) => {
     return doc.data();
