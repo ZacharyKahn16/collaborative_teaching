@@ -143,7 +143,7 @@ export class InstanceChecker {
     }
 
     for (const instance of this.gCloud.workerInstances) {
-      const instanceGood = this.gCloud.isInstanceHealthGood(instance);
+      const instanceGood = this.gCloud.isInstanceHealthGood(instance, false);
       const socketInstance = this.workerSockets.get(instance.id);
 
       // If instance is not good but there is a socket connection. Kil it
@@ -194,7 +194,7 @@ export class InstanceChecker {
     }
 
     for (const instance of this.gCloud.databaseInstances) {
-      const instanceGood = this.gCloud.isInstanceHealthGood(instance);
+      const instanceGood = this.gCloud.isInstanceHealthGood(instance, false);
       const dbInstance = this.dbInstances.get(instance.id);
 
       // If instance is not good but there is a db connection. Kil it

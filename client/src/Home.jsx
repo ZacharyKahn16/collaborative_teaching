@@ -11,6 +11,7 @@ import ViewCourse from "./CoursePage";
 import LoadingScreen from "./LoadingScreen";
 import { GlobalContext } from "./GlobalContext";
 import FileViewModal from "./FileViewModal";
+import NotificationPopup from "./Notification";
 
 const drawerWidth = 250;
 
@@ -54,6 +55,7 @@ class Home extends React.Component {
     return (
       <div className={this.props.classes.root}>
         <CssBaseline />
+        <NotificationPopup />
         <FileViewModal />
         <nav className={this.props.classes.drawer}>
           <Navigator PaperProps={{ style: { width: drawerWidth } }} />

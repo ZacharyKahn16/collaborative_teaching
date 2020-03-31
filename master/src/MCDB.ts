@@ -61,7 +61,6 @@ export function updateFile(
   fileHash: string,
   ownerId: string,
 ) {
-  LOGGER.debug('Update Doc', fileId, timestamp, fdbLocations, fileName, fileHash, ownerId);
   return fs.updateDocument(FILE_COLLECTION, fileId, {
     lastUpdated: timestamp,
     fdbLocations: fdbLocations,

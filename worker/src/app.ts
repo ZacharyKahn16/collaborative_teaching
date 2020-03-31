@@ -139,7 +139,11 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
         return;
       }
     } catch (err) {
-      sendErrorMessage(socket, requestId, `Error getting document: ${err}`);
+      sendErrorMessage(
+        socket,
+        requestId,
+        `Error getting document: ${err.message ? err.message : err}`,
+      );
       return;
     }
 
@@ -158,7 +162,11 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
         sendSuccessMessage(socket, requestId, resp);
       },
       function(err: any) {
-        sendErrorMessage(socket, requestId, `Error retrieving file ${err}`);
+        sendErrorMessage(
+          socket,
+          requestId,
+          `Error retrieving file ${err.message ? err.message : err}`,
+        );
         throw err;
       },
     );
@@ -247,7 +255,11 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
         `Successful inserts into ${successfulInserts.map((elem) => elem.getIp()).join()}`,
       );
     } catch (err) {
-      sendErrorMessage(socket, requestId, `Unable to create replicas because: ${err}`);
+      sendErrorMessage(
+        socket,
+        requestId,
+        `Unable to create replicas because: ${err.message ? err.message : err}`,
+      );
     }
 
     broadcastAllMetadataToClients();
@@ -314,7 +326,11 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
         return;
       }
     } catch (err) {
-      sendErrorMessage(socket, requestId, `Error getting document: ${err}`);
+      sendErrorMessage(
+        socket,
+        requestId,
+        `Error getting document: ${err.message ? err.message : err}`,
+      );
       return;
     }
 
@@ -369,7 +385,11 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
           `Successful inserts into ${successfulInserts.map((elem) => elem.getIp()).join()}`,
         );
       } catch (err) {
-        sendErrorMessage(socket, requestId, `Unable to create replicas because: ${err}`);
+        sendErrorMessage(
+          socket,
+          requestId,
+          `Unable to create replicas because: ${err.message ? err.message : err}`,
+        );
       }
       return;
     }
@@ -380,13 +400,20 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
       `Successful updates into ${successfulUpdates.map((elem) => elem.getIp()).join()}`,
     );
 
-    updateFile(docId, {
-      fileHash: fileHash,
-      lastUpdated: timeStamp,
-      name: fileName,
-    }).catch((err) => {
-      sendErrorMessage(socket, requestId, `Unable to update entry in the MCDB: ${err}`);
-    });
+    try {
+      await updateFile(docId, {
+        fileHash: fileHash,
+        lastUpdated: timeStamp,
+        name: fileName,
+      });
+    } catch (err) {
+      sendErrorMessage(
+        socket,
+        requestId,
+        `Unable to update entry in the MCDB: ${err.message ? err.message : err}`,
+      );
+      return;
+    }
 
     // If the MCDBs entry for FDB FileLocations of a file has a mismatch
     // between the current FDBs that are alive in the system, populate
@@ -417,14 +444,17 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
         sendSuccessMessage(
           socket,
           requestId,
-          `Successful inserts into ${successfulInserts.map((elem) => elem.getIp()).join()}`,
+          `Successful inserts into ${successfulInserts.length} file databases`,
         );
+        broadcastAllMetadataToClients();
       } catch (err) {
-        sendErrorMessage(socket, requestId, `Unable to create replicas because: ${err}`);
+        sendErrorMessage(
+          socket,
+          requestId,
+          `Unable to create replicas because: ${err.message ? err.message : err}`,
+        );
       }
     }
-
-    broadcastAllMetadataToClients();
   });
 
   /**
@@ -467,7 +497,11 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
         return;
       }
     } catch (err) {
-      sendErrorMessage(socket, requestId, `Error getting document: ${err}`);
+      sendErrorMessage(
+        socket,
+        requestId,
+        `Error getting document: ${err.message ? err.message : err}`,
+      );
       return;
     }
 
@@ -494,9 +528,16 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
       return;
     }
 
-    deleteFile(docId).catch((err) => {
-      sendErrorMessage(socket, requestId, `Unable to delete entry in the MCDB: ${err}`);
-    });
+    try {
+      await deleteFile(docId);
+      broadcastAllMetadataToClients();
+    } catch (err) {
+      sendErrorMessage(
+        socket,
+        requestId,
+        `Unable to delete entry in the MCDB: ${err.message ? err.message : err}`,
+      );
+    }
   });
 
   socket.on(ADD_COURSE, async (req) => {
@@ -528,7 +569,7 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
 
     try {
       await result[1];
-      sendSuccessMessage(socket, requestId, `Created course with id ${result[0]}`);
+      sendSuccessMessage(socket, requestId, `Created new course`);
       broadcastAllMetadataToClients();
       return;
     } catch (err) {
@@ -587,7 +628,7 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
 
     try {
       await updateCourse(courseId, courseName, courseDesc);
-      sendSuccessMessage(socket, requestId, `Updated course with id ${courseId}`);
+      sendSuccessMessage(socket, requestId, `Updated the course`);
       broadcastAllMetadataToClients();
       return;
     } catch (err) {

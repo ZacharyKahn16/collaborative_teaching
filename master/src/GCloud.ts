@@ -317,7 +317,7 @@ export class GCloud {
       const nextName = `${INSTANCE_TYPE.MASTER}-${this.thisInstance.number + 1}`;
       LOGGER.debug(`${nextName} - creating.`);
 
-      const command = `gcloud beta compute --project=${PROJECT_ID} instances create ${nextName} --zone=${ZONE} --machine-type=n1-standard-8 --subnet=default --network-tier=PREMIUM --maintenance-policy=MIGRATE --service-account=165250393917-compute@developer.gserviceaccount.com --scopes=https://www.googleapis.com/auth/cloud-platform --tags=http-server --image=ubuntu-minimal-1804-bionic-v20200317 --image-project=ubuntu-os-cloud --boot-disk-size=10GB --boot-disk-type=pd-standard --boot-disk-device-name=${nextName} --no-shielded-secure-boot --shielded-vtpm --shielded-integrity-monitoring --reservation-affinity=any --address=${nextIp} --metadata=startup-script-url=gs://collaborative-teaching.appspot.com/scripts/startup-master.bash,startup-status=initializing,created-on=$(date +%s)`;
+      const command = `gcloud beta compute --project=${PROJECT_ID} instances create ${nextName} --zone=${ZONE} --custom-cpu=6 --custom-memory=12 --subnet=default --network-tier=PREMIUM --maintenance-policy=MIGRATE --service-account=165250393917-compute@developer.gserviceaccount.com --scopes=https://www.googleapis.com/auth/cloud-platform --tags=http-server --image=ubuntu-minimal-1804-bionic-v20200317 --image-project=ubuntu-os-cloud --boot-disk-size=10GB --boot-disk-type=pd-standard --boot-disk-device-name=${nextName} --no-shielded-secure-boot --shielded-vtpm --shielded-integrity-monitoring --reservation-affinity=any --address=${nextIp} --metadata=startup-script-url=gs://collaborative-teaching.appspot.com/scripts/startup-master.bash,startup-status=initializing,created-on=$(date +%s)`;
       exec(command, { silent: true }, (code, stdout, stderr) => {
         if (code !== 0 || (stderr && stderr.includes('ERROR'))) {
           LOGGER.error(`${nextName} - creating failed.`, code, stderr);
@@ -360,7 +360,7 @@ export class GCloud {
     });
   }
 
-  isInstanceHealthGood(instance: ComputeEngineInstance): boolean {
+  isInstanceHealthGood(instance: ComputeEngineInstance, log: boolean = true): boolean {
     let val = false;
     let message = '';
 
@@ -382,10 +382,12 @@ export class GCloud {
       }
     }
 
-    if (val) {
-      LOGGER.info(message);
-    } else {
-      LOGGER.error(message, instance);
+    if (log) {
+      if (val) {
+        LOGGER.info(message);
+      } else {
+        LOGGER.error(message, instance);
+      }
     }
 
     return val;
