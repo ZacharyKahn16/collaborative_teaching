@@ -86,6 +86,7 @@ class CoursePage extends React.Component {
     const { classes } = this.props;
 
     const course = this.getCourseFromPath();
+
     if (!course) {
       window.open(window.location.origin, "_self");
     }

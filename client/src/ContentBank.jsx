@@ -19,6 +19,8 @@ import UpdateCard from "./UpdateCard";
 import DeleteCard from "./DeleteCard";
 import "./Styles/FileList.css";
 import { GlobalContext } from "./GlobalContext";
+import AddIcon from "@material-ui/icons/Add";
+import AddToCourseCard from "./AddToCourseCard";
 
 class ContentBank extends Component {
   static contextType = GlobalContext;
@@ -29,11 +31,13 @@ class ContentBank extends Component {
     this.state = {
       editModalOpen: false,
       deleteModalOpen: false,
+      addToCourseModalOpen: false,
       selectedFile: {},
     };
 
     this.handleEditModalOpen = this.handleEditModalOpen.bind(this);
     this.handleDeleteModalOpen = this.handleDeleteModalOpen.bind(this);
+    this.handleAddToCourseModalOpen = this.handleAddToCourseModalOpen.bind(this);
     this.handleModalClose = this.handleModalClose.bind(this);
     this.updateSelectedFile = this.updateSelectedFile.bind(this);
   }
@@ -54,6 +58,13 @@ class ContentBank extends Component {
     this.setState(() => ({
       deleteModalOpen: true,
       selectedFile: file,
+    }));
+  };
+
+  handleAddToCourseModalOpen = (file) => {
+    this.setState(() => ({
+      selectedFile: file,
+      addToCourseModalOpen: true,
     }));
   };
 
@@ -83,9 +94,8 @@ class ContentBank extends Component {
   };
 
   render() {
-    const { allFiles } = this.context;
+    const { allFiles, user, allCourses } = this.context;
     const { searchTerm } = this.props;
-    const { user } = this.context;
 
     const files = allFiles
       .filter((file) => {
@@ -106,6 +116,14 @@ class ContentBank extends Component {
         </Typography>
       );
     }
+
+    const myCourses = allCourses
+      .filter((course) => {
+        return course.ownerId === user.uid;
+      })
+      .sort((a, b) => {
+        return a.courseName.localeCompare(b.courseName);
+      });
 
     return (
       <TableContainer>
@@ -167,6 +185,12 @@ class ContentBank extends Component {
                     >
                       <DeleteIcon color="inherit" />
                     </IconButton>
+                    <IconButton
+                      className="action-button"
+                      onClick={() => this.handleAddToCourseModalOpen(row)}
+                    >
+                      <AddIcon color="inherit" />
+                    </IconButton>
                   </TableCell>
                 ) : (
                   <TableCell align="center" />
@@ -192,6 +216,14 @@ class ContentBank extends Component {
               fileInfo={this.state.selectedFile}
             />
           </div>
+        </Dialog>
+        <Dialog open={this.state.addToCourseModalOpen} onClose={this.handleModalClose}>
+          <AddToCourseCard
+            closeModal={this.handleModalClose}
+            socket={this.props.socket}
+            fileInfo={this.state.selectedFile}
+            courseInfo={myCourses}
+          />
         </Dialog>
       </TableContainer>
     );

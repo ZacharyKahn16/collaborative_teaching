@@ -29,8 +29,11 @@ import { GlobalContext } from "./GlobalContext";
 import moment from "moment-timezone";
 import EditIcon from "@material-ui/icons/Edit";
 import DeleteIcon from "@material-ui/icons/Delete";
+import AddIcon from "@material-ui/icons/Add";
+import Avatar from "@material-ui/core/Avatar";
 import UpdateCard from "./UpdateCard";
 import DeleteCard from "./DeleteCard";
+import AddToCourseCard from "./AddToCourseCard";
 
 const styles = (theme) => ({
   paper: {
@@ -69,6 +72,7 @@ class MyFiles extends React.Component {
       uploadModalOpen: false,
       editModalOpen: false,
       deleteModalOpen: false,
+      addToCourseModalOpen: false,
       selectedFile: null,
     };
 
@@ -77,8 +81,10 @@ class MyFiles extends React.Component {
     this.updateSearchTerm = this.updateSearchTerm.bind(this);
     this.handleEditModalOpen = this.handleEditModalOpen.bind(this);
     this.handleDeleteModalOpen = this.handleDeleteModalOpen.bind(this);
+    this.handleAddToCourseModalOpen = this.handleAddToCourseModalOpen.bind(this);
     this.handleModalClose = this.handleModalClose.bind(this);
     this.updateSelectedFile = this.updateSelectedFile.bind(this);
+    this.getCourseNames = this.getCourseNames.bind(this);
   }
 
   updateSearchTerm(event) {
@@ -113,10 +119,18 @@ class MyFiles extends React.Component {
     }));
   };
 
+  handleAddToCourseModalOpen = (file) => {
+    this.setState(() => ({
+      selectedFile: file,
+      addToCourseModalOpen: true,
+    }));
+  };
+
   handleModalClose = () => {
     this.setState(() => ({
       editModalOpen: false,
       deleteModalOpen: false,
+      addToCourseModalOpen: false,
     }));
   };
 
@@ -126,8 +140,23 @@ class MyFiles extends React.Component {
     setSelectedFileId(fileId);
   };
 
+  getCourseNames = (courses) => {
+    const { allCourses } = this.context;
+    if (allCourses.length !== 0 && courses.length !== 0) {
+      let courseNames = "";
+      courses.forEach(function (course) {
+        const tempCourse = allCourses.find((viewCourse) => viewCourse.docId === course);
+        courseNames === ""
+          ? (courseNames = courseNames.concat(tempCourse.courseName))
+          : (courseNames = courseNames.concat(", ", tempCourse.courseName));
+      });
+      return courseNames;
+    }
+    return "Not part of any courses";
+  };
+
   render() {
-    const { allFiles, user } = this.context;
+    const { allFiles, user, allCourses } = this.context;
     const { classes } = this.props;
 
     const files = allFiles
@@ -143,6 +172,14 @@ class MyFiles extends React.Component {
       })
       .sort((a, b) => {
         return b.lastUpdated - a.lastUpdated;
+      });
+
+    const myCourses = allCourses
+      .filter((course) => {
+        return course.ownerId === user.uid;
+      })
+      .sort((a, b) => {
+        return a.courseName.localeCompare(b.courseName);
       });
 
     return (
@@ -232,22 +269,43 @@ class MyFiles extends React.Component {
                           </Link>
                         </Typography>
                       </TableCell>
-                      <TableCell align="left">{row.docId}</TableCell>
+                      {/*<TableCell align="left">{row.docId}</TableCell>*/}
+                      <TableCell align="left">
+                        {row.courseIds.length <= 1 ? (
+                          this.getCourseNames(row.courseIds)
+                        ) : (
+                          <Tooltip title={this.getCourseNames(row.courseIds)}>
+                            <Avatar color={"inherit"}>{row.courseIds.length}</Avatar>
+                          </Tooltip>
+                        )}
+                      </TableCell>
                       <TableCell align="left">{row.name.split(".")[1].toUpperCase()}</TableCell>
                       <TableCell align="left">{moment(row.lastUpdated).format("lll")}</TableCell>
                       <TableCell align="center">
-                        <IconButton
-                          className="action-button"
-                          onClick={() => this.handleEditModalOpen(row)}
-                        >
-                          <EditIcon color="inherit" />
-                        </IconButton>
-                        <IconButton
-                          className="action-button"
-                          onClick={() => this.handleDeleteModalOpen(row)}
-                        >
-                          <DeleteIcon color="inherit" />
-                        </IconButton>
+                        <Tooltip title="Edit file">
+                          <IconButton
+                            className="action-button"
+                            onClick={() => this.handleEditModalOpen(row)}
+                          >
+                            <EditIcon color="inherit" />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Delete file">
+                          <IconButton
+                            className="action-button"
+                            onClick={() => this.handleDeleteModalOpen(row)}
+                          >
+                            <DeleteIcon color="inherit" />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title={"Add file to course"}>
+                          <IconButton
+                            className="action-button"
+                            onClick={() => this.handleAddToCourseModalOpen(row)}
+                          >
+                            <AddIcon color={"inherit"} />
+                          </IconButton>
+                        </Tooltip>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -265,6 +323,14 @@ class MyFiles extends React.Component {
                   closeModal={this.handleModalClose}
                   socket={this.props.socket}
                   fileInfo={this.state.selectedFile}
+                />
+              </Dialog>
+              <Dialog open={this.state.addToCourseModalOpen} onClose={this.handleModalClose}>
+                <AddToCourseCard
+                  closeModal={this.handleModalClose}
+                  socket={this.props.socket}
+                  fileInfo={this.state.selectedFile}
+                  courseInfo={myCourses}
                 />
               </Dialog>
             </TableContainer>
