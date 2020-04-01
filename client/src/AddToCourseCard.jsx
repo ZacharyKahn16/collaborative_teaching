@@ -2,17 +2,11 @@ import React, { Component } from "react";
 import Card from "@material-ui/core/Card";
 import CardContent from "@material-ui/core/CardContent";
 import Typography from "@material-ui/core/Typography";
-import Button from "@material-ui/core/Button";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemText from "@material-ui/core/ListItemText";
 import "./Styles/Card.css";
 import { GlobalContext } from "./GlobalContext";
-import { IconButton, Link, TableCell, TableRow } from "@material-ui/core";
-import moment from "moment-timezone";
-import EditIcon from "@material-ui/icons/Edit";
-import DeleteIcon from "@material-ui/icons/Delete";
-import AddIcon from "@material-ui/icons/Add";
 
 class AddToCourseCard extends Component {
   static contextType = GlobalContext;
@@ -28,7 +22,7 @@ class AddToCourseCard extends Component {
   }
 
   addToCourse = (course) => {
-    const { user, network } = this.context;
+    const { network } = this.context;
     const { fileInfo } = this.props;
     network.addFileToCourse(fileInfo.ownerId, course.docId, fileInfo.docId);
     this.props.closeModal();

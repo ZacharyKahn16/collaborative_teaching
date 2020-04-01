@@ -7,10 +7,18 @@ import {
   Dialog,
   Grid,
   IconButton,
+  Link,
   Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
   TextField,
   Toolbar,
   Tooltip,
+  Typography,
   withStyles,
 } from "@material-ui/core";
 import SearchIcon from "@material-ui/icons/Search";
@@ -19,6 +27,14 @@ import PublishIcon from "@material-ui/icons/Publish";
 import Header from "./Header";
 import FileList from "./FileList";
 import { GlobalContext } from "./GlobalContext";
+import moment from "moment-timezone";
+import EditIcon from "@material-ui/icons/Edit";
+import DeleteIcon from "@material-ui/icons/Delete";
+import AddIcon from "@material-ui/icons/Add";
+import UpdateCard from "./UpdateCard";
+import DeleteCard from "./DeleteCard";
+import AddToCourseCard from "./AddToCourseCard";
+import Avatar from "@material-ui/core/Avatar";
 
 const styles = (theme) => ({
   paper: {
@@ -51,6 +67,9 @@ class CoursePage extends React.Component {
     super(props);
     this.state = {
       uploadModalOpen: false,
+      editModalOpen: false,
+      deleteModalOpen: false,
+      addToCourseModalOpen: false,
     };
 
     this.handleOpenUploadModal = this.handleOpenUploadModal.bind(this);
@@ -68,6 +87,35 @@ class CoursePage extends React.Component {
     });
   }
 
+  handleEditModalOpen = (file) => {
+    this.setState(() => ({
+      selectedFile: file,
+      editModalOpen: true,
+    }));
+  };
+
+  handleDeleteModalOpen = (file) => {
+    this.setState(() => ({
+      selectedFile: file,
+      deleteModalOpen: true,
+    }));
+  };
+
+  handleAddToCourseModalOpen = (file) => {
+    this.setState(() => ({
+      selectedFile: file,
+      addToCourseModalOpen: true,
+    }));
+  };
+
+  handleModalClose = () => {
+    this.setState(() => ({
+      editModalOpen: false,
+      deleteModalOpen: false,
+      addToCourseModalOpen: false,
+    }));
+  };
+
   componentDidMount() {
     // console.log("mounted")
   }
@@ -82,7 +130,23 @@ class CoursePage extends React.Component {
     });
   };
 
+  getCourseNamesFromId = (courseIds) => {
+    const { allCourses } = this.context;
+    if (courseIds.length === 0) {
+      return "Not part of any courses";
+    }
+    return allCourses
+      .filter((course) => {
+        return courseIds.includes(course.docId);
+      })
+      .map((course) => {
+        return course.courseName;
+      })
+      .join(", ");
+  };
+
   render() {
+    const { allFiles, user, allCourses } = this.context;
     const { classes } = this.props;
 
     const course = this.getCourseFromPath();
@@ -90,6 +154,22 @@ class CoursePage extends React.Component {
     if (!course) {
       window.open(window.location.origin, "_self");
     }
+
+    const files = allFiles
+      .filter((file) => {
+        return file.courseIds.includes(course.docId);
+      })
+      .sort((a, b) => {
+        return b.lastUpdated - a.lastUpdated;
+      });
+
+    const myCourses = allCourses
+      .filter((selCourse) => {
+        return selCourse.ownerId === user.uid;
+      })
+      .sort((a, b) => {
+        return a.courseName.localeCompare(b.courseName);
+      });
 
     return (
       <Paper className={classes.paper} square>
@@ -134,7 +214,115 @@ class CoursePage extends React.Component {
           </Toolbar>
         </AppBar>
         <div className={classes.contentWrapper}>
-          <FileList />
+          {/*<FileList />*/}
+          <TableContainer>
+            <Table aria-label="simple table">
+              <TableHead>
+                <TableRow className="bold">
+                  <TableCell className="bold" align="left">
+                    File Name
+                  </TableCell>
+                  <TableCell className="bold" align="left">
+                    Courses
+                  </TableCell>
+                  <TableCell className="bold" align="left">
+                    File Type
+                  </TableCell>
+                  <TableCell className="bold" align="left">
+                    Owner
+                  </TableCell>
+                  <TableCell className="bold" align="left">
+                    Last Updated
+                  </TableCell>
+                  <TableCell className="bold" align="center">
+                    Actions
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {files.map((row) => (
+                  <TableRow key={row.docId} className="file-row">
+                    <TableCell align="left">
+                      <Typography variant="body2">
+                        <Link
+                          color="primary"
+                          href="#"
+                          onClick={() => {
+                            this.updateSelectedFile(row.docId);
+                          }}
+                        >
+                          {row.name}
+                        </Link>
+                      </Typography>
+                    </TableCell>
+                    <TableCell align="left">
+                      {row.courseIds.length <= 1 ? (
+                        this.getCourseNamesFromId(row.courseIds)
+                      ) : (
+                        <Tooltip title={this.getCourseNamesFromId(row.courseIds)}>
+                          <Avatar color={"inherit"}>{row.courseIds.length}</Avatar>
+                        </Tooltip>
+                      )}
+                    </TableCell>
+                    <TableCell align="left">{row.name.split(".")[1].toUpperCase()}</TableCell>
+                    <TableCell align="left">{row.ownerName}</TableCell>
+                    <TableCell align="left">{moment(row.lastUpdated).format("lll")}</TableCell>
+                    {row.ownerId === user.uid ? (
+                      <TableCell align="center">
+                        <IconButton
+                          className="action-button"
+                          key={row.fileName}
+                          onClick={() => this.handleEditModalOpen(row)}
+                        >
+                          <EditIcon color="inherit" />
+                        </IconButton>
+                        <IconButton
+                          className="action-button"
+                          onClick={() => this.handleDeleteModalOpen(row)}
+                        >
+                          <DeleteIcon color="inherit" />
+                        </IconButton>
+                        <IconButton
+                          className="action-button"
+                          onClick={() => this.handleAddToCourseModalOpen(row)}
+                        >
+                          <AddIcon color="inherit" />
+                        </IconButton>
+                      </TableCell>
+                    ) : (
+                      <TableCell align="center" />
+                    )}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+            <Dialog open={this.state.editModalOpen} onClose={this.handleModalClose}>
+              <div>
+                <UpdateCard
+                  closeModal={this.handleModalClose}
+                  socket={this.props.socket}
+                  fileInfo={this.state.selectedFile}
+                />
+              </div>
+            </Dialog>
+            <Dialog open={this.state.deleteModalOpen} onClose={this.handleModalClose}>
+              <div>
+                <DeleteCard
+                  closeModal={this.handleModalClose}
+                  socket={this.props.socket}
+                  fileInfo={this.state.selectedFile}
+                />
+              </div>
+            </Dialog>
+            <Dialog open={this.state.addToCourseModalOpen} onClose={this.handleModalClose}>
+              <AddToCourseCard
+                closeModal={this.handleModalClose}
+                socket={this.props.socket}
+                fileInfo={this.state.selectedFile}
+                courseInfo={myCourses}
+              />
+            </Dialog>
+          </TableContainer>
         </div>
       </Paper>
     );

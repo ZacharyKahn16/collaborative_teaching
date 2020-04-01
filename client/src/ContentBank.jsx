@@ -11,6 +11,7 @@ import {
   Link,
   IconButton,
   Dialog,
+  Tooltip,
 } from "@material-ui/core";
 import DeleteIcon from "@material-ui/icons/Delete";
 import EditIcon from "@material-ui/icons/Edit";
@@ -21,6 +22,7 @@ import "./Styles/FileList.css";
 import { GlobalContext } from "./GlobalContext";
 import AddIcon from "@material-ui/icons/Add";
 import AddToCourseCard from "./AddToCourseCard";
+import Avatar from "@material-ui/core/Avatar";
 
 class ContentBank extends Component {
   static contextType = GlobalContext;
@@ -82,7 +84,9 @@ class ContentBank extends Component {
 
   getCourseNamesFromId = (courseIds) => {
     const { allCourses } = this.context;
-
+    if (courseIds.length === 0) {
+      return "Not part of any courses";
+    }
     return allCourses
       .filter((course) => {
         return courseIds.includes(course.docId);
@@ -166,7 +170,15 @@ class ContentBank extends Component {
                     </Link>
                   </Typography>
                 </TableCell>
-                <TableCell align="left">{this.getCourseNamesFromId(row.courseIds)}</TableCell>
+                <TableCell align="left">
+                  {row.courseIds.length <= 1 ? (
+                    this.getCourseNamesFromId(row.courseIds)
+                  ) : (
+                    <Tooltip title={this.getCourseNamesFromId(row.courseIds)}>
+                      <Avatar color={"inherit"}>{row.courseIds.length}</Avatar>
+                    </Tooltip>
+                  )}
+                </TableCell>
                 <TableCell align="left">{row.name.split(".")[1].toUpperCase()}</TableCell>
                 <TableCell align="left">{row.ownerName}</TableCell>
                 <TableCell align="left">{moment(row.lastUpdated).format("lll")}</TableCell>

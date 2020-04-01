@@ -84,7 +84,7 @@ class MyFiles extends React.Component {
     this.handleAddToCourseModalOpen = this.handleAddToCourseModalOpen.bind(this);
     this.handleModalClose = this.handleModalClose.bind(this);
     this.updateSelectedFile = this.updateSelectedFile.bind(this);
-    this.getCourseNames = this.getCourseNames.bind(this);
+    this.getCourseNamesFromId = this.getCourseNamesFromId.bind(this);
   }
 
   updateSearchTerm(event) {
@@ -140,19 +140,19 @@ class MyFiles extends React.Component {
     setSelectedFileId(fileId);
   };
 
-  getCourseNames = (courses) => {
+  getCourseNamesFromId = (courseIds) => {
     const { allCourses } = this.context;
-    if (allCourses.length !== 0 && courses.length !== 0) {
-      let courseNames = "";
-      courses.forEach(function (course) {
-        const tempCourse = allCourses.find((viewCourse) => viewCourse.docId === course);
-        courseNames === ""
-          ? (courseNames = courseNames.concat(tempCourse.courseName))
-          : (courseNames = courseNames.concat(", ", tempCourse.courseName));
-      });
-      return courseNames;
+    if (courseIds.length === 0) {
+      return "Not part of any courses";
     }
-    return "Not part of any courses";
+    return allCourses
+      .filter((course) => {
+        return courseIds.includes(course.docId);
+      })
+      .map((course) => {
+        return course.courseName;
+      })
+      .join(", ");
   };
 
   render() {
@@ -240,7 +240,7 @@ class MyFiles extends React.Component {
                       File Name
                     </TableCell>
                     <TableCell className="bold" align="left">
-                      Course
+                      Courses
                     </TableCell>
                     <TableCell className="bold" align="left">
                       File Type
@@ -272,9 +272,9 @@ class MyFiles extends React.Component {
                       {/*<TableCell align="left">{row.docId}</TableCell>*/}
                       <TableCell align="left">
                         {row.courseIds.length <= 1 ? (
-                          this.getCourseNames(row.courseIds)
+                          this.getCourseNamesFromId(row.courseIds)
                         ) : (
-                          <Tooltip title={this.getCourseNames(row.courseIds)}>
+                          <Tooltip title={this.getCourseNamesFromId(row.courseIds)}>
                             <Avatar color={"inherit"}>{row.courseIds.length}</Avatar>
                           </Tooltip>
                         )}
