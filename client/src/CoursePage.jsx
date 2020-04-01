@@ -28,11 +28,10 @@ import Header from "./Header";
 import FileList from "./FileList";
 import { GlobalContext } from "./GlobalContext";
 import moment from "moment-timezone";
-import EditIcon from "@material-ui/icons/Edit";
 import DeleteIcon from "@material-ui/icons/Delete";
 import AddIcon from "@material-ui/icons/Add";
 import UpdateCard from "./UpdateCard";
-import DeleteCard from "./DeleteCard";
+import DeleteFromCourseCard from "./DeleteFromCourseCard";
 import AddToCourseCard from "./AddToCourseCard";
 import Avatar from "@material-ui/core/Avatar";
 
@@ -73,6 +72,7 @@ class CoursePage extends React.Component {
     };
 
     this.handleOpenUploadModal = this.handleOpenUploadModal.bind(this);
+    this.updateSelectedFile = this.updateSelectedFile.bind(this);
   }
 
   handleOpenUploadModal() {
@@ -114,6 +114,12 @@ class CoursePage extends React.Component {
       deleteModalOpen: false,
       addToCourseModalOpen: false,
     }));
+  };
+
+  updateSelectedFile = (fileId) => {
+    const { setSelectedFileId } = this.context;
+
+    setSelectedFileId(fileId);
   };
 
   componentDidMount() {
@@ -264,20 +270,36 @@ class CoursePage extends React.Component {
                         </Tooltip>
                       )}
                     </TableCell>
-                    <TableCell align="left">{row.name.split(".")[1].toUpperCase()}</TableCell>
+                    <TableCell align="left">
+                      {row.name.split(".")[row.name.split(".").length - 1].toUpperCase()}
+                    </TableCell>
                     <TableCell align="left">{row.ownerName}</TableCell>
                     <TableCell align="left">{moment(row.lastUpdated).format("lll")}</TableCell>
-                    <TableCell align="center">
-                      <IconButton className="action-button">
-                        <DeleteIcon color="inherit" />
-                      </IconButton>
-                      <IconButton
-                        className="action-button"
-                        onClick={() => this.handleAddToCourseModalOpen(row)}
-                      >
-                        <AddIcon color="inherit" />
-                      </IconButton>
-                    </TableCell>
+                    {row.ownerId === user.uid && course.ownerId === user.uid ? (
+                      <TableCell align="center">
+                        <IconButton
+                          className="action-button"
+                          onClick={() => this.handleDeleteModalOpen(row)}
+                        >
+                          <DeleteIcon color="inherit" />
+                        </IconButton>
+                        <IconButton
+                          className="action-button"
+                          onClick={() => this.handleAddToCourseModalOpen(row)}
+                        >
+                          <AddIcon color="inherit" />
+                        </IconButton>
+                      </TableCell>
+                    ) : (
+                      <TableCell align="center">
+                        <IconButton
+                          className="action-button"
+                          onClick={() => this.handleAddToCourseModalOpen(row)}
+                        >
+                          <AddIcon color="inherit" />
+                        </IconButton>
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))}
               </TableBody>
@@ -293,10 +315,11 @@ class CoursePage extends React.Component {
             </Dialog>
             <Dialog open={this.state.deleteModalOpen} onClose={this.handleModalClose}>
               <div>
-                <DeleteCard
+                <DeleteFromCourseCard
                   closeModal={this.handleModalClose}
                   socket={this.props.socket}
                   fileInfo={this.state.selectedFile}
+                  courseInfo={course}
                 />
               </div>
             </Dialog>

@@ -74,6 +74,7 @@ class ContentBank extends Component {
     this.setState(() => ({
       editModalOpen: false,
       deleteModalOpen: false,
+      addToCourseModalOpen: false,
     }));
   };
 
@@ -179,7 +180,9 @@ class ContentBank extends Component {
                     </Tooltip>
                   )}
                 </TableCell>
-                <TableCell align="left">{row.name.split(".")[1].toUpperCase()}</TableCell>
+                <TableCell align="left">
+                  {row.name.split(".")[row.name.split(".").length - 1].toUpperCase()}
+                </TableCell>
                 <TableCell align="left">{row.ownerName}</TableCell>
                 <TableCell align="left">{moment(row.lastUpdated).format("lll")}</TableCell>
                 {row.ownerId === user.uid ? (

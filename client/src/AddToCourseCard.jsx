@@ -7,6 +7,7 @@ import ListItem from "@material-ui/core/ListItem";
 import ListItemText from "@material-ui/core/ListItemText";
 import "./Styles/Card.css";
 import { GlobalContext } from "./GlobalContext";
+import Button from "@material-ui/core/Button";
 
 class AddToCourseCard extends Component {
   static contextType = GlobalContext;
@@ -22,9 +23,9 @@ class AddToCourseCard extends Component {
   }
 
   addToCourse = (course) => {
-    const { network } = this.context;
+    const { user, network } = this.context;
     const { fileInfo } = this.props;
-    network.addFileToCourse(fileInfo.ownerId, course.docId, fileInfo.docId);
+    network.addFileToCourse(user.uid, course.docId, fileInfo.docId);
     this.props.closeModal();
   };
 
@@ -57,6 +58,9 @@ class AddToCourseCard extends Component {
               ))}
             </List>
           </div>
+          {/*<Button variant="contained" onClick={this.cancelDelete}>*/}
+          {/*  Cancel*/}
+          {/*</Button>*/}
         </CardContent>
       </Card>
     );

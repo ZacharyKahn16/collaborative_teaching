@@ -279,7 +279,9 @@ class MyFiles extends React.Component {
                           </Tooltip>
                         )}
                       </TableCell>
-                      <TableCell align="left">{row.name.split(".")[1].toUpperCase()}</TableCell>
+                      <TableCell align="left">
+                        {row.name.split(".")[row.name.split(".").length - 1].toUpperCase()}
+                      </TableCell>
                       <TableCell align="left">{moment(row.lastUpdated).format("lll")}</TableCell>
                       <TableCell align="center">
                         <Tooltip title="Edit file">

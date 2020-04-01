@@ -75,10 +75,7 @@ export class GCloud {
   getInstances() {
     exec('gcloud compute instances list', { silent: true }, async (code, stdout, stderr) => {
       if (code === 0) {
-        const output = stdout
-          .trim()
-          .split('\n')
-          .slice(1);
+        const output = stdout.trim().split('\n').slice(1);
 
         const newInstances = [];
 
@@ -143,10 +140,7 @@ export class GCloud {
             resolve(object);
           }
 
-          let output = stdout
-            .trim()
-            .split('\n')
-            .slice(3);
+          let output = stdout.trim().split('\n').slice(3);
           output.pop();
 
           for (let i = 0; i < output.length; i++) {
