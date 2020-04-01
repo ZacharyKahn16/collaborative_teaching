@@ -267,31 +267,17 @@ class CoursePage extends React.Component {
                     <TableCell align="left">{row.name.split(".")[1].toUpperCase()}</TableCell>
                     <TableCell align="left">{row.ownerName}</TableCell>
                     <TableCell align="left">{moment(row.lastUpdated).format("lll")}</TableCell>
-                    {row.ownerId === user.uid ? (
-                      <TableCell align="center">
-                        <IconButton
-                          className="action-button"
-                          key={row.fileName}
-                          onClick={() => this.handleEditModalOpen(row)}
-                        >
-                          <EditIcon color="inherit" />
-                        </IconButton>
-                        <IconButton
-                          className="action-button"
-                          onClick={() => this.handleDeleteModalOpen(row)}
-                        >
-                          <DeleteIcon color="inherit" />
-                        </IconButton>
-                        <IconButton
-                          className="action-button"
-                          onClick={() => this.handleAddToCourseModalOpen(row)}
-                        >
-                          <AddIcon color="inherit" />
-                        </IconButton>
-                      </TableCell>
-                    ) : (
-                      <TableCell align="center" />
-                    )}
+                    <TableCell align="center">
+                      <IconButton className="action-button">
+                        <DeleteIcon color="inherit" />
+                      </IconButton>
+                      <IconButton
+                        className="action-button"
+                        onClick={() => this.handleAddToCourseModalOpen(row)}
+                      >
+                        <AddIcon color="inherit" />
+                      </IconButton>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

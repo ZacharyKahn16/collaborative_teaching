@@ -205,7 +205,14 @@ class ContentBank extends Component {
                     </IconButton>
                   </TableCell>
                 ) : (
-                  <TableCell align="center" />
+                  <TableCell align="center">
+                    <IconButton
+                      className="action-button"
+                      onClick={() => this.handleAddToCourseModalOpen(row)}
+                    >
+                      <AddIcon color="inherit" />
+                    </IconButton>
+                  </TableCell>
                 )}
               </TableRow>
             ))}
