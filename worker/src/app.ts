@@ -148,28 +148,32 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
     }
 
     shuffle(fdbLocations);
-    const fdbRef = findFdbUsingIp(fdbLocations[0], fdbList);
-    if (!fdbRef) {
-      sendErrorMessage(socket, requestId, 'Error finding FDB IP in current Fdb List');
-      return;
+    const successfulRetrievals: any[] = [];
+    for (let i = 0; i < fdbLocations.length; i++) {
+      if (successfulRetrievals.length > 0) {
+        break;
+      }
+
+      const fdbRef = findFdbUsingIp(fdbLocations[i], fdbList);
+      if (!fdbRef) {
+        continue;
+      }
+
+      fdbRef.retrieveFile(docId).then(
+        function(resp: any) {
+          sendSuccessMessage(socket, requestId, resp);
+          successfulRetrievals.push(fdbRef);
+          return;
+        },
+        function(err: any) {
+          console.log(err);
+        },
+      );
     }
 
-    /**
-      TODO: Show what success response will look like
-     */
-    fdbRef.retrieveFile(docId).then(
-      function(resp: any) {
-        sendSuccessMessage(socket, requestId, resp);
-      },
-      function(err: any) {
-        sendErrorMessage(
-          socket,
-          requestId,
-          `Error retrieving file ${err.message ? err.message : err}`,
-        );
-        throw err;
-      },
-    );
+    if (successfulRetrievals.length <= 0) {
+      sendErrorMessage(socket, requestId, 'Error retrieving file');
+    }
   });
 
   /**
