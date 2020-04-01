@@ -75,7 +75,10 @@ export class GCloud {
   getInstances() {
     exec('gcloud compute instances list', { silent: true }, async (code, stdout, stderr) => {
       if (code === 0) {
-        const output = stdout.trim().split('\n').slice(1);
+        const output = stdout
+          .trim()
+          .split('\n')
+          .slice(1);
 
         const newInstances = [];
 
@@ -103,6 +106,7 @@ export class GCloud {
             };
 
             try {
+              // eslint-disable-next-line no-await-in-loop
               const meta = await this.getMetadata(id);
               instance.createdOn = meta.created;
               instance.initializedOn = meta.initialized;
@@ -140,7 +144,10 @@ export class GCloud {
             resolve(object);
           }
 
-          let output = stdout.trim().split('\n').slice(3);
+          const output = stdout
+            .trim()
+            .split('\n')
+            .slice(3);
           output.pop();
 
           for (let i = 0; i < output.length; i++) {
@@ -200,6 +207,13 @@ export class GCloud {
       }
 
       this.amIResponder = amIMain;
+
+      LOGGER.debug(
+        'This master:',
+        this.thisInstance,
+        `Responder: ${!this.amICoordinator()}`,
+        `Coordinator: ${this.amICoordinator()}`,
+      );
 
       this.healthCheck();
     }
