@@ -125,6 +125,23 @@ export async function getAllFiles() {
   });
 }
 
+// Get all the Course Id's for courses which contain a file
+export async function getAllCourseIdsWithFile(fileId: string) {
+  const courses = await fs
+    .getDb()
+    .collection(COURSE_COLLECTION)
+    .where('filesInCourse', 'array-contains', fileId)
+    .get();
+
+  const courseIds: string[] = [];
+  for (const course of courses.docs) {
+    const courseData = course.data();
+    courseIds.push(courseData['docId']);
+  }
+
+  return courseIds;
+}
+
 // CourseId created by firestore.
 export function createNewCourse(courseName: string, courseDesc: string, ownerId: string) {
   return fs.addToCollection(COURSE_COLLECTION, {

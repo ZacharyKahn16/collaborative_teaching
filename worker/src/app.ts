@@ -18,6 +18,7 @@ import {
   verifyOwner,
   updateFile,
   deleteFile,
+  getAllCourseIdsWithFile,
 } from './MCDB';
 import {
   shuffle,
@@ -148,28 +149,32 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
     }
 
     shuffle(fdbLocations);
-    const fdbRef = findFdbUsingIp(fdbLocations[0], fdbList);
-    if (!fdbRef) {
-      sendErrorMessage(socket, requestId, 'Error finding FDB IP in current Fdb List');
-      return;
+    const successfulRetrievals: any[] = [];
+    for (let i = 0; i < fdbLocations.length; i++) {
+      if (successfulRetrievals.length > 0) {
+        break;
+      }
+
+      const fdbRef = findFdbUsingIp(fdbLocations[i], fdbList);
+      if (!fdbRef) {
+        continue;
+      }
+
+      fdbRef.retrieveFile(docId).then(
+        function(resp: any) {
+          sendSuccessMessage(socket, requestId, resp);
+          successfulRetrievals.push(fdbRef);
+          return;
+        },
+        function(err: any) {
+          console.log(err);
+        },
+      );
     }
 
-    /**
-      TODO: Show what success response will look like
-     */
-    fdbRef.retrieveFile(docId).then(
-      function(resp: any) {
-        sendSuccessMessage(socket, requestId, resp);
-      },
-      function(err: any) {
-        sendErrorMessage(
-          socket,
-          requestId,
-          `Error retrieving file ${err.message ? err.message : err}`,
-        );
-        throw err;
-      },
-    );
+    if (successfulRetrievals.length <= 0) {
+      sendErrorMessage(socket, requestId, 'Error retrieving file');
+    }
   });
 
   /**
@@ -522,6 +527,14 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
       );
     }
 
+    // Delete file from courses in MCDB
+    const allCoursesWithFile = await getAllCourseIdsWithFile(docId);
+    for (const course of allCoursesWithFile) {
+      removeFileFromCourse(course, docId).catch((err) => {
+        console.log(err);
+      });
+    }
+
     if (successfulDeletes.length <= 0) {
       sendErrorMessage(socket, requestId, 'No successful deletes from FDBs');
       LOGGER.debug('No successful deletes from FDBs');
@@ -569,7 +582,7 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
 
     try {
       await result[1];
-      sendSuccessMessage(socket, requestId, `Created new course`);
+      sendSuccessMessage(socket, requestId, 'Created new course');
       broadcastAllMetadataToClients();
       return;
     } catch (err) {
@@ -628,7 +641,7 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
 
     try {
       await updateCourse(courseId, courseName, courseDesc);
-      sendSuccessMessage(socket, requestId, `Updated the course`);
+      sendSuccessMessage(socket, requestId, 'Updated the course');
       broadcastAllMetadataToClients();
       return;
     } catch (err) {
