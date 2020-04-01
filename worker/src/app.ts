@@ -18,6 +18,7 @@ import {
   verifyOwner,
   updateFile,
   deleteFile,
+  getAllCourseIdsWithFile,
 } from './MCDB';
 import {
   shuffle,
@@ -526,6 +527,14 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
       );
     }
 
+    // Delete file from courses in MCDB
+    const allCoursesWithFile = await getAllCourseIdsWithFile(docId);
+    for (const course of allCoursesWithFile) {
+      removeFileFromCourse(course, docId).catch((err) => {
+        console.log(err);
+      });
+    }
+
     if (successfulDeletes.length <= 0) {
       sendErrorMessage(socket, requestId, 'No successful deletes from FDBs');
       LOGGER.debug('No successful deletes from FDBs');
@@ -573,7 +582,7 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
 
     try {
       await result[1];
-      sendSuccessMessage(socket, requestId, `Created new course`);
+      sendSuccessMessage(socket, requestId, 'Created new course');
       broadcastAllMetadataToClients();
       return;
     } catch (err) {
@@ -632,7 +641,7 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
 
     try {
       await updateCourse(courseId, courseName, courseDesc);
-      sendSuccessMessage(socket, requestId, `Updated the course`);
+      sendSuccessMessage(socket, requestId, 'Updated the course');
       broadcastAllMetadataToClients();
       return;
     } catch (err) {
