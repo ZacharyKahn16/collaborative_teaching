@@ -160,7 +160,7 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
         continue;
       }
 
-      fdbRef.retrieveFile(docId).then(
+      await fdbRef.retrieveFile(docId).then(
         function(resp: any) {
           sendSuccessMessage(socket, requestId, resp);
           successfulRetrievals.push(fdbRef);

@@ -24,7 +24,16 @@ if response.status_code == 200:
         if cursor.count() > 0:
             print("Printing contents from fileInformation collection of {} \n".format(fdb_name))
             for document in cursor:
-                print(document)
+                doc_dict = {
+                    "doc_id": document["docId"],
+                    "file_name": document["fileName"],
+                    "file_hash": document["fileHash"],
+                    "file_type": document["fileType"],
+                    "owner_id": document["ownerId"],
+                    "last_update": document["lastUpdated"]
+                }
+                print(doc_dict)
+
             print("______________________________________________________")
         else:
             print("No content in {}".format(fdb_name))
