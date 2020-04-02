@@ -130,7 +130,6 @@ export class NetworkInstance {
         }
       })
       .catch((error) => {
-        console.log("error from master", ipOne, error);
         setTimeout(() => {
           this.connectMaster(ipTwo, ipOne);
         }, backOffForRetry(this.connectionAttempts));

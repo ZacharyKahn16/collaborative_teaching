@@ -11,8 +11,9 @@ const INSTANCE_TYPE = {
   DATABASE: 'database',
 };
 
-const REFRESH_DATA_INTERVAL = 3.5 * 60 * 1000; // 3.5 min (ms)
-const TIME_TILL_ACTIVE = 2.5 * 60; // 2.5 min (s)
+const REFRESH_DATA_INTERVAL = 30 * 1000; // 30 secs
+const CONSISTENT_INTERVAL = 45 * 1000; // 45 secs
+const TIME_TILL_ACTIVE = 2.5 * 60 * 1000; // 2.5 min (s)
 
 export const NUM_MASTERS = 2;
 export const NUM_WORKERS = 3;
@@ -55,9 +56,6 @@ export class GCloud {
   workerInstances: ComputeEngineInstance[] = [];
   masterInstances: ComputeEngineInstance[] = [];
 
-  checkInstancesNum = 0;
-  checkRepNum = 0;
-
   // Startup timers for processes
   constructor() {
     for (let i = 0; i < NUM_WORKERS; i++) {
@@ -76,12 +74,10 @@ export class GCloud {
 
     setInterval(() => {
       this.replicationCheck();
-    }, REFRESH_DATA_INTERVAL);
+    }, CONSISTENT_INTERVAL);
   }
 
   getInstances() {
-    this.checkInstancesNum = this.checkInstancesNum + 1;
-    LOGGER.debug('check start', this.checkInstancesNum, 'instances', moment().valueOf());
     exec('gcloud compute instances list', { silent: true }, async (code, stdout, stderr) => {
       if (code === 0) {
         const output = stdout
@@ -200,7 +196,7 @@ export class GCloud {
       return instance.instanceType.includes(INSTANCE_TYPE.DATABASE);
     });
 
-    let thisInstance = this.allInstances.filter((instance) => {
+    const thisInstance = this.allInstances.filter((instance) => {
       return instance.id === this.id;
     });
 
@@ -303,14 +299,10 @@ export class GCloud {
         }
       }
     }
-    LOGGER.debug('check end', this.checkInstancesNum, 'instances', moment().valueOf());
   }
 
   async checkReplication(): Promise<void> {
     if (this.amICoordinator()) {
-      this.checkRepNum = this.checkRepNum + 1;
-      LOGGER.debug('check start', this.checkRepNum, 'replication', moment().valueOf());
-
       const ips = this.databaseInstances
         .filter((instance) => {
           return (
@@ -334,7 +326,6 @@ export class GCloud {
       try {
         await this.masterCoordinator.makeMCDBWithCorrectInfo(ips);
       } catch (err) {}
-      LOGGER.debug('check end', this.checkRepNum, 'replication', moment().valueOf());
     }
   }
 
@@ -395,19 +386,19 @@ export class GCloud {
 
     if (!instance.createdOn || Number.isNaN(instance.createdOn) || instance.createdOn === -1) {
       val = true;
-      message = `${instance.id} - health is GOOD, has been created but not yet initialized.`;
+      message = `${instance.id} health is GOOD, has been created but not yet initialized.`;
     } else if (instance.instanceRunning && (instance.instanceServing as boolean)) {
       val = true;
-      message = `${instance.id} - health is GOOD, has been created and is now serving.`;
+      message = `${instance.id} health is GOOD, has been created and is now serving.`;
     } else {
       val = moment().unix() <= instance.createdOn + TIME_TILL_ACTIVE;
     }
 
     if (message.length === 0) {
       if (val) {
-        message = `${instance.id} - health is GOOD, has been created but not yet initialized.`;
+        message = `${instance.id} health is GOOD, has been created but not yet initialized.`;
       } else {
-        message = `${instance.id} - health i BAD, has been created, should be serving, but is not serving.`;
+        message = `${instance.id} health i BAD, has been created, should be serving, but is not serving.`;
       }
     }
 
