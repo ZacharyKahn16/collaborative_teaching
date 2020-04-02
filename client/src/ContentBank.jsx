@@ -223,26 +223,17 @@ class ContentBank extends Component {
         </Table>
         <Dialog open={this.state.editModalOpen} onClose={this.handleModalClose}>
           <div>
-            <UpdateCard
-              closeModal={this.handleModalClose}
-              socket={this.props.socket}
-              fileInfo={this.state.selectedFile}
-            />
+            <UpdateCard closeModal={this.handleModalClose} fileInfo={this.state.selectedFile} />
           </div>
         </Dialog>
         <Dialog open={this.state.deleteModalOpen} onClose={this.handleModalClose}>
           <div>
-            <DeleteCard
-              closeModal={this.handleModalClose}
-              socket={this.props.socket}
-              fileInfo={this.state.selectedFile}
-            />
+            <DeleteCard closeModal={this.handleModalClose} fileInfo={this.state.selectedFile} />
           </div>
         </Dialog>
         <Dialog open={this.state.addToCourseModalOpen} onClose={this.handleModalClose}>
           <AddToCourseCard
             closeModal={this.handleModalClose}
-            socket={this.props.socket}
             fileInfo={this.state.selectedFile}
             courseInfo={myCourses}
           />

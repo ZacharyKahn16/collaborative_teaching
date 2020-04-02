@@ -20,10 +20,8 @@ import {
   TableContainer,
 } from "@material-ui/core";
 import SearchIcon from "@material-ui/icons/Search";
-import RefreshIcon from "@material-ui/icons/Refresh";
 import PublishIcon from "@material-ui/icons/Publish";
 import Header from "./Header";
-import FileList from "./FileList";
 import UploadCard from "./UploadCard";
 import { GlobalContext } from "./GlobalContext";
 import moment from "moment-timezone";
@@ -213,11 +211,6 @@ class MyFiles extends React.Component {
                   Add file
                   <input type="file" style={{ display: "none" }} />
                 </Button>
-                <Tooltip title="Reload">
-                  <IconButton>
-                    <RefreshIcon className={classes.block} color="inherit" />
-                  </IconButton>
-                </Tooltip>
               </Grid>
             </Grid>
             <Dialog open={this.state.uploadModalOpen} onClose={this.handleCloseUploadModal}>
@@ -226,7 +219,6 @@ class MyFiles extends React.Component {
           </Toolbar>
         </AppBar>
         <div className={classes.contentWrapper}>
-          {/*<FileList searchTerm={this.state.searchTerm} />*/}
           {files.length === 0 ? (
             <Typography color="textSecondary" align="center">
               No files available
@@ -269,7 +261,6 @@ class MyFiles extends React.Component {
                           </Link>
                         </Typography>
                       </TableCell>
-                      {/*<TableCell align="left">{row.docId}</TableCell>*/}
                       <TableCell align="left">
                         {row.courseIds.length <= 1 ? (
                           this.getCourseNamesFromId(row.courseIds)
@@ -314,23 +305,14 @@ class MyFiles extends React.Component {
                 </TableBody>
               </Table>
               <Dialog open={this.state.editModalOpen} onClose={this.handleModalClose}>
-                <UpdateCard
-                  closeModal={this.handleModalClose}
-                  socket={this.props.socket}
-                  fileInfo={this.state.selectedFile}
-                />
+                <UpdateCard closeModal={this.handleModalClose} fileInfo={this.state.selectedFile} />
               </Dialog>
               <Dialog open={this.state.deleteModalOpen} onClose={this.handleModalClose}>
-                <DeleteCard
-                  closeModal={this.handleModalClose}
-                  socket={this.props.socket}
-                  fileInfo={this.state.selectedFile}
-                />
+                <DeleteCard closeModal={this.handleModalClose} fileInfo={this.state.selectedFile} />
               </Dialog>
               <Dialog open={this.state.addToCourseModalOpen} onClose={this.handleModalClose}>
                 <AddToCourseCard
                   closeModal={this.handleModalClose}
-                  socket={this.props.socket}
                   fileInfo={this.state.selectedFile}
                   courseInfo={myCourses}
                 />

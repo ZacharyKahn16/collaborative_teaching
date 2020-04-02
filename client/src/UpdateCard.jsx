@@ -81,7 +81,7 @@ class UpdateCard extends Component {
           <Button
             className="mr-1"
             variant="contained"
-            color={this.state.uploadedFile ? "primary" : ""}
+            color={this.state.uploadedFile ? "primary" : undefined}
             disabled={!this.state.uploadedFile}
             onClick={this.updateFileBtn}
           >

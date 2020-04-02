@@ -23,7 +23,6 @@ import {
   AppBar,
 } from "@material-ui/core";
 import EditIcon from "@material-ui/icons/Edit";
-import DeleteIcon from "@material-ui/icons/Delete";
 import AddIcon from "@material-ui/icons/Add";
 import { GlobalContext } from "./GlobalContext";
 import Header from "./Header";
@@ -93,7 +92,6 @@ class MyCourses extends React.Component {
     this.handleCloseEditCourse = this.handleCloseEditCourse.bind(this);
     this.handleClickOpenDialogueNewCourse = this.handleClickOpenDialogueNewCourse.bind(this);
     this.handleCloseDialogueNewCourse = this.handleCloseDialogueNewCourse.bind(this);
-    this.deleteClass = this.deleteClass.bind(this);
     this.createCourseName = this.createCourseName.bind(this);
     this.createCourseDescription = this.createCourseDescription.bind(this);
   }
@@ -139,10 +137,6 @@ class MyCourses extends React.Component {
     this.setState({
       openDialogueNewCourse: false,
     });
-  }
-
-  deleteClass(course) {
-    console.log(course);
   }
 
   createCourseName(e) {
@@ -246,11 +240,6 @@ class MyCourses extends React.Component {
                     <Tooltip title={"Edit"}>
                       <IconButton onClick={() => this.handleClickOpenEditCourse(course)}>
                         <EditIcon />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title={"Remove"}>
-                      <IconButton onClick={() => this.deleteClass(course)}>
-                        <DeleteIcon />
                       </IconButton>
                     </Tooltip>
                   </CardActions>

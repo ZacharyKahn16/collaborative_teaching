@@ -46,9 +46,9 @@ class Home extends React.Component {
   static contextType = GlobalContext;
 
   render() {
-    const { isLoaded } = this.context;
+    const { isLoaded, user, workerInfo } = this.context;
 
-    if (!isLoaded) {
+    if (!isLoaded || !user || !workerInfo) {
       return <LoadingScreen />;
     }
 

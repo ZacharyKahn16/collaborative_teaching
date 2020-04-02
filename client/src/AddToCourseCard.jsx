@@ -7,7 +7,6 @@ import ListItem from "@material-ui/core/ListItem";
 import ListItemText from "@material-ui/core/ListItemText";
 import "./Styles/Card.css";
 import { GlobalContext } from "./GlobalContext";
-import Button from "@material-ui/core/Button";
 
 class AddToCourseCard extends Component {
   static contextType = GlobalContext;

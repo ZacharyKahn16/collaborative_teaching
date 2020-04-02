@@ -12,25 +12,19 @@ class DeleteCard extends Component {
   constructor(props) {
     super(props);
 
-    this.state = {
-      fileDisplayName: "",
-    };
-
     this.cancelDelete = this.cancelDelete.bind(this);
     this.deleteFile = this.deleteFile.bind(this);
   }
 
   cancelDelete = () => {
     this.props.closeModal();
-
-    this.setState(() => ({
-      fileDisplayName: "",
-    }));
   };
 
   deleteFile = () => {
+    const { fileInfo } = this.props;
     const { user, network } = this.context;
-    network.updateExistingFile(this.state.uploadedFile, user.uid);
+    network.deleteExistingFile(fileInfo.docId, user.uid);
+    this.cancelDelete();
   };
 
   render() {

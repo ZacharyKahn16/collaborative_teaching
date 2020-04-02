@@ -256,13 +256,15 @@ export class NetworkInstance {
       });
   }
 
-  // deleteExistingFile(file: File, ownerId: string) {
-  //   if (this.socket) {
-  //     console.log("deleting file: " + file.name);
-  //
-  //     this.socket.emit(DELETE_FILE, {});
-  //   }
-  // }
+  deleteExistingFile(docId: string, ownerId: string, requestId: string = v4()) {
+    if (this.socket) {
+      this.socket.emit(DELETE_FILE, {
+        docId,
+        ownerId,
+        requestId,
+      });
+    }
+  }
 
   setUser(user: any) {
     if (this.socket) {

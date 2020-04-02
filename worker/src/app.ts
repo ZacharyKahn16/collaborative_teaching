@@ -257,7 +257,7 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
       sendSuccessMessage(
         socket,
         requestId,
-        `Successful inserts into ${successfulInserts.map((elem) => elem.getIp()).join()}`,
+        `Successful inserts into ${successfulInserts.length} file databases`,
       );
     } catch (err) {
       sendErrorMessage(
@@ -402,7 +402,7 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
     sendSuccessMessage(
       socket,
       requestId,
-      `Successful updates into ${successfulUpdates.map((elem) => elem.getIp()).join()}`,
+      `Successful updates to ${successfulUpdates.length} file databases`,
     );
 
     try {
@@ -543,6 +543,7 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
 
     try {
       await deleteFile(docId);
+      sendSuccessMessage(socket, requestId, `File has been deleted`);
       broadcastAllMetadataToClients();
     } catch (err) {
       sendErrorMessage(

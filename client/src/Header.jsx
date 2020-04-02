@@ -50,7 +50,7 @@ class Header extends React.Component {
             </Grid>
             <Grid item>
               <IconButton className={classes.iconButtonAvatar} disabled={true}>
-                <Avatar src="/static/images/avatar/1.jpg" alt={user.name} />
+                <Avatar src="/static/images/avatar/1.jpg" alt={user.name || user.email} />
               </IconButton>
             </Grid>
           </Grid>

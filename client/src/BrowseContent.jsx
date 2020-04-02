@@ -4,11 +4,8 @@ import Toolbar from "@material-ui/core/Toolbar";
 import Paper from "@material-ui/core/Paper";
 import Grid from "@material-ui/core/Grid";
 import TextField from "@material-ui/core/TextField";
-import Tooltip from "@material-ui/core/Tooltip";
-import IconButton from "@material-ui/core/IconButton";
 import { withStyles } from "@material-ui/core/styles";
 import SearchIcon from "@material-ui/icons/Search";
-import RefreshIcon from "@material-ui/icons/Refresh";
 import Header from "./Header";
 import ContentBank from "./ContentBank";
 import { GlobalContext } from "./GlobalContext";
@@ -79,18 +76,10 @@ class BrowseContent extends React.Component {
                   onKeyDown={this.handleSearchOnChange}
                 />
               </Grid>
-              <Grid item>
-                <Tooltip title="Reload">
-                  <IconButton>
-                    <RefreshIcon className={classes.block} color="inherit" />
-                  </IconButton>
-                </Tooltip>
-              </Grid>
             </Grid>
           </Toolbar>
         </AppBar>
         <div className={classes.contentWrapper}>
-          {/*No users for this project yet*/}
           <ContentBank searchTerm={this.state.searchTerm} />
         </div>
       </Paper>

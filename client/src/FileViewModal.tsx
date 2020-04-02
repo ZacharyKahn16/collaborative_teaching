@@ -36,7 +36,6 @@ const FileViewModal = () => {
 
   const [fileName, setFileName] = useState("");
   const [fileContent, setFileContent] = useState("");
-  const [fileHash, setFileHash] = useState("");
 
   const [timeout, setTimeout] = useState<number | undefined>(undefined);
   const [reqId, setReqId] = useState("");
@@ -45,7 +44,6 @@ const FileViewModal = () => {
     setSelectedFileId("");
     setFileName("");
     setFileContent("");
-    setFileHash("");
     setReqId("");
     window.clearTimeout(timeout);
   }
@@ -83,7 +81,7 @@ const FileViewModal = () => {
 
         const id = window.setTimeout(() => {
           getFile();
-        }, 10 * 1000);
+        }, 30 * 1000);
         setTimeout(id);
 
         if (resp.status === "success") {
@@ -92,7 +90,6 @@ const FileViewModal = () => {
           if (message.docId === selectedFileId) {
             setFileName(message.fileName);
             setFileContent(message.fileContents);
-            setFileHash(message.fileHash);
           }
         }
       }

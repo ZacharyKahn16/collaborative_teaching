@@ -3,7 +3,6 @@ import PropTypes from "prop-types";
 import { withRouter } from "react-router-dom";
 import {
   AppBar,
-  Button,
   Dialog,
   Grid,
   IconButton,
@@ -17,15 +16,11 @@ import {
   TableRow,
   TextField,
   Toolbar,
-  Tooltip,
   Typography,
   withStyles,
 } from "@material-ui/core";
 import SearchIcon from "@material-ui/icons/Search";
-import RefreshIcon from "@material-ui/icons/Refresh";
-import PublishIcon from "@material-ui/icons/Publish";
 import Header from "./Header";
-import FileList from "./FileList";
 import { GlobalContext } from "./GlobalContext";
 import moment from "moment-timezone";
 import DeleteIcon from "@material-ui/icons/Delete";
@@ -33,7 +28,6 @@ import AddIcon from "@material-ui/icons/Add";
 import UpdateCard from "./UpdateCard";
 import DeleteFromCourseCard from "./DeleteFromCourseCard";
 import AddToCourseCard from "./AddToCourseCard";
-import Avatar from "@material-ui/core/Avatar";
 
 const styles = (theme) => ({
   paper: {
@@ -122,10 +116,6 @@ class CoursePage extends React.Component {
     setSelectedFileId(fileId);
   };
 
-  componentDidMount() {
-    // console.log("mounted")
-  }
-
   getCourseFromPath = () => {
     const { location } = this.props;
     const { allCourses } = this.context;
@@ -196,23 +186,6 @@ class CoursePage extends React.Component {
                   }}
                 />
               </Grid>
-              <Grid item>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  className={classes.addUser}
-                  onClick={this.handleOpenUploadModal}
-                >
-                  <PublishIcon className={classes.addFileButton} color="inherit" />
-                  Add file
-                  <input type="file" style={{ display: "none" }} />
-                </Button>
-                <Tooltip title="Reload">
-                  <IconButton>
-                    <RefreshIcon className={classes.block} color="inherit" />
-                  </IconButton>
-                </Tooltip>
-              </Grid>
             </Grid>
             <Dialog open={this.state.uploadModalOpen} onClose={this.handleCloseUploadModal}>
               <div>{/*TODO: Conditional card for either editing or deleting*/}</div>
@@ -220,16 +193,12 @@ class CoursePage extends React.Component {
           </Toolbar>
         </AppBar>
         <div className={classes.contentWrapper}>
-          {/*<FileList />*/}
           <TableContainer>
             <Table aria-label="simple table">
               <TableHead>
                 <TableRow className="bold">
                   <TableCell className="bold" align="left">
                     File Name
-                  </TableCell>
-                  <TableCell className="bold" align="left">
-                    Courses
                   </TableCell>
                   <TableCell className="bold" align="left">
                     File Type
@@ -260,15 +229,6 @@ class CoursePage extends React.Component {
                           {row.name}
                         </Link>
                       </Typography>
-                    </TableCell>
-                    <TableCell align="left">
-                      {row.courseIds.length <= 1 ? (
-                        this.getCourseNamesFromId(row.courseIds)
-                      ) : (
-                        <Tooltip title={this.getCourseNamesFromId(row.courseIds)}>
-                          <Avatar color={"inherit"}>{row.courseIds.length}</Avatar>
-                        </Tooltip>
-                      )}
                     </TableCell>
                     <TableCell align="left">
                       {row.name.split(".")[row.name.split(".").length - 1].toUpperCase()}
@@ -306,18 +266,13 @@ class CoursePage extends React.Component {
             </Table>
             <Dialog open={this.state.editModalOpen} onClose={this.handleModalClose}>
               <div>
-                <UpdateCard
-                  closeModal={this.handleModalClose}
-                  socket={this.props.socket}
-                  fileInfo={this.state.selectedFile}
-                />
+                <UpdateCard closeModal={this.handleModalClose} fileInfo={this.state.selectedFile} />
               </div>
             </Dialog>
             <Dialog open={this.state.deleteModalOpen} onClose={this.handleModalClose}>
               <div>
                 <DeleteFromCourseCard
                   closeModal={this.handleModalClose}
-                  socket={this.props.socket}
                   fileInfo={this.state.selectedFile}
                   courseInfo={course}
                 />
@@ -326,7 +281,6 @@ class CoursePage extends React.Component {
             <Dialog open={this.state.addToCourseModalOpen} onClose={this.handleModalClose}>
               <AddToCourseCard
                 closeModal={this.handleModalClose}
-                socket={this.props.socket}
                 fileInfo={this.state.selectedFile}
                 courseInfo={myCourses}
               />
