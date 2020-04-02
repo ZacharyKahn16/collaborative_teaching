@@ -55,6 +55,7 @@ const ADD_COURSE = 'Add Course';
 const UPDATE_COURSE = 'Update Course';
 const ADD_FILE_TO_COURSE = 'Add File To Course';
 const REMOVE_FILE_FROM_COURSE = 'Remove File From Course';
+const DEBUG = 'Debug';
 
 // Server message constants
 const SERVER_RESP = 'Server Response';
@@ -790,6 +791,19 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
         fdbList.push(fdbInstance);
       }
     }
+  });
+
+  // Used to debug database list
+  socket.on(DEBUG, function(req) {
+    const fdbIps: any[] = [];
+    for (const fdb of fdbList) {
+      fdbIps.push(fdb.getIp());
+    }
+
+    socket.emit(SERVER_RESP, {
+      Message: 'Debug FdbList',
+      fdbList: fdbIps,
+    });
   });
 });
 
