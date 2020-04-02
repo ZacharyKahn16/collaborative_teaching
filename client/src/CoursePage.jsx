@@ -133,94 +133,100 @@ class CoursePage extends React.Component {
         </AppBar>
 
         <div className={classes.contentWrapper}>
-          <TableContainer>
-            <Table aria-label="simple table">
-              <TableHead>
-                <TableRow className="bold">
-                  <TableCell className="bold" align="left">
-                    File Name
-                  </TableCell>
-                  <TableCell className="bold" align="left">
-                    File Type
-                  </TableCell>
-                  <TableCell className="bold" align="left">
-                    Owner
-                  </TableCell>
-                  <TableCell className="bold" align="left">
-                    Last Updated
-                  </TableCell>
-                  <TableCell className="bold" align="center">
-                    Actions
-                  </TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {files.map((row) => (
-                  <TableRow key={row.docId} className="file-row">
-                    <TableCell align="left">
-                      <Typography variant="body2">
-                        <Link
-                          color="primary"
-                          href="#"
-                          onClick={() => {
-                            this.updateSelectedFile(row.docId);
-                          }}
-                        >
-                          {row.name}
-                        </Link>
-                      </Typography>
+          {files.length === 0 ? (
+            <Typography color="textSecondary" align="center">
+              No files in this course
+            </Typography>
+          ) : (
+            <TableContainer>
+              <Table aria-label="simple table">
+                <TableHead>
+                  <TableRow className="bold">
+                    <TableCell className="bold" align="left">
+                      File Name
                     </TableCell>
-                    <TableCell align="left">
-                      {row.name.split(".")[row.name.split(".").length - 1].toUpperCase()}
+                    <TableCell className="bold" align="left">
+                      File Type
                     </TableCell>
-                    <TableCell align="left">{row.ownerName}</TableCell>
-                    <TableCell align="left">{moment(row.lastUpdated).format("lll")}</TableCell>
-                    {row.ownerId === user.uid && course.ownerId === user.uid ? (
-                      <TableCell align="center">
-                        <IconButton
-                          className="action-button"
-                          onClick={() => this.handleDeleteModalOpen(row)}
-                        >
-                          <DeleteIcon color="inherit" />
-                        </IconButton>
-                        <IconButton
-                          className="action-button"
-                          onClick={() => this.handleAddToCourseModalOpen(row)}
-                        >
-                          <AddIcon color="inherit" />
-                        </IconButton>
-                      </TableCell>
-                    ) : (
-                      <TableCell align="center">
-                        <IconButton
-                          className="action-button"
-                          onClick={() => this.handleAddToCourseModalOpen(row)}
-                        >
-                          <AddIcon color="inherit" />
-                        </IconButton>
-                      </TableCell>
-                    )}
+                    <TableCell className="bold" align="left">
+                      Owner
+                    </TableCell>
+                    <TableCell className="bold" align="left">
+                      Last Updated
+                    </TableCell>
+                    <TableCell className="bold" align="center">
+                      Actions
+                    </TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-            <Dialog open={this.state.deleteModalOpen} onClose={this.handleModalClose}>
-              <div>
-                <DeleteFromCourseCard
+                </TableHead>
+                <TableBody>
+                  {files.map((row) => (
+                    <TableRow key={row.docId} className="file-row">
+                      <TableCell align="left">
+                        <Typography variant="body2">
+                          <Link
+                            color="primary"
+                            href="#"
+                            onClick={() => {
+                              this.updateSelectedFile(row.docId);
+                            }}
+                          >
+                            {row.name}
+                          </Link>
+                        </Typography>
+                      </TableCell>
+                      <TableCell align="left">
+                        {row.name.split(".")[row.name.split(".").length - 1].toUpperCase()}
+                      </TableCell>
+                      <TableCell align="left">{row.ownerName}</TableCell>
+                      <TableCell align="left">{moment(row.lastUpdated).format("lll")}</TableCell>
+                      {course.ownerId === user.uid ? (
+                        <TableCell align="center">
+                          <IconButton
+                            className="action-button"
+                            onClick={() => this.handleDeleteModalOpen(row)}
+                          >
+                            <DeleteIcon color="inherit" />
+                          </IconButton>
+                          <IconButton
+                            className="action-button"
+                            onClick={() => this.handleAddToCourseModalOpen(row)}
+                          >
+                            <AddIcon color="inherit" />
+                          </IconButton>
+                        </TableCell>
+                      ) : (
+                        <TableCell align="center">
+                          <IconButton
+                            className="action-button"
+                            onClick={() => this.handleAddToCourseModalOpen(row)}
+                          >
+                            <AddIcon color="inherit" />
+                          </IconButton>
+                        </TableCell>
+                      )}
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+              <Dialog open={this.state.deleteModalOpen} onClose={this.handleModalClose}>
+                <div>
+                  <DeleteFromCourseCard
+                    closeModal={this.handleModalClose}
+                    fileInfo={this.state.selectedFile}
+                    courseInfo={course}
+                  />
+                </div>
+              </Dialog>
+              <Dialog open={this.state.addToCourseModalOpen} onClose={this.handleModalClose}>
+                <AddToCourseCard
                   closeModal={this.handleModalClose}
                   fileInfo={this.state.selectedFile}
-                  courseInfo={course}
+                  courseInfo={myCourses}
                 />
-              </div>
-            </Dialog>
-            <Dialog open={this.state.addToCourseModalOpen} onClose={this.handleModalClose}>
-              <AddToCourseCard
-                closeModal={this.handleModalClose}
-                fileInfo={this.state.selectedFile}
-                courseInfo={myCourses}
-              />
-            </Dialog>
-          </TableContainer>
+              </Dialog>
+            </TableContainer>
+          )}
         </div>
       </Paper>
     );

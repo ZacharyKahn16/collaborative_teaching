@@ -33,9 +33,16 @@ class AddToCourseCard extends Component {
 
     if (courseInfo.length === 0) {
       return (
-        <Typography color="textSecondary" align="center">
-          You have no courses that you can add this file to. Please create a course then try again
-        </Typography>
+        <Card className="card-body">
+          <CardContent>
+            <Typography variant="h5" color="textSecondary" gutterBottom>
+              No available courses
+            </Typography>
+            <Typography variant="body2" className="mb-2" component="p" paragraph gutterBottom>
+              To add this file to a course, you must first create a course
+            </Typography>
+          </CardContent>
+        </Card>
       );
     }
 
@@ -57,9 +64,6 @@ class AddToCourseCard extends Component {
               ))}
             </List>
           </div>
-          {/*<Button variant="contained" onClick={this.cancelDelete}>*/}
-          {/*  Cancel*/}
-          {/*</Button>*/}
         </CardContent>
       </Card>
     );
