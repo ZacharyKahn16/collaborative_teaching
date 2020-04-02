@@ -14,6 +14,7 @@ import {
   TableHead,
   TableRow,
   Toolbar,
+  Tooltip,
   Typography,
   withStyles,
 } from "@material-ui/core";
@@ -182,27 +183,33 @@ class CoursePage extends React.Component {
                       <TableCell align="left">{moment(row.lastUpdated).format("lll")}</TableCell>
                       {course.ownerId === user.uid ? (
                         <TableCell align="center">
-                          <IconButton
-                            className="action-button"
-                            onClick={() => this.handleDeleteModalOpen(row)}
-                          >
-                            <DeleteIcon color="inherit" />
-                          </IconButton>
-                          <IconButton
-                            className="action-button"
-                            onClick={() => this.handleAddToCourseModalOpen(row)}
-                          >
-                            <AddIcon color="inherit" />
-                          </IconButton>
+                          <Tooltip title="Delete From Course">
+                            <IconButton
+                              className="action-button"
+                              onClick={() => this.handleDeleteModalOpen(row)}
+                            >
+                              <DeleteIcon color="inherit" />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="Add to Course">
+                            <IconButton
+                              className="action-button"
+                              onClick={() => this.handleAddToCourseModalOpen(row)}
+                            >
+                              <AddIcon color="inherit" />
+                            </IconButton>
+                          </Tooltip>
                         </TableCell>
                       ) : (
                         <TableCell align="center">
-                          <IconButton
-                            className="action-button"
-                            onClick={() => this.handleAddToCourseModalOpen(row)}
-                          >
-                            <AddIcon color="inherit" />
-                          </IconButton>
+                          <Tooltip title="Add to Course">
+                            <IconButton
+                              className="action-button"
+                              onClick={() => this.handleAddToCourseModalOpen(row)}
+                            >
+                              <AddIcon color="inherit" />
+                            </IconButton>
+                          </Tooltip>
                         </TableCell>
                       )}
                     </TableRow>
