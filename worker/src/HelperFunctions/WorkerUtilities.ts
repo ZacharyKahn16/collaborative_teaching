@@ -73,7 +73,7 @@ export async function createReplicas(
       break;
     }
 
-    const fdbRef = fdbs[i];
+    const fdbRef = fdbList[i];
 
     await fdbRef
       .insertFile(docId, fileName, fileContents, fileHash, fileType, ownerId, timeStamp)
