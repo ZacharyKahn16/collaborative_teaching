@@ -53,29 +53,26 @@ export class NetworkInstance {
   socket: SocketIOClient.Socket | undefined = undefined;
 
   connectionAttempts = 0;
-  isLoaded = false;
 
   allFiles: Record<string, any>[] = [];
   allCourses: Record<string, any>[] = [];
   messages: Record<string, any>[] = [];
 
   callbacks: any = undefined;
+  connectedToSocket = false;
 
   constructor() {
     this.connectMaster(MASTER_STATIC_IPS[0], MASTER_STATIC_IPS[1]);
 
     setInterval(() => {
-      if (!this.isLoaded && this.workerInfo !== null) {
-        if (this.socket) {
-          this.socket.close();
-        }
-
-        this.socket = undefined;
-        this.workerInfo = undefined;
-        this.update();
-        this.connectMaster(MASTER_STATIC_IPS[0], MASTER_STATIC_IPS[1]);
+      if (this.workerInfo && !this.connectedToSocket) {
+        this.setupWorker();
       }
-    }, 10 * 1000);
+    }, 2 * 1000);
+
+    setInterval(() => {
+      this.update();
+    }, 2000);
   }
 
   setupCallback(callbacks: any) {
@@ -92,7 +89,9 @@ export class NetworkInstance {
         setAllCourses,
       } = this.callbacks;
 
-      setIsLoaded(this.isLoaded);
+      setIsLoaded(
+        this.workerInfo !== undefined && this.socket !== undefined && this.connectedToSocket,
+      );
       setWorkerInfo(this.workerInfo);
       setAllFiles(this.allFiles);
       setResponses(this.messages);
@@ -100,31 +99,38 @@ export class NetworkInstance {
     }
   }
 
+  resetSocket() {
+    if (this.socket) {
+      this.socket.close();
+    }
+
+    this.socket = undefined;
+    this.workerInfo = undefined;
+    this.connectedToSocket = false;
+    this.connectionAttempts = 0;
+    this.connectMaster(MASTER_STATIC_IPS[0], MASTER_STATIC_IPS[1]);
+    this.update();
+  }
+
   connectMaster(ipOne: string, ipTwo: string) {
-    console.log("trying to connect to master, attempt", this.connectionAttempts);
+    this.connectionAttempts = this.connectionAttempts + 1;
 
     axios
       .get(ipOne)
       .then((result) => {
-        if (!result.data.worker) {
-          this.isLoaded = false;
-          this.connectionAttempts = this.connectionAttempts + 1;
-
+        console.log(this.connectionAttempts, "response from master", ipOne, result.data.worker);
+        if (result.data && result.data.worker && result.data.worker.publicIp) {
+          this.workerInfo = result.data.worker as WorkerInstance;
+          this.update();
+          this.connectionAttempts = 0;
+        } else {
           setTimeout(() => {
             this.connectMaster(ipTwo, ipOne);
           }, backOffForRetry(this.connectionAttempts));
-        } else {
-          console.log("got worker from master", result.data.worker);
-          this.workerInfo = result.data.worker as WorkerInstance;
-          this.update();
-          this.setupWorker();
         }
       })
       .catch((error) => {
-        console.error("master connection error", error);
-        this.isLoaded = false;
-        this.connectionAttempts = this.connectionAttempts + 1;
-
+        console.log("error from master", ipOne, error);
         setTimeout(() => {
           this.connectMaster(ipTwo, ipOne);
         }, backOffForRetry(this.connectionAttempts));
@@ -143,9 +149,10 @@ export class NetworkInstance {
     this.socket = io(`http://${this.workerInfo.publicIp}:${WORKER_SOCKET_PORT}`);
 
     this.socket.on("connect", () => {
-      console.log("connected to worker", this.workerInfo);
+      // @ts-ignore
+      console.log("connected to", this.workerInfo.id);
 
-      this.isLoaded = true;
+      this.connectedToSocket = true;
       this.connectionAttempts = 0;
       this.update();
     });
@@ -168,18 +175,34 @@ export class NetworkInstance {
       this.update();
     });
 
+    this.socket.on("connect_error", () => {
+      console.log("connect_error socket", this.workerInfo);
+      this.resetSocket();
+    });
+
+    this.socket.on("connect_timeout", () => {
+      console.log("connect_timeout socket", this.workerInfo);
+      this.resetSocket();
+    });
+
+    this.socket.on("reconnect_failed", () => {
+      console.log("reconnect_failed socket", this.workerInfo);
+      this.resetSocket();
+    });
+
+    this.socket.on("reconnect_error", () => {
+      console.log("reconnect_error socket", this.workerInfo);
+      this.resetSocket();
+    });
+
     this.socket.on("disconnect", () => {
-      console.log("disconnected from worker", this.workerInfo);
+      console.log("disconnected socket", this.workerInfo);
+      this.resetSocket();
+    });
 
-      if (this.socket) {
-        this.socket.close();
-      }
-
-      this.socket = undefined;
-      this.workerInfo = undefined;
-      this.connectionAttempts = 0;
-      this.connectMaster(MASTER_STATIC_IPS[0], MASTER_STATIC_IPS[1]);
-      this.update();
+    this.socket.on("error", () => {
+      console.log("error socket", this.workerInfo);
+      this.resetSocket();
     });
   }
 
