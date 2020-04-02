@@ -209,19 +209,17 @@ export class GCloud {
       this.amIResponder = amIMain;
 
       LOGGER.debug(
-        'This MASTER',
-        `Responder: ${!this.amICoordinator()}`,
-        `Coordinator: ${this.amICoordinator()}`,
+        `${thisInstance[0].id.toUpperCase()},  Responder: ${!this.amICoordinator()}, Coordinator: ${this.amICoordinator()}`,
         this.thisInstance,
       );
 
-      this.healthCheck();
-    }
-
-    LOGGER.debug('Masters', this.masterInstances);
-    if (this.amICoordinator()) {
+      LOGGER.debug('Masters', this.masterInstances);
       LOGGER.debug('Workers', this.workerInstances);
-      LOGGER.debug('File Databases', this.databaseInstances);
+      if (this.amICoordinator()) {
+        LOGGER.debug('File Databases', this.databaseInstances);
+      }
+
+      this.healthCheck();
     }
   }
 
