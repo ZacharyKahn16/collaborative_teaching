@@ -132,7 +132,7 @@ export class NetworkInstance {
   }
 
   setupWorker() {
-    if (!this.workerInfo) {
+    if (!this.workerInfo || !this.workerInfo.publicIp) {
       return;
     }
 

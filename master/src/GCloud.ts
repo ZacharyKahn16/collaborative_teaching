@@ -12,7 +12,7 @@ const INSTANCE_TYPE = {
 };
 
 const REFRESH_DATA_INTERVAL = 2.5 * 60 * 1000; // 2.5 min (ms)
-const TIME_TILL_ACTIVE = 8 * 60; // 8 min (s)
+const TIME_TILL_ACTIVE = 3 * 60; // 3 min (s)
 
 export const NUM_MASTERS = 2;
 export const NUM_WORKERS = 3;
@@ -209,18 +209,20 @@ export class GCloud {
       this.amIResponder = amIMain;
 
       LOGGER.debug(
-        'This master:',
-        this.thisInstance,
+        'This MASTER:',
         `Responder: ${!this.amICoordinator()}`,
         `Coordinator: ${this.amICoordinator()}`,
+        this.thisInstance,
       );
 
       this.healthCheck();
     }
 
     LOGGER.debug('Masters', this.masterInstances);
-    LOGGER.debug('Workers', this.workerInstances);
-    LOGGER.debug('File Databases', this.databaseInstances);
+    if (this.amICoordinator()) {
+      LOGGER.debug('Workers', this.workerInstances);
+      LOGGER.debug('File Databases', this.databaseInstances);
+    }
   }
 
   healthCheck(): void {
@@ -394,7 +396,7 @@ export class GCloud {
       }
     }
 
-    if (log) {
+    if (log && this.amICoordinator()) {
       if (val) {
         LOGGER.info(message);
       } else {
