@@ -808,7 +808,9 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
 
 const PORT = process.env.PORT || 4001;
 httpServer.listen(PORT, () => {
-  LOGGER.debug(`Server started at http://localhost:${PORT}`);
+  LOGGER.debug(
+    `${(process.env.NAME || 'Server').toUpperCase()} started at http://localhost:${PORT}`,
+  );
   setInterval(() => {
     broadcastAllMetadataToClients();
   }, 1000 * 60);

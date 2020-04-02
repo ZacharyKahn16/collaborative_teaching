@@ -116,7 +116,7 @@ export class NetworkInstance {
     this.connectionAttempts = this.connectionAttempts + 1;
 
     axios
-      .get(ipOne)
+      .get(ipOne, { timeout: 2 * 1000 })
       .then((result) => {
         console.log(this.connectionAttempts, "response from master", ipOne, result.data.worker);
         if (result.data && result.data.worker && result.data.worker.publicIp) {

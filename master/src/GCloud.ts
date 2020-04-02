@@ -55,6 +55,9 @@ export class GCloud {
   workerInstances: ComputeEngineInstance[] = [];
   masterInstances: ComputeEngineInstance[] = [];
 
+  checkInstancesNum = 0;
+  checkRepNum = 0;
+
   // Startup timers for processes
   constructor() {
     for (let i = 0; i < NUM_WORKERS; i++) {
@@ -70,9 +73,15 @@ export class GCloud {
     setInterval(() => {
       this.getInstances();
     }, REFRESH_DATA_INTERVAL);
+
+    setInterval(() => {
+      this.replicationCheck();
+    }, REFRESH_DATA_INTERVAL);
   }
 
   getInstances() {
+    this.checkInstancesNum = this.checkInstancesNum + 1;
+    LOGGER.debug('check start', this.checkInstancesNum, 'instances', moment().valueOf());
     exec('gcloud compute instances list', { silent: true }, async (code, stdout, stderr) => {
       if (code === 0) {
         const output = stdout
@@ -227,6 +236,9 @@ export class GCloud {
     this.checkMasters();
     this.checkWorkers();
     this.checkDatabases();
+  }
+
+  replicationCheck(): void {
     this.checkReplication();
   }
 
@@ -291,10 +303,14 @@ export class GCloud {
         }
       }
     }
+    LOGGER.debug('check end', this.checkInstancesNum, 'instances', moment().valueOf());
   }
 
   async checkReplication(): Promise<void> {
     if (this.amICoordinator()) {
+      this.checkRepNum = this.checkRepNum + 1;
+      LOGGER.debug('check start', this.checkRepNum, 'replication', moment().valueOf());
+
       const ips = this.databaseInstances
         .filter((instance) => {
           return (
@@ -318,6 +334,7 @@ export class GCloud {
       try {
         await this.masterCoordinator.makeMCDBWithCorrectInfo(ips);
       } catch (err) {}
+      LOGGER.debug('check end', this.checkRepNum, 'replication', moment().valueOf());
     }
   }
 
@@ -327,7 +344,7 @@ export class GCloud {
       const nextIndex = index === 0 ? 1 : 0;
       const nextIp = staticIps[nextIndex];
       const nextName = `${INSTANCE_TYPE.MASTER}-${this.thisInstance.number + 1}`;
-      LOGGER.debug(`${nextName} - creating.`);
+      LOGGER.debug(`${nextName} creating`);
 
       const command = `gcloud beta compute --project=${PROJECT_ID} instances create ${nextName} --zone=${ZONE} --machine-type=n1-standard-8 --subnet=default --network-tier=PREMIUM --maintenance-policy=MIGRATE --service-account=165250393917-compute@developer.gserviceaccount.com --scopes=https://www.googleapis.com/auth/cloud-platform --tags=http-server --image=ubuntu-minimal-1804-bionic-v20200317 --image-project=ubuntu-os-cloud --boot-disk-size=10GB --boot-disk-type=pd-standard --boot-disk-device-name=${nextName} --no-shielded-secure-boot --shielded-vtpm --shielded-integrity-monitoring --reservation-affinity=any --address=${nextIp} --metadata=startup-script-url=gs://collaborative-teaching.appspot.com/scripts/startup-master.bash,startup-status=initializing,created-on=$(date +%s)`;
       exec(command, { silent: true }, (code, stdout, stderr) => {
@@ -340,7 +357,7 @@ export class GCloud {
 
   createWorker(num: number): void {
     const name = `${INSTANCE_TYPE.WORKER}-${num}`;
-    LOGGER.debug(`${name} - creating.`);
+    LOGGER.debug(`${name} creating`);
 
     const command = `gcloud beta compute --project=${PROJECT_ID} instances create ${name} --zone=${ZONE} --machine-type=n1-standard-2 --subnet=default --network-tier=PREMIUM --maintenance-policy=MIGRATE --service-account=165250393917-compute@developer.gserviceaccount.com --scopes=https://www.googleapis.com/auth/cloud-platform --tags=http-server --image=ubuntu-minimal-1804-bionic-v20200317 --image-project=ubuntu-os-cloud --boot-disk-size=10GB --boot-disk-type=pd-standard --boot-disk-device-name=${name} --no-shielded-secure-boot --shielded-vtpm --shielded-integrity-monitoring --reservation-affinity=any --metadata=startup-script-url=gs://collaborative-teaching.appspot.com/scripts/startup-worker.bash,startup-status=initializing,created-on=$(date +%s)`;
     exec(command, { silent: true }, (code, stdout, stderr) => {
@@ -352,7 +369,7 @@ export class GCloud {
 
   createDatabase(num: number): void {
     const name = `${INSTANCE_TYPE.DATABASE}-${num}`;
-    LOGGER.debug(`${name} - creating.`);
+    LOGGER.debug(`${name} creating`);
 
     const command = `gcloud beta compute --project=${PROJECT_ID} instances create ${name} --zone=${ZONE} --machine-type=n1-standard-2 --subnet=default --network-tier=PREMIUM --maintenance-policy=MIGRATE --service-account=165250393917-compute@developer.gserviceaccount.com --scopes=https://www.googleapis.com/auth/cloud-platform --tags=database-server --image=ubuntu-minimal-1804-bionic-v20200317 --image-project=ubuntu-os-cloud --boot-disk-size=10GB --boot-disk-type=pd-standard --boot-disk-device-name=${name} --no-shielded-secure-boot --shielded-vtpm --shielded-integrity-monitoring --reservation-affinity=any --metadata=startup-script-url=gs://collaborative-teaching.appspot.com/scripts/startup-database.bash,startup-status=initializing,created-on=$(date +%s)`;
     exec(command, { silent: true }, (code, stdout, stderr) => {
@@ -363,7 +380,7 @@ export class GCloud {
   }
 
   deleteInstance(id: string): void {
-    LOGGER.debug(`${id} - deleting.`);
+    LOGGER.debug(`${id} deleting`);
     const command = `gcloud compute --project=${PROJECT_ID} instances delete ${id} --zone=${ZONE}`;
     exec(command, { silent: true }, (code, stdout, stderr) => {
       if (code !== 0 || stderr) {
