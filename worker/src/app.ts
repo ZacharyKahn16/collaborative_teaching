@@ -376,7 +376,6 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
           fileType,
           ownerId,
           timeStamp,
-          requestId,
         );
 
         if (successfulInserts.length <= 0) {

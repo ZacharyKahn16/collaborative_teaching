@@ -3,8 +3,6 @@ import { AccessFDB } from './workerToFDBConnection';
 import { LOGGER } from '../Logger';
 import { addFdbLocation, getFile } from '../MCDB';
 
-const deepCopyFunc = deepCopy({ proto: true });
-
 export function shuffle(array: any) {
   let currentIndex = array.length;
   let temporaryValue;
@@ -53,7 +51,7 @@ export async function createReplicas(
   fdbsToAvoid: AccessFDB[] = [],
 ) {
   // Filter out fdbs that you need to avoid
-  let fdbs = deepCopyFunc(fdbList);
+  let fdbs = [...fdbList];
   fdbs = fdbs.filter((fdb: AccessFDB) => {
     const toAvoid = fdbsToAvoid.find((fdbToAvoid: AccessFDB) => {
       return fdbToAvoid.getIp() === fdb.getIp();
@@ -73,7 +71,7 @@ export async function createReplicas(
       break;
     }
 
-    const fdbRef = fdbList[i];
+    const fdbRef = fdbs[i];
 
     await fdbRef
       .insertFile(docId, fileName, fileContents, fileHash, fileType, ownerId, timeStamp)
