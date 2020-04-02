@@ -11,8 +11,8 @@ const INSTANCE_TYPE = {
   DATABASE: 'database',
 };
 
-const REFRESH_DATA_INTERVAL = 2.5 * 60 * 1000; // 2.5 min (ms)
-const TIME_TILL_ACTIVE = 3 * 60; // 3 min (s)
+const REFRESH_DATA_INTERVAL = 3.5 * 60 * 1000; // 3.5 min (ms)
+const TIME_TILL_ACTIVE = 2.5 * 60; // 2.5 min (s)
 
 export const NUM_MASTERS = 2;
 export const NUM_WORKERS = 3;
@@ -209,7 +209,7 @@ export class GCloud {
       this.amIResponder = amIMain;
 
       LOGGER.debug(
-        'This MASTER:',
+        'This MASTER',
         `Responder: ${!this.amICoordinator()}`,
         `Coordinator: ${this.amICoordinator()}`,
         this.thisInstance,

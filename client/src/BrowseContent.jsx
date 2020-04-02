@@ -68,7 +68,7 @@ class BrowseContent extends React.Component {
               <Grid item xs>
                 <TextField
                   fullWidth
-                  placeholder="Search by author, course or file name."
+                  placeholder="Search..."
                   InputProps={{
                     disableUnderline: true,
                     className: classes.searchInput,

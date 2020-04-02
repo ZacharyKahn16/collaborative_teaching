@@ -4,7 +4,6 @@ import { withRouter } from "react-router-dom";
 import {
   AppBar,
   Dialog,
-  Grid,
   IconButton,
   Link,
   Paper,
@@ -14,18 +13,15 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  TextField,
   Toolbar,
   Typography,
   withStyles,
 } from "@material-ui/core";
-import SearchIcon from "@material-ui/icons/Search";
 import Header from "./Header";
 import { GlobalContext } from "./GlobalContext";
 import moment from "moment-timezone";
 import DeleteIcon from "@material-ui/icons/Delete";
 import AddIcon from "@material-ui/icons/Add";
-import UpdateCard from "./UpdateCard";
 import DeleteFromCourseCard from "./DeleteFromCourseCard";
 import AddToCourseCard from "./AddToCourseCard";
 
@@ -59,34 +55,12 @@ class CoursePage extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      uploadModalOpen: false,
-      editModalOpen: false,
       deleteModalOpen: false,
       addToCourseModalOpen: false,
     };
 
-    this.handleOpenUploadModal = this.handleOpenUploadModal.bind(this);
     this.updateSelectedFile = this.updateSelectedFile.bind(this);
   }
-
-  handleOpenUploadModal() {
-    this.setState({
-      uploadModalOpen: true,
-    });
-  }
-
-  handleCloseUploadModal() {
-    this.setState({
-      uploadModalOpen: false,
-    });
-  }
-
-  handleEditModalOpen = (file) => {
-    this.setState(() => ({
-      selectedFile: file,
-      editModalOpen: true,
-    }));
-  };
 
   handleDeleteModalOpen = (file) => {
     this.setState(() => ({
@@ -104,7 +78,6 @@ class CoursePage extends React.Component {
 
   handleModalClose = () => {
     this.setState(() => ({
-      editModalOpen: false,
       deleteModalOpen: false,
       addToCourseModalOpen: false,
     }));
@@ -124,21 +97,6 @@ class CoursePage extends React.Component {
     return allCourses.find((c) => {
       return c.docId === courseId;
     });
-  };
-
-  getCourseNamesFromId = (courseIds) => {
-    const { allCourses } = this.context;
-    if (courseIds.length === 0) {
-      return "Not part of any courses";
-    }
-    return allCourses
-      .filter((course) => {
-        return courseIds.includes(course.docId);
-      })
-      .map((course) => {
-        return course.courseName;
-      })
-      .join(", ");
   };
 
   render() {
@@ -171,27 +129,9 @@ class CoursePage extends React.Component {
       <Paper className={classes.paper} square>
         <Header title={course.courseName} />
         <AppBar className={classes.searchBar} position="static" color="default" elevation={0}>
-          <Toolbar>
-            <Grid container spacing={2} alignItems="center">
-              <Grid item>
-                <SearchIcon className={classes.block} color="inherit" />
-              </Grid>
-              <Grid item xs>
-                <TextField
-                  fullWidth
-                  placeholder="Search by course or file name."
-                  InputProps={{
-                    disableUnderline: true,
-                    className: classes.searchInput,
-                  }}
-                />
-              </Grid>
-            </Grid>
-            <Dialog open={this.state.uploadModalOpen} onClose={this.handleCloseUploadModal}>
-              <div>{/*TODO: Conditional card for either editing or deleting*/}</div>
-            </Dialog>
-          </Toolbar>
+          <Toolbar />
         </AppBar>
+
         <div className={classes.contentWrapper}>
           <TableContainer>
             <Table aria-label="simple table">
@@ -264,11 +204,6 @@ class CoursePage extends React.Component {
                 ))}
               </TableBody>
             </Table>
-            <Dialog open={this.state.editModalOpen} onClose={this.handleModalClose}>
-              <div>
-                <UpdateCard closeModal={this.handleModalClose} fileInfo={this.state.selectedFile} />
-              </div>
-            </Dialog>
             <Dialog open={this.state.deleteModalOpen} onClose={this.handleModalClose}>
               <div>
                 <DeleteFromCourseCard

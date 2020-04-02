@@ -192,7 +192,7 @@ class MyFiles extends React.Component {
               <Grid item xs>
                 <TextField
                   fullWidth={true}
-                  placeholder="Search by course or file name."
+                  placeholder="Search..."
                   onChange={this.updateSearchTerm}
                   InputProps={{
                     disableUnderline: true,

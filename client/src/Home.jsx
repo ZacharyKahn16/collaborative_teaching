@@ -48,7 +48,7 @@ class Home extends React.Component {
   render() {
     const { isLoaded, user, workerInfo } = this.context;
 
-    if (!isLoaded || !user || !workerInfo) {
+    if (!isLoaded || !user || !workerInfo || !workerInfo.publicIp) {
       return <LoadingScreen />;
     }
 
