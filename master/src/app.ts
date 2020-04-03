@@ -17,8 +17,8 @@ app.get('/instances', (req, res) => {
 
   return res.send({
     thisMaster: {
-      responder: gcloud.amIResponder,
-      coordinator: !gcloud.amIResponder,
+      responder: gcloud.amIResponder(),
+      coordinator: gcloud.amICoordinator(),
       ...gcloud.thisInstance,
     },
     fdbs: gcloud.databaseInstances,

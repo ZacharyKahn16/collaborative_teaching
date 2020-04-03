@@ -22,7 +22,7 @@ export class WorkerTracker {
   }
 
   getNextWorker(): ComputeEngineInstance | null {
-    if (!this.gcloud.amIResponder) {
+    if (!this.gcloud.amIResponder()) {
       return null;
     }
 

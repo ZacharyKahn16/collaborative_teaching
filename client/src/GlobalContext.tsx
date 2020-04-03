@@ -62,7 +62,7 @@ export class NetworkInstance {
   connectedToSocket = false;
 
   constructor() {
-    this.connectMaster(MASTER_STATIC_IPS[0], MASTER_STATIC_IPS[1]);
+    this.connectMaster(MASTER_STATIC_IPS[0], MASTER_STATIC_IPS[1], MASTER_STATIC_IPS[2]);
 
     setInterval(() => {
       if (this.workerInfo && !this.connectedToSocket) {
@@ -108,30 +108,30 @@ export class NetworkInstance {
     this.workerInfo = undefined;
     this.connectedToSocket = false;
     this.connectionAttempts = 0;
-    this.connectMaster(MASTER_STATIC_IPS[0], MASTER_STATIC_IPS[1]);
+    this.connectMaster(MASTER_STATIC_IPS[0], MASTER_STATIC_IPS[1], MASTER_STATIC_IPS[2]);
     this.update();
   }
 
-  connectMaster(ipOne: string, ipTwo: string) {
+  connectMaster(ipOne: string, ipTwo: string, ipThree: string) {
     this.connectionAttempts = this.connectionAttempts + 1;
 
     axios
       .get(ipOne, { timeout: 2 * 1000 })
       .then((result) => {
-        console.log(this.connectionAttempts, "response from master", ipOne, result.data.worker);
+        console.log("response from master", ipOne, result.data.worker);
         if (result.data && result.data.worker && result.data.worker.publicIp) {
           this.workerInfo = result.data.worker as WorkerInstance;
           this.update();
           this.connectionAttempts = 0;
         } else {
           setTimeout(() => {
-            this.connectMaster(ipTwo, ipOne);
+            this.connectMaster(ipTwo, ipThree, ipOne);
           }, backOffForRetry(this.connectionAttempts));
         }
       })
       .catch((error) => {
         setTimeout(() => {
-          this.connectMaster(ipTwo, ipOne);
+          this.connectMaster(ipTwo, ipThree, ipOne);
         }, backOffForRetry(this.connectionAttempts));
       });
   }

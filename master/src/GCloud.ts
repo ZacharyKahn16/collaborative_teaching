@@ -3,6 +3,7 @@ import moment from 'moment';
 import { LOGGER } from './Logger';
 import { MasterCoordinator } from './masterCoordinator';
 
+/* eslint-disable @typescript-eslint/ban-ts-ignore */
 const ZONE = 'us-central1-a';
 const PROJECT_ID = 'collaborative-teaching';
 const INSTANCE_TYPE = {
@@ -15,13 +16,14 @@ const REFRESH_DATA_INTERVAL = 30 * 1000; // 30 secs
 const CONSISTENT_INTERVAL = 45 * 1000; // 45 secs
 const TIME_TILL_ACTIVE = 2.5 * 60 * 1000; // 2.5 min (s)
 
-export const NUM_MASTERS = 2;
+export const NUM_MASTERS = 3;
 export const NUM_WORKERS = 3;
 export const NUM_DATABASES = 4;
+const MASTER_IDS: number[] = [];
 const WORKER_IDS: number[] = [];
 const DATABASE_IDS: number[] = [];
 
-const staticIps = ['35.224.26.195', '35.226.186.203'];
+const STATIC_IPS = ['35.224.26.195', '35.226.186.203', '35.226.103.161'];
 
 export interface ComputeEngineInstance {
   id: string;
@@ -49,7 +51,6 @@ export class GCloud {
 
   readonly id = process.env.NAME;
   thisInstance: ComputeEngineInstance | undefined = undefined;
-  amIResponder: boolean = false;
 
   allInstances: ComputeEngineInstance[] = [];
   databaseInstances: ComputeEngineInstance[] = [];
@@ -58,6 +59,10 @@ export class GCloud {
 
   // Startup timers for processes
   constructor() {
+    for (let i = 0; i < NUM_MASTERS; i++) {
+      MASTER_IDS.push(i + 1);
+    }
+
     for (let i = 0; i < NUM_WORKERS; i++) {
       WORKER_IDS.push(i + 1);
     }
@@ -175,12 +180,32 @@ export class GCloud {
     });
   }
 
+  amIResponder(): boolean {
+    if (this.masterInstances.length < 1) {
+      return false;
+    }
+
+    if (this.masterInstances.length < 2) {
+      return true;
+    }
+
+    const ids = this.masterInstances.map((instance) => {
+      return instance.number;
+    });
+
+    return this.thisInstance !== undefined && this.thisInstance.number < Math.max(...ids);
+  }
+
   amICoordinator(): boolean {
-    return (
-      this.thisInstance !== undefined &&
-      this.masterInstances.length === NUM_MASTERS &&
-      !this.amIResponder
-    );
+    if (this.masterInstances.length < 2) {
+      return false;
+    }
+
+    const ids = this.masterInstances.map((instance) => {
+      return instance.number;
+    });
+
+    return this.thisInstance !== undefined && this.thisInstance.number === Math.max(...ids);
   }
 
   filterInstances(): void {
@@ -202,27 +227,10 @@ export class GCloud {
 
     if (thisInstance.length === 1) {
       this.thisInstance = thisInstance[0];
-
-      let amIMain = true;
-
-      for (const instance of this.masterInstances) {
-        if (this.thisInstance.number > instance.number) {
-          amIMain = false;
-        }
-      }
-
-      this.amIResponder = amIMain;
-
       LOGGER.debug(
-        `${thisInstance[0].id.toUpperCase()},  Responder: ${!this.amICoordinator()}, Coordinator: ${this.amICoordinator()}`,
+        `${thisInstance[0].id.toUpperCase()},  Responder: ${this.amIResponder()}, Coordinator: ${this.amICoordinator()}`,
         this.thisInstance,
       );
-
-      LOGGER.debug('Masters', this.masterInstances);
-      LOGGER.debug('Workers', this.workerInstances);
-      if (this.amICoordinator()) {
-        LOGGER.debug('File Databases', this.databaseInstances);
-      }
 
       this.healthCheck();
     }
@@ -240,18 +248,27 @@ export class GCloud {
 
   checkMasters(): void {
     if (this.thisInstance !== undefined) {
-      if (this.masterInstances.length < NUM_MASTERS) {
-        this.createMaster();
-      } else {
-        const otherMaster = this.masterInstances.filter((instance) => {
-          // @ts-ignore
-          return instance.id !== this.thisInstance.id;
-        });
+      const mastersAvailNums = this.masterInstances.map((instance) => {
+        return instance.number;
+      });
 
-        for (const master of otherMaster) {
-          if (!this.isInstanceHealthGood(master)) {
-            this.deleteInstance(master.id);
-          }
+      const mastersNotAvailNums = MASTER_IDS.filter((num) => {
+        // @ts-ignore
+        return mastersAvailNums.indexOf(num) < 0 && this.thisInstance.number !== num;
+      });
+
+      for (const num of mastersNotAvailNums) {
+        this.createMaster(num);
+      }
+
+      const otherMaster = this.masterInstances.filter((instance) => {
+        // @ts-ignore
+        return instance.id !== this.thisInstance.id;
+      });
+
+      for (const master of otherMaster) {
+        if (!this.isInstanceHealthGood(master)) {
+          this.deleteInstance(master.id);
         }
       }
     }
@@ -259,15 +276,15 @@ export class GCloud {
 
   checkWorkers(): void {
     if (this.amICoordinator()) {
-      const mastersAvailNums = this.workerInstances.map((instance) => {
+      const workersAvailNums = this.workerInstances.map((instance) => {
         return instance.number;
       });
 
-      const mastersNotAvailNums = WORKER_IDS.filter((num) => {
-        return mastersAvailNums.indexOf(num) < 0;
+      const workersNotAvailNums = WORKER_IDS.filter((num) => {
+        return workersAvailNums.indexOf(num) < 0;
       });
 
-      for (const num of mastersNotAvailNums) {
+      for (const num of workersNotAvailNums) {
         this.createWorker(num);
       }
 
@@ -329,21 +346,17 @@ export class GCloud {
     }
   }
 
-  createMaster(): void {
-    if (this.thisInstance !== undefined) {
-      const index = staticIps.indexOf(this.thisInstance.publicIp);
-      const nextIndex = index === 0 ? 1 : 0;
-      const nextIp = staticIps[nextIndex];
-      const nextName = `${INSTANCE_TYPE.MASTER}-${this.thisInstance.number + 1}`;
-      LOGGER.debug(`${nextName} creating`);
+  createMaster(num: number): void {
+    const name = `${INSTANCE_TYPE.MASTER}-${num}`;
+    const ip = STATIC_IPS[num - 1];
+    LOGGER.debug(`${name} creating`);
 
-      const command = `gcloud beta compute --project=${PROJECT_ID} instances create ${nextName} --zone=${ZONE} --machine-type=n1-standard-8 --subnet=default --network-tier=PREMIUM --maintenance-policy=MIGRATE --service-account=165250393917-compute@developer.gserviceaccount.com --scopes=https://www.googleapis.com/auth/cloud-platform --tags=http-server --image=ubuntu-minimal-1804-bionic-v20200317 --image-project=ubuntu-os-cloud --boot-disk-size=10GB --boot-disk-type=pd-standard --boot-disk-device-name=${nextName} --no-shielded-secure-boot --shielded-vtpm --shielded-integrity-monitoring --reservation-affinity=any --address=${nextIp} --metadata=startup-script-url=gs://collaborative-teaching.appspot.com/scripts/startup-master.bash,startup-status=initializing,created-on=$(date +%s)`;
-      exec(command, { silent: true }, (code, stdout, stderr) => {
-        if (code !== 0 || (stderr && stderr.includes('ERROR'))) {
-          LOGGER.error(`${nextName} - creating failed.`, code, stderr);
-        }
-      });
-    }
+    const command = `gcloud beta compute --project=${PROJECT_ID} instances create ${name} --zone=${ZONE} --machine-type=n1-standard-8 --subnet=default --network-tier=PREMIUM --maintenance-policy=MIGRATE --service-account=165250393917-compute@developer.gserviceaccount.com --scopes=https://www.googleapis.com/auth/cloud-platform --tags=http-server --image=ubuntu-minimal-1804-bionic-v20200317 --image-project=ubuntu-os-cloud --boot-disk-size=10GB --boot-disk-type=pd-standard --boot-disk-device-name=${name} --no-shielded-secure-boot --shielded-vtpm --shielded-integrity-monitoring --reservation-affinity=any --address=${ip} --metadata=startup-script-url=gs://collaborative-teaching.appspot.com/scripts/startup-master.bash,startup-status=initializing,created-on=$(date +%s)`;
+    exec(command, { silent: true }, (code, stdout, stderr) => {
+      if (code !== 0 || (stderr && stderr.includes('ERROR'))) {
+        LOGGER.error(`${name} - creating failed.`, code, stderr);
+      }
+    });
   }
 
   createWorker(num: number): void {
