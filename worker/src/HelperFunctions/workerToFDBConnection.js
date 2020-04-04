@@ -147,7 +147,11 @@ export class AccessFDB {
         },
       )
       .then(function(items) {
-        return items.length > 0 ? items[0] : items;
+        if (items.length <= 0) {
+          throw new Error('File not found');
+        }
+
+        return items[0];
       })
       .catch(function(err) {
         LOGGER.error('ERROR: Something went wrong with retrieval.', err);
