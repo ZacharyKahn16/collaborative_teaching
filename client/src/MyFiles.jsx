@@ -16,7 +16,6 @@ import {
   TableRow,
   TableCell,
   TableBody,
-  Link,
   TableContainer,
 } from "@material-ui/core";
 import SearchIcon from "@material-ui/icons/Search";
@@ -250,15 +249,14 @@ class MyFiles extends React.Component {
                     <TableRow key={row.docId}>
                       <TableCell align="left">
                         <Typography variant="body2">
-                          <Link
+                          <Button
                             color="primary"
-                            href="#"
                             onClick={() => {
                               this.updateSelectedFile(row.docId);
                             }}
                           >
                             {row.name}
-                          </Link>
+                          </Button>
                         </Typography>
                       </TableCell>
                       <TableCell align="left">

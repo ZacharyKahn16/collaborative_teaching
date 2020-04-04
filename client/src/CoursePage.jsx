@@ -5,7 +5,6 @@ import {
   AppBar,
   Dialog,
   IconButton,
-  Link,
   Paper,
   Table,
   TableBody,
@@ -16,6 +15,7 @@ import {
   Toolbar,
   Tooltip,
   Typography,
+  Button,
   withStyles,
 } from "@material-ui/core";
 import Header from "./Header";
@@ -168,15 +168,14 @@ class CoursePage extends React.Component {
                     <TableRow key={row.docId} className="file-row">
                       <TableCell align="left">
                         <Typography variant="body2">
-                          <Link
+                          <Button
                             color="primary"
-                            href="#"
                             onClick={() => {
                               this.updateSelectedFile(row.docId);
                             }}
                           >
                             {row.name}
-                          </Link>
+                          </Button>
                         </Typography>
                       </TableCell>
                       <TableCell align="left">

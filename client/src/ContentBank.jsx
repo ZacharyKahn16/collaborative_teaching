@@ -8,9 +8,9 @@ import {
   TableHead,
   TableRow,
   Typography,
-  Link,
   IconButton,
   Dialog,
+  Button,
   Tooltip,
 } from "@material-ui/core";
 import DeleteIcon from "@material-ui/icons/Delete";
@@ -160,15 +160,14 @@ class ContentBank extends Component {
               <TableRow key={row.docId} className="file-row">
                 <TableCell align="left">
                   <Typography variant="body2">
-                    <Link
+                    <Button
                       color="primary"
-                      href="#"
                       onClick={() => {
                         this.updateSelectedFile(row.docId);
                       }}
                     >
                       {row.name}
-                    </Link>
+                    </Button>
                   </Typography>
                 </TableCell>
                 <TableCell align="left">

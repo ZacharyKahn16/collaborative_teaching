@@ -233,6 +233,14 @@ class MyCourses extends React.Component {
                         >
                           {course.courseDesc}
                         </Typography>
+                        <Typography
+                          variant="body2"
+                          color="textSecondary"
+                          component="p"
+                          className={classes.desc}
+                        >
+                          {course.ownerName}
+                        </Typography>
                       </CardContent>
                     </CardActionArea>
                   </Link>
@@ -271,6 +279,14 @@ class MyCourses extends React.Component {
                           className={classes.desc}
                         >
                           {course.courseDesc}
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          color="textSecondary"
+                          component="p"
+                          className={classes.desc}
+                        >
+                          {course.ownerName}
                         </Typography>
                       </CardContent>
                     </CardActionArea>
@@ -355,7 +371,7 @@ class MyCourses extends React.Component {
               type="text"
               fullWidth
               multiline={true}
-              rows={3}
+              // rows={3}
               onChange={this.createCourseDescription}
               value={this.state.courseDescription}
             />
