@@ -30,6 +30,11 @@ class Header extends React.Component {
     const { classes, title } = this.props;
     const { workerInfo, user } = this.context;
 
+    const workerText =
+      workerInfo !== null && workerInfo !== undefined
+        ? `Connected to ${workerInfo.id}`
+        : "Trying to connect to worker";
+
     return (
       <AppBar
         component="div"
@@ -46,7 +51,7 @@ class Header extends React.Component {
               </Typography>
             </Grid>
             <Grid item>
-              <Typography color="inherit">Connected to {workerInfo.id}</Typography>
+              <Typography color="inherit">{workerText}</Typography>
             </Grid>
             <Grid item>
               <IconButton className={classes.iconButtonAvatar} disabled={true}>

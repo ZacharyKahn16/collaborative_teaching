@@ -41,7 +41,7 @@ class DeleteCard extends Component {
       <Card className="card-body">
         <CardContent>
           <Typography variant="h5" color="textSecondary" gutterBottom>
-            Delete File
+            Delete File from Course
           </Typography>
           <Typography variant="body2" className="mb-2" component="p" paragraph gutterBottom>
             Are you sure you want to delete {fileInfo.name} from {courseInfo.courseName}?

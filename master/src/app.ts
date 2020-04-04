@@ -17,8 +17,8 @@ app.get('/instances', (req, res) => {
 
   return res.send({
     thisMaster: {
-      responder: gcloud.amIResponder,
-      coordinator: !gcloud.amIResponder,
+      responder: gcloud.amIResponder(),
+      coordinator: gcloud.amICoordinator(),
       ...gcloud.thisInstance,
     },
     fdbs: gcloud.databaseInstances,
@@ -39,7 +39,9 @@ app.use('/', (req, res) => {
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
-  LOGGER.debug(`Server started at http://localhost:${PORT}`);
+  LOGGER.debug(
+    `${(process.env.NAME || 'Server').toUpperCase()} started at http://localhost:${PORT}`,
+  );
   GCloud.makeGCloud();
   WorkerTracker.makeWorkerTracker();
   InstanceChecker.makeInstanceChecker();

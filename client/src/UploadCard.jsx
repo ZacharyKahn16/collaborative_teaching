@@ -8,6 +8,8 @@ import Button from "@material-ui/core/Button";
 import "./Styles/Card.css";
 import { GlobalContext } from "./GlobalContext";
 
+const MAX_SIZE = 10485760; // 10 MB
+
 class UploadCard extends Component {
   static contextType = GlobalContext;
 
@@ -43,9 +45,11 @@ class UploadCard extends Component {
   };
 
   uploadFile = () => {
-    const { user, network } = this.context;
-    network.writeNewFile(this.state.uploadedFile, user.uid);
-    this.props.closeModal();
+    if (this.state.uploadedFile && this.state.uploadedFile.size < MAX_SIZE) {
+      const { user, network } = this.context;
+      network.writeNewFile(this.state.uploadedFile, user.uid);
+      this.props.closeModal();
+    }
   };
 
   render() {
@@ -72,12 +76,17 @@ class UploadCard extends Component {
             </Grid>
           </Grid>
           <br />
+          {this.state.uploadedFile && this.state.uploadedFile.size >= MAX_SIZE ? (
+            <Typography variant="subtitle2" color="error">
+              Max file size is 10MB
+            </Typography>
+          ) : null}
           <br />
           <Button
             className="mr-1"
             variant="contained"
             color={this.state.uploadedFile ? "primary" : undefined}
-            disabled={!this.state.uploadedFile}
+            disabled={!this.state.uploadedFile || this.state.uploadedFile.size >= MAX_SIZE}
             onClick={this.uploadFile}
           >
             Upload

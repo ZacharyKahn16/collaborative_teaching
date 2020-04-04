@@ -314,13 +314,14 @@ class MyCourses extends React.Component {
               fullWidth
               onChange={this.createCourseName}
             />
+
             <TextField
               margin="dense"
               label="Course Description"
               type="text"
               fullWidth
               multiline={true}
-              rows={3}
+              // rows={3}
               onChange={this.createCourseDescription}
             />
           </DialogContent>
