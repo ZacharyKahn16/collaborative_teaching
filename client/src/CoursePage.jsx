@@ -48,6 +48,9 @@ const styles = (theme) => ({
   contentWrapper: {
     margin: "40px 16px",
   },
+  toolbar: {
+    padding: "10px",
+  },
 });
 
 class CoursePage extends React.Component {
@@ -130,7 +133,7 @@ class CoursePage extends React.Component {
       <Paper className={classes.paper} square>
         <Header title={course.courseName} />
         <AppBar className={classes.searchBar} position="static" color="default" elevation={0}>
-          <Toolbar />
+          <Toolbar className={classes.toolbar}>{course.courseDesc}</Toolbar>
         </AppBar>
 
         <div className={classes.contentWrapper}>
