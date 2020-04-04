@@ -406,7 +406,7 @@ export class GCloud {
       message = `${instance.id} health is GOOD, has been created but not yet initialized.`;
     } else if (instance.instanceRunning && (instance.instanceServing as boolean)) {
       val = true;
-      message = `${instance.id} health is GOOD, has been created and is now serving.`;
+      message = `${instance.id} health is GOOD, and is serving.`;
     } else {
       val = moment().unix() <= instance.createdOn + TIME_TILL_ACTIVE;
     }

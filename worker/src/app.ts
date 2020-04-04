@@ -543,7 +543,7 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
 
     try {
       await deleteFile(docId);
-      sendSuccessMessage(socket, requestId, `File has been deleted`);
+      sendSuccessMessage(socket, requestId, 'File has been deleted');
       broadcastAllMetadataToClients();
     } catch (err) {
       sendErrorMessage(

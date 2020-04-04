@@ -1,4 +1,3 @@
-import deepCopy from 'rfdc';
 import { AccessFDB } from './workerToFDBConnection';
 import { LOGGER } from '../Logger';
 import { addFdbLocation, getFile } from '../MCDB';
@@ -111,6 +110,7 @@ export async function retrieveFdbLocations(docId: string): Promise<any[]> {
   if (!docData) {
     return [];
   }
+
   return docData['fdbLocations'];
 }
 

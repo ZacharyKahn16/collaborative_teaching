@@ -81,7 +81,7 @@ const FileViewModal = () => {
 
         const id = window.setTimeout(() => {
           getFile();
-        }, 30 * 1000);
+        }, 10 * 1000);
         setTimeout(id);
 
         if (resp.status === "success") {
