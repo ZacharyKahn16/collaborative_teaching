@@ -6,9 +6,6 @@ import * as mcdb from './MCDB';
 const MongoClient = require('mongodb').MongoClient;
 const { LOGGER } = require('./Logger');
 
-// TODO: MAKE SURE OWNERID IS ADDED TO WORKERS.
-// TODO: DECIDE IF fileId is inserted as string or int into FDB.
-
 export class MasterCoordinator {
   /**
    * @class
@@ -853,7 +850,7 @@ export class MasterCoordinator {
    * are compared to make sure that they are in agreement.
    *
    * THIS FUNCTION CAN ONLY RUN AFTER makeCorrectNumberOfReplicas AND
-   * makeAllFileCopiesConsistent HAVE COMPLETED.
+   * makeAllFileCopiesConsistent AND populateEmptyFdbs HAVE COMPLETED.
    *
    * @param {Array} fdbIps List of fdbIps, eg. ['1.1.1.1']
    *
@@ -1123,5 +1120,132 @@ export class MasterCoordinator {
     } catch (err) {
       LOGGER.error(err);
     }
+  }
+
+  /**
+   * Populate an empty FDBs.
+   *
+   * Finds any empty FDBs in system and populates them with files randomly
+   * selected from other FDBs. It will then delete these copied files from other
+   * FDBs it copied them from.
+   *
+   * THIS FUNCTION CAN ONLY RUN AFTER makeCorrectNumberOfReplicas AND
+   * makeAllFileCopiesConsistent HAVE COMPLETED.
+   *
+   * @param {Array} fdbIps List of fdbIps, eg. ['1.1.1.1']
+   *
+   * @returns {Promise} Promise returns 0 on success, otherwise throws error.
+   **/
+  populateEmptyFdbs(fdbIps) {
+    const _this = this;
+    // organizedDocData structure: {docId: [[fdbIp, hash, ts, ownerId, fileName]]}
+    return this.getAllFDBsOrganizedByDocId(fdbIps).then(
+      async function(organizedDocData) {
+        // If organizedDocData is empty, no data in FDBs yet.
+        if (
+          Object.entries(organizedDocData).length === 0 &&
+          organizedDocData.constructor === Object
+        ) {
+          LOGGER.info('No data in any FDBs yet. No further work required.');
+          return 0;
+        }
+
+        // Find if an fdb is missing and get the total number of files in the
+        // system.
+        let totalNumFiles = 0;
+        let fdbsWithData = [];
+        let fdb;
+        for (let docId in organizedDocData) {
+          for (let i = 0; i < organizedDocData[docId].length; i++) {
+            fdb = organizedDocData[docId][i][0];
+            totalNumFiles = totalNumFiles + 1;
+            if (!fdbsWithData.includes(fdb)) {
+              fdbsWithData.push(fdb);
+            }
+          }
+        }
+
+        let emptyFdbs = fdbIps.filter((ele) => {
+          return !fdbsWithData.includes(ele);
+        });
+
+        if (emptyFdbs.length === 0) {
+          LOGGER.info('No empty FDBs in system.');
+          return 0;
+        } else {
+          LOGGER.info(
+            'There is/are ' +
+              emptyFdbs.length +
+              ' empty FDB(s) in system. Populating empty FDBs now.',
+          );
+        }
+
+        let numFdbs = fdbIps.length;
+        if (totalNumFiles <= numFdbs) {
+          LOGGER.info(
+            'Number of files in system is less or equal to than number of FDBs. Therefore, no need for load balancing.',
+          );
+          return 0;
+        }
+
+        // Populate empty FDBs
+
+        // Start with full list of files in system, but update this list as
+        // files are added to empty fdbs.
+        let filesAvailableForCopy = Object.keys(organizedDocData);
+        let emptyFdb;
+        try {
+          // Keep track of which files need to be deleted and from where they
+          // need to be deleted.
+          let deletePromises = [];
+          for (let i = 0; i < emptyFdbs.length; i++) {
+            emptyFdb = emptyFdbs[i];
+            let numFilesToCopyOver = Math.ceil(totalNumFiles / (numFdbs + 1));
+            let randFileIds = _this._getRandomFDBs(filesAvailableForCopy, numFilesToCopyOver);
+            filesAvailableForCopy = filesAvailableForCopy.filter((ele) => {
+              return !randFileIds.includes(ele);
+            });
+
+            let rfileId;
+            for (let j = 0; j < randFileIds.length; j++) {
+              rfileId = randFileIds[j];
+              // Returns an array with one entry.
+              let randFdbToCopyFrom = _this._getRandomFDBs(
+                organizedDocData[rfileId].map((ele) => {
+                  return ele[0];
+                }),
+                1,
+              );
+
+              let resp = await _this._retrieveAndInsert(rfileId, randFdbToCopyFrom, [emptyFdb]);
+              // If insertion into empty fdb successful, add the copied file
+              // to deletion promises list so that it gets deleted from its old
+              // fdb.
+              if (resp === 0) {
+                deletePromises.push(_this.deleteFile(rfileId, randFdbToCopyFrom[0]));
+              }
+            }
+          }
+
+          // Delete the files that we just made copies of replicas.
+          Promise.all(deletePromises).then(
+            (vals) => {
+              LOGGER.info('SUCCESSFULLY DELETED FILES AFTER POPULATING EMPTY FDBs.');
+            },
+            (err) => {
+              LOGGER.error('ERROR WHEN DELETING FILES AFTER POPULATING EMPTY FDBs.', err);
+            },
+          );
+        } catch (err) {
+          LOGGER.error(err);
+        }
+
+        return 0;
+      },
+      function(err) {
+        LOGGER.error(err);
+        throw err;
+      },
+    );
   }
 }

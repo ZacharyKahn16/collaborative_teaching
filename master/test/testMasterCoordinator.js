@@ -340,7 +340,9 @@ class CreateMockDataForMC {
 // let myArgs = process.argv.slice(2);
 // const fdbIps = myArgs[0];
 // Manually copy past in from gcloud console.
-const fdbIps = ['35.224.201.131', '35.223.131.225', '35.223.196.247', '35.226.93.142'];
+// const fdbIps = ['35.202.117.244', '34.71.103.160', '35.223.11.177'];
+const fdbIps = ['35.202.117.244', '34.71.103.160', '35.223.11.177', '34.70.126.34'];
+// const fdbIps = ['34.70.126.34'];
 let mc = new MasterCoordinator.MasterCoordinator();
 let mockDataCreater = new CreateMockDataForMC(mc);
 
@@ -393,7 +395,60 @@ async function entireAutoMcTest(fdbIps, mc, mockDataCreater) {
   }
 }
 
-entireAutoMcTest(fdbIps, mc, mockDataCreater);
+// entireAutoMcTest(fdbIps, mc, mockDataCreater);
+
+// Checks that auto rebalancing feature works.
+async function autoFillEmptyFdbsTest(fdbIps, mc, mockDataCreater) {
+  try {
+    // Delete all data from FDBs.
+    setTimeout(function() {
+      LOGGER.info('CLEAR FDBs.');
+      mockDataCreater.deleteAllData(fdbIps);
+    }, 500);
+    // Run all MC functions and make sure they work when FDBs are empty.
+    setTimeout(function() {
+      LOGGER.info('RUN MC WITH EMPTY FDBs.');
+      mc.makeAllFileCopiesConsistent(fdbIps)
+        .then((result) => mc.makeCorrectNumberOfReplicas(fdbIps))
+        .then((result) => mc.populateEmptyFdbs(fdbIps))
+        .then((result) => mc.makeMCDBWithCorrectInfo(fdbIps))
+        .finally((result) => LOGGER.info('DONE PART 1'));
+    }, 2500);
+
+    // Insert mock data into subset of FDBs and into MCDB.
+    setTimeout(function() {
+      LOGGER.info('PUT IN MOCK DATA INTO ONLY 2 OF 4 FDBs.');
+      mockDataCreater.insertOneCopyPerFdb(fdbIps.slice(0, 2));
+      mockDataCreater.insertTooManyCopies(fdbIps.slice(0, 2));
+      mockDataCreater.createInconsistentCopies(fdbIps.slice(0, 2));
+      mockDataCreater.insertFakeInconsistentMcdbData();
+    }, 4500);
+
+    // Run MC.
+    setTimeout(function() {
+      LOGGER.info('RUN MC WITH INCONSISTENT DATA AND NOT IN ALL FDBs.');
+      mc.makeAllFileCopiesConsistent(fdbIps)
+        .then((result) => mc.makeCorrectNumberOfReplicas(fdbIps))
+        .then((result) => mc.populateEmptyFdbs(fdbIps))
+        .then((result) => mc.makeMCDBWithCorrectInfo(fdbIps))
+        .finally((result) => LOGGER.info('DONE PART 2'));
+    }, 8000);
+
+    // Run MC after everything has been cleaned up.
+    setTimeout(function() {
+      LOGGER.info('RUN MC WITH CONSISTENT DATA.');
+      mc.makeAllFileCopiesConsistent(fdbIps)
+        .then((result) => mc.makeCorrectNumberOfReplicas(fdbIps))
+        .then((result) => mc.populateEmptyFdbs(fdbIps))
+        .then((result) => mc.makeMCDBWithCorrectInfo(fdbIps))
+        .finally((result) => LOGGER.info('DONE PART 3'));
+    }, 15000);
+  } catch (err) {
+    LOGGER.error(err);
+  }
+}
+
+autoFillEmptyFdbsTest(fdbIps, mc, mockDataCreater);
 
 // *** MANUAL SET UP *** //
 // Use manual testing for debugging individual funcitons.
@@ -532,6 +587,16 @@ entireAutoMcTest(fdbIps, mc, mockDataCreater);
 // Test makeMCDBWithCorrectInfo
 // This should make MCDB match what is presented in the FDBs.
 // mc.makeMCDBWithCorrectInfo(fdbIps).then(
+//   function(items) {
+//     LOGGER.info('The promise was fulfilled with items!', items);
+//   },
+//   function(err) {
+//     LOGGER.error('*******\nTHE PROMISE WAS REJECTED\n*******\n', err, err.stack);
+//   },
+// );
+
+// Test populateNewFDB
+// mc.populateEmptyFdbs(fdbIps).then(
 //   function(items) {
 //     LOGGER.info('The promise was fulfilled with items!', items);
 //   },

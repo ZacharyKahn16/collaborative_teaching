@@ -341,6 +341,10 @@ export class GCloud {
       } catch (err) {}
 
       try {
+        await this.masterCoordinator.populateEmptyFdbs(ips);
+      } catch (err) {}
+
+      try {
         await this.masterCoordinator.makeMCDBWithCorrectInfo(ips);
       } catch (err) {}
     }
