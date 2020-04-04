@@ -229,7 +229,7 @@ export class GCloud {
       this.thisInstance = thisInstance[0];
       LOGGER.debug(
         `${thisInstance[0].id.toUpperCase()},  Responder: ${this.amIResponder()}, Coordinator: ${this.amICoordinator()}`,
-        this.thisInstance,
+        'Election',
       );
 
       this.healthCheck();
@@ -411,7 +411,7 @@ export class GCloud {
       if (val) {
         message = `${instance.id} health is GOOD, has been created but not yet initialized.`;
       } else {
-        message = `${instance.id} health i BAD, has been created, should be serving, but is not serving.`;
+        message = `${instance.id} health is BAD, has been created, should be serving, but is not serving.`;
       }
     }
 
@@ -419,7 +419,7 @@ export class GCloud {
       if (val) {
         LOGGER.info(message);
       } else {
-        LOGGER.error(message, instance);
+        LOGGER.error(message);
       }
     }
 
