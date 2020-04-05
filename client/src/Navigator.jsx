@@ -13,6 +13,7 @@ import SchoolIcon from "@material-ui/icons/School";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
 import AccountBalanceIcon from "@material-ui/icons/AccountBalance";
 import { AUTH } from "./Firebase";
+import Logo from "./collab-teach-logo.svg";
 
 const categories = [
   {
@@ -77,6 +78,14 @@ const styles = (theme) => ({
     marginRight: theme.spacing(2),
   },
   divider: {},
+  logoWrap: {
+    justifyContent: "center",
+  },
+  logo: {
+    userDrag: "none",
+    userSelect: "none",
+    transform: "translate(-5px, 0px)",
+  },
 });
 
 function Navigator(props) {
@@ -96,8 +105,8 @@ function Navigator(props) {
   return (
     <Drawer variant="permanent" {...other}>
       <List disablePadding>
-        <ListItem className={clsx(classes.firebase, classes.item, classes.itemCategory)}>
-          Collaborative Teaching
+        <ListItem className={clsx(classes.firebase, classes.item, classes.itemCategory, classes.logoWrap)}>
+          <img className={clsx(classes.logo)} src={Logo} alt="Collab Learn" />
         </ListItem>
         {categories.map(({ id, children }, parentKey) => (
           <React.Fragment key={parentKey}>
