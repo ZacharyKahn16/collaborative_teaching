@@ -105,7 +105,9 @@ function Navigator(props) {
   return (
     <Drawer variant="permanent" {...other}>
       <List disablePadding>
-        <ListItem className={clsx(classes.firebase, classes.item, classes.itemCategory, classes.logoWrap)}>
+        <ListItem
+          className={clsx(classes.firebase, classes.item, classes.itemCategory, classes.logoWrap)}
+        >
           <img className={clsx(classes.logo)} src={Logo} alt="Collab Learn" />
         </ListItem>
         {categories.map(({ id, children }, parentKey) => (

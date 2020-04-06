@@ -44,12 +44,7 @@ class ContentBank extends Component {
     this.updateSelectedFile = this.updateSelectedFile.bind(this);
   }
 
-  createData = (fileName, fileType, courseName, owner, dateUploaded) => {
-    return { fileName, fileType, courseName, owner, dateUploaded };
-  };
-
   handleEditModalOpen = (file) => {
-    console.log(file);
     this.setState(() => ({
       editModalOpen: true,
       selectedFile: file,
@@ -159,16 +154,15 @@ class ContentBank extends Component {
             {files.map((row) => (
               <TableRow key={row.docId} className="file-row">
                 <TableCell align="left">
-                  <Typography variant="body2">
-                    <Button
-                      color="primary"
-                      onClick={() => {
-                        this.updateSelectedFile(row.docId);
-                      }}
-                    >
-                      {row.name}
-                    </Button>
-                  </Typography>
+                  <Button
+                    color="primary"
+                    style={{ width: "100%", justifyContent: "flex-start", textAlign: "left" }}
+                    onClick={() => {
+                      this.updateSelectedFile(row.docId);
+                    }}
+                  >
+                    {row.name}
+                  </Button>
                 </TableCell>
                 <TableCell align="left">
                   {row.courseIds.length <= 1 ? (

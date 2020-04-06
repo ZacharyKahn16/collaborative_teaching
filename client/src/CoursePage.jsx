@@ -51,6 +51,11 @@ const styles = (theme) => ({
   toolbar: {
     padding: "10px",
   },
+  button: {
+    width: "100%",
+    justifyContent: "flex-start",
+    textAlign: "left",
+  },
 });
 
 class CoursePage extends React.Component {
@@ -167,16 +172,15 @@ class CoursePage extends React.Component {
                   {files.map((row) => (
                     <TableRow key={row.docId} className="file-row">
                       <TableCell align="left">
-                        <Typography variant="body2">
-                          <Button
-                            color="primary"
-                            onClick={() => {
-                              this.updateSelectedFile(row.docId);
-                            }}
-                          >
-                            {row.name}
-                          </Button>
-                        </Typography>
+                        <Button
+                          color="primary"
+                          className={classes.button}
+                          onClick={() => {
+                            this.updateSelectedFile(row.docId);
+                          }}
+                        >
+                          {row.name}
+                        </Button>
                       </TableCell>
                       <TableCell align="left">
                         {row.name.split(".")[row.name.split(".").length - 1].toUpperCase()}

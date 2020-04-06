@@ -106,7 +106,7 @@ const FileViewModal = () => {
       open={true}
       onClose={onClose}
       fullWidth={true}
-      disableBackdropClick={true}
+      disableBackdropClick={false}
       disableEscapeKeyDown={false}
     >
       <IconButton className={classes.closeButton} onClick={onClose} color="inherit">

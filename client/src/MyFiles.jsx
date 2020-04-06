@@ -57,6 +57,11 @@ const styles = (theme) => ({
   addFileButton: {
     marginRight: "5px",
   },
+  button: {
+    width: "100%",
+    justifyContent: "flex-start",
+    textAlign: "left",
+  },
 });
 
 class MyFiles extends React.Component {
@@ -248,16 +253,15 @@ class MyFiles extends React.Component {
                   {files.map((row) => (
                     <TableRow key={row.docId}>
                       <TableCell align="left">
-                        <Typography variant="body2">
-                          <Button
-                            color="primary"
-                            onClick={() => {
-                              this.updateSelectedFile(row.docId);
-                            }}
-                          >
-                            {row.name}
-                          </Button>
-                        </Typography>
+                        <Button
+                          color="primary"
+                          className={classes.button}
+                          onClick={() => {
+                            this.updateSelectedFile(row.docId);
+                          }}
+                        >
+                          {row.name}
+                        </Button>
                       </TableCell>
                       <TableCell align="left">
                         {row.courseIds.length <= 1 ? (

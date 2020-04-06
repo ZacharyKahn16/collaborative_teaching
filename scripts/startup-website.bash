@@ -14,6 +14,7 @@ gsutil cp -r gs://collaborative-teaching.appspot.com/build ./
 mv  -v /var/www/html/build/* /var/www/html/
 sudo rm index.nginx-debian.html
 sudo rm -rf build/
+sed -i 's/try_files $uri $uri\/ =404;/try_files $uri $uri\/ \/index.html;/g' /etc/nginx/sites-available/default
 sudo systemctl restart nginx
 sudo systemctl status nginx
 

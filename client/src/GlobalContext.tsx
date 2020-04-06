@@ -23,8 +23,7 @@ const ADD_FILE_TO_COURSE = "Add File To Course";
 const REMOVE_FILE_FROM_COURSE = "Remove File From Course";
 
 function backOffForRetry(retryNum: number) {
-  // Exp between 9 and 18 (corresponds to 512 ms to 262144 ms)
-  const exp = Math.min(retryNum + 9, 18);
+  const exp = Math.min(retryNum, 10);
   const nominalDelay = 2 ** exp;
   return nominalDelay * (Math.random() + 0.5);
 }
