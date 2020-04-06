@@ -229,7 +229,6 @@ export class GCloud {
       this.thisInstance = thisInstance[0];
       LOGGER.debug(
         `${thisInstance[0].id.toUpperCase()},  Responder: ${this.amIResponder()}, Coordinator: ${this.amICoordinator()}`,
-        'Election',
       );
 
       this.healthCheck();
@@ -353,7 +352,8 @@ export class GCloud {
   createMaster(num: number): void {
     const name = `${INSTANCE_TYPE.MASTER}-${num}`;
     const ip = STATIC_IPS[num - 1];
-    LOGGER.debug(`${name} creating`);
+    // @ts-ignore
+    LOGGER.debug(`${this.thisInstance.id.toUpperCase()} is creating ${name.toUpperCase()}`);
 
     const command = `gcloud beta compute --project=${PROJECT_ID} instances create ${name} --zone=${ZONE} --machine-type=n1-standard-8 --subnet=default --network-tier=PREMIUM --maintenance-policy=MIGRATE --service-account=165250393917-compute@developer.gserviceaccount.com --scopes=https://www.googleapis.com/auth/cloud-platform --tags=http-server --image=ubuntu-minimal-1804-bionic-v20200317 --image-project=ubuntu-os-cloud --boot-disk-size=10GB --boot-disk-type=pd-standard --boot-disk-device-name=${name} --no-shielded-secure-boot --shielded-vtpm --shielded-integrity-monitoring --reservation-affinity=any --address=${ip} --metadata=startup-script-url=gs://collaborative-teaching.appspot.com/scripts/startup-master.bash,startup-status=initializing,created-on=$(date +%s)`;
     exec(command, { silent: true }, (code, stdout, stderr) => {
@@ -365,7 +365,8 @@ export class GCloud {
 
   createWorker(num: number): void {
     const name = `${INSTANCE_TYPE.WORKER}-${num}`;
-    LOGGER.debug(`${name} creating`);
+    // @ts-ignore
+    LOGGER.debug(`${this.thisInstance.id.toUpperCase()} is creating ${name.toUpperCase()}`);
 
     const command = `gcloud beta compute --project=${PROJECT_ID} instances create ${name} --zone=${ZONE} --machine-type=n1-standard-2 --subnet=default --network-tier=PREMIUM --maintenance-policy=MIGRATE --service-account=165250393917-compute@developer.gserviceaccount.com --scopes=https://www.googleapis.com/auth/cloud-platform --tags=http-server --image=ubuntu-minimal-1804-bionic-v20200317 --image-project=ubuntu-os-cloud --boot-disk-size=10GB --boot-disk-type=pd-standard --boot-disk-device-name=${name} --no-shielded-secure-boot --shielded-vtpm --shielded-integrity-monitoring --reservation-affinity=any --metadata=startup-script-url=gs://collaborative-teaching.appspot.com/scripts/startup-worker.bash,startup-status=initializing,created-on=$(date +%s)`;
     exec(command, { silent: true }, (code, stdout, stderr) => {
@@ -377,7 +378,8 @@ export class GCloud {
 
   createDatabase(num: number): void {
     const name = `${INSTANCE_TYPE.DATABASE}-${num}`;
-    LOGGER.debug(`${name} creating`);
+    // @ts-ignore
+    LOGGER.debug(`${this.thisInstance.id.toUpperCase()} is creating ${name.toUpperCase()}`);
 
     const command = `gcloud beta compute --project=${PROJECT_ID} instances create ${name} --zone=${ZONE} --machine-type=n1-standard-2 --subnet=default --network-tier=PREMIUM --maintenance-policy=MIGRATE --service-account=165250393917-compute@developer.gserviceaccount.com --scopes=https://www.googleapis.com/auth/cloud-platform --tags=database-server --image=ubuntu-minimal-1804-bionic-v20200317 --image-project=ubuntu-os-cloud --boot-disk-size=10GB --boot-disk-type=pd-standard --boot-disk-device-name=${name} --no-shielded-secure-boot --shielded-vtpm --shielded-integrity-monitoring --reservation-affinity=any --metadata=startup-script-url=gs://collaborative-teaching.appspot.com/scripts/startup-database.bash,startup-status=initializing,created-on=$(date +%s)`;
     exec(command, { silent: true }, (code, stdout, stderr) => {
@@ -388,7 +390,9 @@ export class GCloud {
   }
 
   deleteInstance(id: string): void {
-    LOGGER.debug(`${id} deleting`);
+    // @ts-ignore
+    LOGGER.debug(`${this.thisInstance.id.toUpperCase()} is deleting ${id.toUpperCase()}`);
+
     const command = `gcloud compute --project=${PROJECT_ID} instances delete ${id} --zone=${ZONE}`;
     exec(command, { silent: true }, (code, stdout, stderr) => {
       if (code !== 0 || stderr) {
