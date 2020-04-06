@@ -354,7 +354,7 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
           successfulUpdates.push(fdbRef);
         },
         function(err: any) {
-          throw err;
+          LOGGER.debug(err);
         },
       );
     }
@@ -522,7 +522,7 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
           successfulDeletes.push(fdbRef);
         },
         function(err: any) {
-          throw err;
+          LOGGER.debug(err);
         },
       );
     }
