@@ -506,7 +506,6 @@ export class MasterCoordinator {
       },
       function(err) {
         LOGGER.error(err);
-        throw err;
       },
     );
   }
@@ -833,7 +832,6 @@ export class MasterCoordinator {
         },
         function(err) {
           LOGGER.error(err);
-          throw err;
         },
       );
   }
@@ -954,7 +952,6 @@ export class MasterCoordinator {
       },
       function(err) {
         LOGGER.error(err);
-        throw err;
       },
     );
   }
@@ -1244,7 +1241,6 @@ export class MasterCoordinator {
       },
       function(err) {
         LOGGER.error(err);
-        throw err;
       },
     );
   }

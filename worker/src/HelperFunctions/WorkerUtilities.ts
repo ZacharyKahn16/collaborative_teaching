@@ -56,10 +56,7 @@ export async function createReplicas(
       return fdbToAvoid.getIp() === fdb.getIp();
     });
 
-    if (toAvoid == undefined) {
-      return true;
-    }
-    return false;
+    return toAvoid === undefined;
   });
 
   const successfulInserts: AccessFDB[] = [];
@@ -104,7 +101,7 @@ export async function retrieveFdbLocations(docId: string): Promise<any[]> {
       docData = doc.data();
     })
     .catch((err) => {
-      throw err;
+      console.error(err);
     });
 
   if (!docData) {
