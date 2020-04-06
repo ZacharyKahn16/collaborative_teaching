@@ -239,7 +239,7 @@ class MyCourses extends React.Component {
                           component="p"
                           className={classes.desc}
                         >
-                          {course.ownerName}
+                          Owner: {course.ownerName}
                         </Typography>
                       </CardContent>
                     </CardActionArea>
@@ -286,7 +286,7 @@ class MyCourses extends React.Component {
                           component="p"
                           className={classes.desc}
                         >
-                          {course.ownerName}
+                          Owner: {course.ownerName}
                         </Typography>
                       </CardContent>
                     </CardActionArea>
