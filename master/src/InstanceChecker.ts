@@ -156,7 +156,7 @@ export class InstanceChecker {
 
       // If instance is not good or not serving, move on
       if (!instanceGood || instance.instanceServing !== true) {
-        LOGGER.debug(`${instance.id} not good, not serving.`);
+        LOGGER.debug(`${instance.id} not good, not serving, no socket made.`);
         continue;
       }
 
@@ -207,7 +207,7 @@ export class InstanceChecker {
 
       // If instance is not good or not serving, move on
       if (!instanceGood || instance.instanceServing !== true) {
-        LOGGER.debug(`${instance.id} not good, not serving.`);
+        LOGGER.debug(`${instance.id} not good, not serving, no client made.`);
         continue;
       }
 
