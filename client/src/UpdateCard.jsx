@@ -7,7 +7,7 @@ import Button from "@material-ui/core/Button";
 import "./Styles/Card.css";
 import { GlobalContext } from "./GlobalContext";
 
-const MAX_SIZE = 10485760; // 10 MB
+const MAX_SIZE = 1048576; // 1MB
 
 class UpdateCard extends Component {
   static contextType = GlobalContext;
@@ -83,7 +83,7 @@ class UpdateCard extends Component {
           <br />
           {this.state.uploadedFile && this.state.uploadedFile.size >= MAX_SIZE ? (
             <Typography variant="subtitle2" color="error">
-              Max file size is 10MB
+              File is too large. Max file size is 1MB
             </Typography>
           ) : null}
           <br />
