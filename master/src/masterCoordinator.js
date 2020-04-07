@@ -1,7 +1,6 @@
 /**
  * Classes for master coordinator.
  **/
-import moment from 'moment';
 import * as mcdb from './MCDB';
 const MongoClient = require('mongodb').MongoClient;
 const { LOGGER } = require('./Logger');
@@ -375,7 +374,7 @@ export class MasterCoordinator {
         // Get organized data for all FDBs.
         return Promise.all(retrievePromises).then(
           (vals) => {
-            LOGGER.info('SUCCESSFULLY RETRIEVED ALL DATA FROM EACH FDB.', moment().valueOf());
+            LOGGER.info('SUCCESSFULLY RETRIEVED ALL DATA FROM EACH FDB.');
 
             // Merge results from all FDBs.
             // Example of objects to merge.
@@ -591,7 +590,7 @@ export class MasterCoordinator {
       // Create replicas.
       Promise.all(updatePromises).then(
         (vals) => {
-          LOGGER.info(`SUCCESSFULLY REPLICATED ALL COPIES FOR ${fileId}.`);
+          LOGGER.info(`SUCCESSFULLY REPLICATED ALL COPIES FOR ${correctFileName}.`);
         },
         (err) => {
           LOGGER.error('ERROR WHEN REPLICATING FILES.', err);
@@ -817,7 +816,7 @@ export class MasterCoordinator {
               // Update all out of sync files.
               Promise.all(updatePromises).then(
                 (vals) => {
-                  LOGGER.info(`SUCCESSFULLY UPDATED ALL INCONSISTENT COPIES FOR DOC ${docId}.`);
+                  LOGGER.info(`SUCCESSFULLY UPDATED ALL INCONSISTENT COPIES FOR DOC ${correctFileName}.`);
                 },
                 (err) => {
                   LOGGER.error('ERROR WHEN UPDATING INCONSISTENT FILES.', err);
@@ -1107,10 +1106,10 @@ export class MasterCoordinator {
       // Update all inconsistencies between FDB and MCDB.
       Promise.all(updatePromises).then(
         (vals) => {
-          LOGGER.debug('SUCCESSFULLY SYNCED FDB AND MCDB ENTRIES.', moment().valueOf());
+          LOGGER.debug('SUCCESSFULLY SYNCED FDB AND MCDB ENTRIES.');
         },
         (err) => {
-          LOGGER.error('ERROR WHEN SYNCING FDB AND MCDB ENTRIES.', err, moment().valueOf());
+          LOGGER.error('ERROR WHEN SYNCING FDB AND MCDB ENTRIES.', err);
         },
       );
       return 0;
