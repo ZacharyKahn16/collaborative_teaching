@@ -1,3 +1,8 @@
 .linkNoStyle {
     text-decoration: none;
 }
+
+@font-face {
+    font-family: "Lexend Deca";
+    src: url("./LexendDeca-Regular.ttf");
+}

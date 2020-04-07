@@ -13,7 +13,7 @@ import SchoolIcon from "@material-ui/icons/School";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
 import AccountBalanceIcon from "@material-ui/icons/AccountBalance";
 import { AUTH } from "./Firebase";
-import Logo from "./collab-teach-logo.svg";
+import Logo from "./collab-learn-logo.svg";
 
 const categories = [
   {
