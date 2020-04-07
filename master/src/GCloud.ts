@@ -14,7 +14,7 @@ const INSTANCE_TYPE = {
 
 const REFRESH_DATA_INTERVAL = 30 * 1000; // 30 secs
 const CONSISTENT_INTERVAL = 45 * 1000; // 45 secs
-const TIME_TILL_ACTIVE = 2.5 * 60 * 1000; // 2.5 min (s)
+const TIME_TILL_ACTIVE = 2.75 * 60; // 2.75 min (s)
 
 export const NUM_MASTERS = 3;
 export const NUM_WORKERS = 3;
