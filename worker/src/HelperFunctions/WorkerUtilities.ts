@@ -119,5 +119,5 @@ export async function retrieveFdbLocations(docId: string): Promise<any[]> {
  * return example: [34.70.206.197, 35.184.8.156] or false
  */
 export function replicasNeeded(fdbList: AccessFDB[]): number {
-  return Math.floor(fdbList.length / 3) + 1;
+  return Math.ceil(fdbList.length / 3) + 1;
 }
