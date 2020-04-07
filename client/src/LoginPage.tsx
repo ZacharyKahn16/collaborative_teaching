@@ -6,7 +6,6 @@ import {
   Typography,
   makeStyles,
   Grid,
-  Link,
   Paper,
   createStyles,
   Theme,
@@ -174,9 +173,9 @@ export default function LoginPage() {
             <Grid container={true} justify="flex-end">
               <Grid item>
                 {login ? (
-                  <Link href="#" variant="body2" onClick={toggleLogin}>
+                  <Button variant="text" onClick={toggleLogin} color="primary">
                     Don't have an account? Register
-                  </Link>
+                  </Button>
                 ) : null}
               </Grid>
             </Grid>
