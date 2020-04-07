@@ -425,7 +425,7 @@ export class MasterCoordinator {
       function(organizedDocData) {
         // Number of replicas dynamically to n/3 + 1.
         const replicaUpdateInfo = {};
-        const desiredReplicas = Math.floor(fdbIps.length / 3) + 1;
+        const desiredReplicas = Math.ceil(fdbIps.length / 3) + 1;
         for (const fileId in organizedDocData) {
           // Positive difference indicates how many replicas need to be added
           // for a given docId. Negative difference tells us how many replicas
