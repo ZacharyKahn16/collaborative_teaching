@@ -36,6 +36,12 @@
 
 ### Retrieving files from workers (TODO: Dan or Garland)
 
+    The files are retreived in the GlobalContext.tsx (line 164) using sockets.
+    Then passed down to the children components using React Context.
+    In files ContentBank.jsx, CoursePage.jsx and MyFiles.jsx, all files are retrieved then filtered if needed.
+
+---
+
 ### Retrieving files from FDBs (TODO: James)
 
 ### Handling failures/heartbeat mechanism (TODO: Satyaki)
