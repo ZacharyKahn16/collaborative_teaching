@@ -816,7 +816,9 @@ export class MasterCoordinator {
               // Update all out of sync files.
               Promise.all(updatePromises).then(
                 (vals) => {
-                  LOGGER.info(`SUCCESSFULLY UPDATED ALL INCONSISTENT COPIES FOR DOC ${correctFileName}.`);
+                  LOGGER.info(
+                    `SUCCESSFULLY UPDATED ALL INCONSISTENT COPIES FOR DOC ${correctFileName}.`,
+                  );
                 },
                 (err) => {
                   LOGGER.error('ERROR WHEN UPDATING INCONSISTENT FILES.', err);
