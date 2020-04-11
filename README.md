@@ -4,18 +4,18 @@
 
 ## Downloading dependencies
 
+### Pre-reqs
+
+    1. Getting access to Github Repo
+    2. Getting access to Google Cloud Console project
+    3. For these email: james.peralta@ucalgary.ca
+
 ### Downloading and configuring Gloud CLI
 
-    1. Select the download appropriate sdk package from: https://cloud.google.com/sdk/
-    2. Untar the sdk package: tar -xvf google-cloud-sdk*
-    3. Install the sdk using the following command: ./google-cloud-sdk/install.sh
-    4. Follow through the installation instruction and select the required options.
-    5. Run gcloud init
-    6. Accept the google login option for logging in to your google cloud account.
-    7. From the browser login to your google cloud account and grant permissions to access google cloud resources.
-    8. At the command prompt, you will be prompted with options for initial configurations which are self explanatory.
-    9. Run: gcloud config set project collaborative-teaching
-    10. You are now setup to run the bash scripts in the "How to deploy cluster section"
+    1. Open a browser and navigate to: https://cloud.google.com/sdk/docs/quickstarts
+    2. Choose the quickstart depending on which operating system you are running
+    3. Run: gcloud config set project collaborative-teaching
+    4. You are now setup to run the bash scripts in the "How to deploy cluster section"
 
 ---
 
