@@ -30,5 +30,14 @@
     5. Navigate to: http://<external_ip>
     6. You can now access the complete system
 
-- Just run the script in ./scripts/make-master.bash and it will create
-  the first master. Afterwards this master will create the rest of the cluster.
+---
+
+## Locations of interesting code code
+
+### Retrieving files from workers (TODO: Dan or Garland)
+
+### Handling failures/heartbeat mechanism (TODO: Satyaki)
+
+### Creating replicas of data (TODO: James)
+
+### Consistency algorithm (TODO: Zach)
