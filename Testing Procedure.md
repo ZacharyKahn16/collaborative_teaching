@@ -17,7 +17,7 @@ To run this:
    1. `entireAutoMcTest(fdbIps, mc, mockDataCreater);`
    2. `autoFillEmptyFdbsTest(fdbIps, mc, mockDataCreater);`
 
-3. Run `$ node testMasterCoordinator.js`
+3. Run `node testMasterCoordinator.js`
 
 The `entireAutoMcTest(fdbIps, mc, mockDataCreater);` function runs various scenarios the system might face in production, such as:
 
@@ -36,13 +36,12 @@ The `autoFillEmptyFdbsTest(fdbIps, mc, mockDataCreater);` function handles the c
 
 **Note**
 
-Depending on the version of nodejs you have run, you might need to run in the masters/src directory:
+Make sure you are in the `masters` directory, then:
 
 ```
-$ npm run build
-$ cd ../build
-$ node testMasterCoordinator.js
-
+npm run build
+cd build/
+node testMasterCoordinator.js
 ```
 
 There is also the option to manually run each of the commands being run by the
@@ -50,4 +49,4 @@ integration tests. Please refer to [testMasterCoordinator.js](https://github.com
 
 ## GCP Cloud Logging
 
-Testing that all components work together is a challenging process and for this system this was accomplished by using logs that ran for each of the processes in the system. These logs enable you to see how the system performs when all processes are running and to kill various processes throughout the system and see how the system recovers. To analyze the logs please refer to GCP's [Cloud Logging](https://cloud.google.com/logging).
+Testing that all the components work together is a challenging process and for this system this was accomplished by using logs that ran for each of the processes in the system. These logs enable you to see how the system performs when all processes are running and to kill various processes throughout the system and see how the system recovers. To analyze the logs please refer to GCP's [Cloud Logging](https://console.cloud.google.com/logs/viewer).
