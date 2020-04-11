@@ -27,7 +27,7 @@
     2. Run ./scripts/make-website.bash and it will deploy the website.
     3. Open a browser and navigate to: https://console.cloud.google.com/compute
     4. Find the external ip of the virtual machine with "website" as the name
-    5. Navigate to: http://<external_ip>
+    5. Navigate to: http://<external_ip> -> ex) http://35.184.240.189/
     6. You can now access the complete system
 
 ---
