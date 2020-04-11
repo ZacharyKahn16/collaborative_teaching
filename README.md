@@ -32,9 +32,11 @@
 
 ---
 
-## Locations of interesting code code
+## Locations of interesting code
 
 ### Retrieving files from workers (TODO: Dan or Garland)
+
+### Retrieving files from FDBs (TODO: James)
 
 ### Handling failures/heartbeat mechanism (TODO: Satyaki)
 
