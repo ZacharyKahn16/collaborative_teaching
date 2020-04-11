@@ -18,7 +18,7 @@ To run this:
    1. `entireAutoMcTest(fdbIps, mc, mockDataCreater);`
    2. `autoFillEmptyFdbsTest(fdbIps, mc, mockDataCreater);`
 
-3. Run `\$ node testMasterCoordinator.js`
+3. Run `$ node testMasterCoordinator.js`
 
 **Note**
 
