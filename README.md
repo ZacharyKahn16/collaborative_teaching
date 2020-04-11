@@ -38,9 +38,9 @@
     Then passed down to the children components using React Context.
     In files ContentBank.jsx, CoursePage.jsx and MyFiles.jsx, all files are retrieved then filtered if needed.
 
----
-
 ### Retrieving files from FDBs (TODO: James)
+
+View the code [here](./worker/src/app.ts).
 
 ### Handling failures/heartbeat mechanism (TODO: Satyaki)
 
