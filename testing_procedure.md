@@ -15,10 +15,10 @@ To run this:
    an MongoDb.
 2. Uncomment one of the following:
 
-- entireAutoMcTest(fdbIps, mc, mockDataCreater);
-- autoFillEmptyFdbsTest(fdbIps, mc, mockDataCreater);
+   1. `entireAutoMcTest(fdbIps, mc, mockDataCreater);`
+   2. `autoFillEmptyFdbsTest(fdbIps, mc, mockDataCreater);`
 
-3. Run \$ node testMasterCoordinator.js
+3. Run `\$ node testMasterCoordinator.js`
 
 **Note**
 
