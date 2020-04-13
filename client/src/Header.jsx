@@ -51,7 +51,10 @@ class Header extends React.Component {
               </Typography>
             </Grid>
             <Grid item>
-              <Typography color="inherit">{workerText}</Typography>
+              <Typography color="inherit">
+                {/*Display which worker we're connected to for demo purposes*/}
+                {workerText}
+              </Typography>
             </Grid>
             <Grid item>
               <IconButton className={classes.iconButtonAvatar} disabled={true}>

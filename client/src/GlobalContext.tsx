@@ -78,6 +78,7 @@ export class NetworkInstance {
     this.callbacks = callbacks;
   }
 
+  //Update global variables with newly fetched data and messages
   update() {
     if (this.callbacks) {
       const {
@@ -114,6 +115,7 @@ export class NetworkInstance {
   connectMaster(ipOne: string, ipTwo: string, ipThree: string) {
     this.connectionAttempts = this.connectionAttempts + 1;
 
+    //Make a HTTP request to connect to one of the three masters with a 2 second timeout for each
     axios
       .get(ipOne, { timeout: 2 * 1000 })
       .then((result) => {
@@ -124,26 +126,32 @@ export class NetworkInstance {
           this.connectionAttempts = 0;
         } else {
           setTimeout(() => {
+            //On timeout, cycle to the next ip round robin fashion
             this.connectMaster(ipTwo, ipThree, ipOne);
           }, backOffForRetry(this.connectionAttempts));
         }
       })
       .catch((error) => {
+        //On an error, cycle to the next ip round robin fashion
         setTimeout(() => {
           this.connectMaster(ipTwo, ipThree, ipOne);
         }, backOffForRetry(this.connectionAttempts));
       });
   }
 
+  //connects to the fetched worker
   setupWorker() {
+    //If no worker fetched yet, return
     if (!this.workerInfo || !this.workerInfo.publicIp) {
       return;
     }
 
+    //Close socket if already open
     if (this.socket) {
       this.socket.close();
     }
 
+    //Connect to worker instance through the fetched ip
     this.socket = io(`http://${this.workerInfo.publicIp}:${WORKER_SOCKET_PORT}`);
 
     this.socket.on("connect", () => {
@@ -155,24 +163,28 @@ export class NetworkInstance {
       this.update();
     });
 
+    //Place latest responses in message array
     this.socket.on(SERVER_RESP, (resp: Record<string, any>) => {
       console.log("Last Response", resp);
       this.messages = [...this.messages, resp];
       this.update();
     });
 
+    //Fetch all files
     this.socket.on(ALL_FILES, (resp: Record<string, any>[]) => {
       this.allFiles = resp;
       console.log(ALL_FILES, resp);
       this.update();
     });
 
+    //Fetch all courses
     this.socket.on(ALL_COURSES, (resp: Record<string, any>[]) => {
       this.allCourses = resp;
       console.log(ALL_COURSES, resp);
       this.update();
     });
 
+    //Error event handling
     this.socket.on("connect_error", () => {
       console.log("connect_error socket", this.workerInfo);
       this.resetSocket();
@@ -204,6 +216,7 @@ export class NetworkInstance {
     });
   }
 
+  //Reads a file and turns it to data url for viewing
   readFileAsDataUrl(file: Doc | File) {
     return new Promise<string>((resolve, reject) => {
       const reader = new FileReader();

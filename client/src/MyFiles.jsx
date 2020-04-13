@@ -250,6 +250,7 @@ class MyFiles extends React.Component {
                   </TableRow>
                 </TableHead>
                 <TableBody>
+                  {/*Map each file retrieved into its own row with details and buttons*/}
                   {files.map((row) => (
                     <TableRow key={row.docId}>
                       <TableCell align="left">
@@ -277,6 +278,7 @@ class MyFiles extends React.Component {
                       </TableCell>
                       <TableCell align="left">{moment(row.lastUpdated).format("lll")}</TableCell>
                       <TableCell align="center">
+                        {/*Generate buttons to perform specific actions for each row*/}
                         <Tooltip title="Edit file">
                           <IconButton
                             className="action-button"
@@ -306,6 +308,7 @@ class MyFiles extends React.Component {
                   ))}
                 </TableBody>
               </Table>
+              {/*All the different modals we use, they are opened and closed with a flag which is toggled by event handlers*/}
               <Dialog open={this.state.editModalOpen} onClose={this.handleModalClose}>
                 <UpdateCard closeModal={this.handleModalClose} fileInfo={this.state.selectedFile} />
               </Dialog>
