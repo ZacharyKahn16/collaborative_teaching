@@ -191,6 +191,7 @@ class MyCourses extends React.Component {
     const { classes } = this.props;
     const { user, allCourses } = this.context;
 
+    // Filters out the courses that belong to the user and the ones that belong to other users
     const myCourses = allCourses
       .filter((course) => {
         return course.ownerId === user.uid;

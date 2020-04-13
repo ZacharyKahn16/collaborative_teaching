@@ -20,6 +20,7 @@ class DeleteCard extends Component {
     this.props.closeModal();
   };
 
+  // Deletes file and sends over the file id to be deleted and the user id to make sure the user is the owner of the file
   deleteFile = () => {
     const { fileInfo } = this.props;
     const { user, network } = this.context;

@@ -44,6 +44,7 @@ class ContentBank extends Component {
     this.updateSelectedFile = this.updateSelectedFile.bind(this);
   }
 
+  // Opens up the edit file modal, also specifies which file was selected
   handleEditModalOpen = (file) => {
     this.setState(() => ({
       editModalOpen: true,
@@ -51,6 +52,7 @@ class ContentBank extends Component {
     }));
   };
 
+  // Opens up the delete file modal
   handleDeleteModalOpen = (file) => {
     this.setState(() => ({
       deleteModalOpen: true,
@@ -58,6 +60,7 @@ class ContentBank extends Component {
     }));
   };
 
+  // Opens up the add to course modal
   handleAddToCourseModalOpen = (file) => {
     this.setState(() => ({
       selectedFile: file,
@@ -65,6 +68,7 @@ class ContentBank extends Component {
     }));
   };
 
+  // Closes any/all modals
   handleModalClose = () => {
     this.setState(() => ({
       editModalOpen: false,
@@ -73,6 +77,7 @@ class ContentBank extends Component {
     }));
   };
 
+  // Opens up modal for editing file
   updateSelectedFile = (fileId) => {
     const { setSelectedFileId } = this.context;
     setSelectedFileId(fileId);
@@ -97,6 +102,7 @@ class ContentBank extends Component {
     const { allFiles, user, allCourses } = this.context;
     const { searchTerm } = this.props;
 
+    // Filters all files by search term(if searchbar was used)
     const files = allFiles
       .filter((file) => {
         return (
@@ -109,6 +115,7 @@ class ContentBank extends Component {
         return b.lastUpdated - a.lastUpdated;
       });
 
+    // If there are no files then we wont bother rendering the table
     if (files.length === 0) {
       return (
         <Typography color="textSecondary" align="center">

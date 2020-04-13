@@ -24,6 +24,7 @@ class AddToCourseCard extends Component {
   addToCourse = (course) => {
     const { user, network } = this.context;
     const { fileInfo } = this.props;
+    // Adds file to a course, while sending over userid, the selected course id and the docid of the file
     network.addFileToCourse(user.uid, course.docId, fileInfo.docId);
     this.props.closeModal();
   };
@@ -31,6 +32,7 @@ class AddToCourseCard extends Component {
   render() {
     const { fileInfo, courseInfo } = this.props;
 
+    // Dont render list of courses if user doesnt own any courses
     if (courseInfo.length === 0) {
       return (
         <Card className="card-body">

@@ -47,6 +47,7 @@ class Header extends React.Component {
           <Grid container alignItems="center" spacing={1}>
             <Grid item xs>
               <Typography color="inherit" variant="h5" component="h1">
+                {/*Title gets passed in via props*/}
                 {title}
               </Typography>
             </Grid>
@@ -58,6 +59,7 @@ class Header extends React.Component {
             </Grid>
             <Grid item>
               <IconButton className={classes.iconButtonAvatar} disabled={true}>
+                {/*Sets the avatar icon as the first letter of the users name*/}
                 <Avatar>{!!user.name && user.name.length > 0 ? user.name[0] : "X"}</Avatar>
               </IconButton>
             </Grid>

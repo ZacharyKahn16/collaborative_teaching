@@ -63,7 +63,7 @@ class Home extends React.Component {
         </nav>
         <div className={this.props.classes.app}>
           <main className={this.props.classes.main}>
-              {/*Route each react component with a url*/}
+            {/*Route each react component with a url*/}
             <Switch>
               <Route exact path={"/courses"} render={(props) => <Courses />} />
               <Route exact path={"/my-files"} render={(props) => <MyFiles />} />

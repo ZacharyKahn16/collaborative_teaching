@@ -98,6 +98,7 @@ class CoursePage extends React.Component {
     setSelectedFileId(fileId);
   };
 
+  // Gets course code from url
   getCourseFromPath = () => {
     const { location } = this.props;
     const { allCourses } = this.context;
@@ -187,6 +188,7 @@ class CoursePage extends React.Component {
                       </TableCell>
                       <TableCell align="left">{row.ownerName}</TableCell>
                       <TableCell align="left">{moment(row.lastUpdated).format("lll")}</TableCell>
+                      {/*Different options will be available depending on whether or not the user is the owner of the course*/}
                       {course.ownerId === user.uid ? (
                         <TableCell align="center">
                           <Tooltip title="Delete From Course">

@@ -113,6 +113,7 @@ const FileViewModal = () => {
         <CloseIcon />
       </IconButton>
       <DialogTitle>{fileName}</DialogTitle>
+      {/*Lets the user to preview*/}
       <DialogContent>{renderContent()}</DialogContent>
     </Dialog>
   );
