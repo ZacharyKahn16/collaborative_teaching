@@ -7,17 +7,28 @@ The main testing methodologies used were:
 
 ## Integration Tests
 
-The integration tests are used to verify that the MC correctly handles inconsistent files, incorrect number of replicas, inconsistency between the FDBs and MCDB, and that an empty FDB gets populated. The file to perform these tests can be found in [testMasterCoordinator.js](https://github.com/ZacharyKahn16/collaborative_teaching/blob/master/master/test/testMasterCoordinator.js).
+The integration tests are used to verify that the MC correctly handles inconsistent files, incorrect number of replicas, inconsistency between the FDBs and MCDB, and that an empty FDB gets populated. The file to perform these tests can be found in [testMasterCoordinator.js](https://github.com/ZacharyKahn16/collaborative_teaching/blob/master/master/src/testMasterCoordinator.js).
 
-To run this:
+To run the Master Coordinator tests:
 
-1. Manually replace the `fdbIps` array to contain the IP addresses that run MongoDb.
+1. Make sure you are in the `masters` directory, then run:
+
+```
+npm run build
+cd build/
+```
+
 2. Uncomment one of the following:
 
    1. `entireAutoMcTest(fdbIps, mc, mockDataCreater);`
    2. `autoFillEmptyFdbsTest(fdbIps, mc, mockDataCreater);`
 
-3. Run `node testMasterCoordinator.js`
+   Only one of these should run at a time.
+
+3. Enter the VM IP addresses at the command line that are running instances of MongoDb.
+   Ex. `$ node testMastercoordinator.js 1.1.1.1 1.2.3.4 1.2.3.5 1.3.4.5`
+
+   A minimum of 2 VMs should be used for these tests, and ideally 4 VMs will be used.
 
 The `entireAutoMcTest(fdbIps, mc, mockDataCreater);` function runs various scenarios the system might face in production, such as:
 
@@ -35,17 +46,8 @@ The `autoFillEmptyFdbsTest(fdbIps, mc, mockDataCreater);` function handles the c
 4. Does nothing if there are no empty FDBs.
 
 **Note**
-
-Make sure you are in the `masters` directory, then:
-
-```
-npm run build
-cd build/
-node testMasterCoordinator.js
-```
-
 There is also the option to manually run each of the commands being run by the
-integration tests. Please refer to [testMasterCoordinator.js](https://github.com/ZacharyKahn16/collaborative_teaching/blob/master/master/test/testMasterCoordinator.js) for the full list of available tests that can be run.
+integration tests. Please refer to [testMasterCoordinator.js](https://github.com/ZacharyKahn16/collaborative_teaching/blob/master/master/src/testMasterCoordinator.js) for the full list of available tests that can be run.
 
 ## GCP Cloud Logging
 

@@ -5,7 +5,7 @@
  * Run each of the individual functions in the MC as well.
  *
  * *** IMPORTANT ***
- * To run test:
+ * To run tests:
  * 1. Make sure you are in the masters directory, then run:
  *    $ npm run build
  *    $ cd build/
