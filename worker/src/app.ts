@@ -587,6 +587,16 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
     }
   });
 
+  /**
+   * Services a add course request for a client
+   * Sample request JSON
+   {
+    "courseName": "course name",
+    "courseDesc": "course desc",
+    "ownerId": "James Peralta",
+    "requestId": "XCJ321CSAD"
+   }
+   */
   socket.on(ADD_COURSE, async (req) => {
     const { ownerId, courseName, courseDesc, requestId } = req;
 
@@ -626,6 +636,17 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
     }
   });
 
+  /**
+   * Services a update course request for a client
+   * Sample request JSON
+   {
+    "courseName": "course name",
+    "courseDesc": "course desc",
+    "courseId": "asdasdas",
+    "ownerId": "James Peralta",
+    "requestId": "XCJ321CSAD"
+   }
+   */
   socket.on(UPDATE_COURSE, async (req) => {
     const { ownerId, courseId, courseName, courseDesc, requestId } = req;
 
@@ -685,6 +706,16 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
     }
   });
 
+  /**
+   * Services a add file to course request for a client
+   * Sample request JSON
+   {
+    "fileId": "asdasdas desc",
+    "courseId": "asdasdas",
+    "ownerId": "James Peralta",
+    "requestId": "XCJ321CSAD"
+   }
+   */
   socket.on(ADD_FILE_TO_COURSE, async (req) => {
     const { ownerId, courseId, fileId, requestId } = req;
 
@@ -747,6 +778,16 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
     }
   });
 
+  /**
+   * Services a remove file from course request for a client
+   * Sample request JSON
+   {
+    "fileId": "asdasdas desc",
+    "courseId": "asdasdas",
+    "ownerId": "James Peralta",
+    "requestId": "XCJ321CSAD"
+   }
+   */
   socket.on(REMOVE_FILE_FROM_COURSE, async (req) => {
     const { ownerId, courseId, fileId, requestId } = req;
 

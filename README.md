@@ -1,7 +1,5 @@
 # Collab Learn
 
----
-
 ## Dependencies
 
 ### Pre-reqs
