@@ -1,3 +1,7 @@
+/**
+ *  Main worker class. This class represents a socket server that clients will connect to
+ *  and it will service all of the clients requests.
+ */
 import { AccessFDB } from './HelperFunctions/workerToFDBConnection';
 import { LOGGER } from './Logger';
 import {
@@ -33,7 +37,6 @@ import { Server } from 'http';
 import io from 'socket.io';
 import cors from 'cors';
 import { SHA256 } from 'crypto-js';
-import * as fs from './Firebase';
 
 const app = express();
 app.use(cors());
@@ -91,7 +94,9 @@ function sendSuccessMessage(socket: any, requestId: string, message: any) {
   });
 }
 
-// Send all metadata to a single client
+/**
+ * Sends a list of all files and courses to a single client
+ */
 async function sendAllMetadataToClient(socket: any) {
   const allFiles = await getAllFiles();
   const allCourses = await getAllCourses();
@@ -100,7 +105,10 @@ async function sendAllMetadataToClient(socket: any) {
   socket.emit(SEND_ALL_COURSES, allCourses);
 }
 
-// Broadcast all metadata to all clients in network
+/**
+ * Sends a list of all files and courses to all clients attached to
+ * this worker
+ */
 async function broadcastAllMetadataToClients() {
   const allFiles = await getAllFiles();
   const allCourses = await getAllCourses();
@@ -117,7 +125,9 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
   });
 
   /**
-   * Retrieves a File
+   * Services a retrieve operation for a client.
+   *
+   * Ex) Client wants the file README.md
    *
    * Sample request JSON
    {
@@ -133,6 +143,7 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
       return;
     }
 
+    // Get the ip addresses of FDBs that have this file
     let fdbLocations: any[];
     try {
       fdbLocations = await retrieveFdbLocations(docId);
@@ -149,13 +160,18 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
       return;
     }
 
+    // Shuffle fdb list to randomize the order of fdb locations.
+    // This ensures we randomly choose an fdb to request from.
     shuffle(fdbLocations);
     const successfulRetrievals: any[] = [];
+    // Cycle through all FDBs that have this file until we get
+    // a successful retrieval
     for (let i = 0; i < fdbLocations.length; i++) {
       if (successfulRetrievals.length > 0) {
         break;
       }
 
+      // Get instance of AccessFdb object for this given IP address
       const fdbRef = findFdbUsingIp(fdbLocations[i], fdbList);
       if (!fdbRef) {
         continue;
@@ -179,7 +195,9 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
   });
 
   /**
-   * Create a new file
+   * Services a Insert/Create file from a client
+   *
+   * Ex) Client wants to insert Lecture1.pdf
    *
    * Sample request JSON
    {
@@ -194,9 +212,9 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
   socket.on(INSERT_FILE, async function(req) {
     const timeStamp = Date.now();
     const fileName = req.fileName;
-    const fileType = req.fileType; // Infer type later
+    const fileType = req.fileType;
     const fileContents = req.fileContents;
-    const fileHash = req.fileHash; // Generate File hash later
+    const fileHash = req.fileHash;
     const requestId = req.requestId;
     const ownerId = req.ownerId;
 
@@ -210,16 +228,16 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
       return;
     }
 
+    // Compare hashes to ensure file was not corrupted when sent
     const newHash = SHA256(fileContents).toString();
-
     if (newHash !== fileHash) {
       sendErrorMessage(socket, requestId, 'File hashes do not match');
       return;
     }
 
+    // Insert the metadata of this file into the MCDB
     const insertedResult = insertedFile(timeStamp, [], [], [], fileName, fileHash, ownerId);
     const docId = insertedResult[0];
-
     let insertSuccess = true;
     await insertedResult[1]
       .then(function() {
@@ -235,6 +253,8 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
       return;
     }
 
+    // Insert the file contents into the fdbs and ensure it is replicated
+    // across multiple instances
     const replicasToMake = replicasNeeded(fdbList);
     try {
       const successfulInserts = await createReplicas(
@@ -272,7 +292,9 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
   });
 
   /**
-   * Updates a File
+   * Services an update request for a client
+   *
+   * Ex) A client wants to make an update to their README.md
    *
    * Sample request JSON
    {
@@ -290,23 +312,25 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
     const docId = req.docId;
     const fileName = req.fileName;
     const fileContents = req.fileContents;
-    const fileType = req.fileType; // Infer type later
+    const fileType = req.fileType;
     const ownerId = req.ownerId;
     const requestId = req.requestId;
-    const fileHash = req.fileHash; // Generate File hash later
+    const fileHash = req.fileHash;
 
     if (!docId || !fileName || !fileContents || !fileType || !requestId || !fileHash) {
       sendErrorMessage(socket, requestId, 'Missing request parameters');
       return;
     }
 
+    // Hash file contents to ensure data was not corrupted
     const newHash = SHA256(fileContents).toString();
-
     if (newHash !== fileHash) {
       sendErrorMessage(socket, requestId, 'File hashes do not match');
       return;
     }
 
+    // Ensure file exists and user who wants to perform an update is the
+    // owner of this file
     const fileExists = await verifyFileExists(docId);
     const userIsOwner = await verifyOwner(docId, ownerId);
 
@@ -324,6 +348,7 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
       return;
     }
 
+    // Get the ip addresses of FDBs that have this file
     let fdbLocations: any[];
     try {
       fdbLocations = await retrieveFdbLocations(docId);
@@ -340,6 +365,7 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
       return;
     }
 
+    // Attempt to update this file at each location
     const successfulUpdates: AccessFDB[] = [];
     const missingFdbIps: string[] = [];
     for (let i = 0; i < fdbLocations.length; i++) {
@@ -405,6 +431,7 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
       `Successful updates to ${successfulUpdates.length} file databases`,
     );
 
+    // Update the MCDB with the latest information of these files
     try {
       await updateFile(docId, {
         fileHash: fileHash,
@@ -422,7 +449,7 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
 
     // If the MCDBs entry for FDB FileLocations of a file has a mismatch
     // between the current FDBs that are alive in the system, populate
-    // new ones. Also make sure over here, that you don't insert the file
+    // new ones. Also make sure that we don't insert the file
     // a second time into the same FDB
     if (missingFdbIps.length > 0) {
       const replicasToMake = missingFdbIps.length;
@@ -463,7 +490,9 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
   });
 
   /**
-   * Deletes a file
+   * Services a delete request for a client
+   *
+   * Ex) A client wants to delete their README.md file
    *
    * Sample request JSON
    {
@@ -477,6 +506,8 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
     const ownerId = req.ownerId;
     const requestId = req.requestId;
 
+    // Verify this file exists and that the user whos wants to delete
+    // this file is also the owner of this file.
     const fileExists = await verifyFileExists(docId);
     const userIsOwner = await verifyOwner(docId, ownerId);
 
@@ -494,6 +525,7 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
       return;
     }
 
+    // Find the IP addresses of all fdbs that have this file
     let fdbLocations: any[];
     try {
       fdbLocations = await retrieveFdbLocations(docId);
@@ -510,6 +542,7 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
       return;
     }
 
+    // Delete this file from every FDB
     const successfulDeletes: AccessFDB[] = [];
     for (let i = 0; i < fdbLocations.length; i++) {
       const fdbRef = findFdbUsingIp(fdbLocations[i], fdbList);
@@ -776,7 +809,11 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
     }
   });
 
-  // Master Handlers
+  /**
+   *  This socket is open for Masters to check if this worker
+   *  is still alive. It is also used for masters to give this worker a
+   *  list of active fdbs in the system.
+   */
   socket.on(DATABASE_LIST, function(req) {
     socket.emit('health-response', 'I am alive');
     fdbList = []; // Reset fdbList
@@ -792,7 +829,7 @@ socketServer.on(CONNECTION_EVENT, function(socket) {
     }
   });
 
-  // Used to debug database list
+  // Used for debugging
   socket.on(DEBUG, function(req) {
     const fdbIps: any[] = [];
     for (const fdb of fdbList) {
@@ -811,6 +848,7 @@ httpServer.listen(PORT, () => {
   LOGGER.debug(
     `${(process.env.NAME || 'Server').toUpperCase()} started at http://localhost:${PORT}`,
   );
+  // Every 15 seconds broadcast all metadata
   setInterval(() => {
     broadcastAllMetadataToClients();
   }, 1000 * 15);

@@ -2,6 +2,9 @@ import { AccessFDB } from './workerToFDBConnection';
 import { LOGGER } from '../Logger';
 import { addFdbLocation, getFile } from '../MCDB';
 
+/**
+ *  Shuffle an array of objects
+ */
 export function shuffle(array: any) {
   let currentIndex = array.length;
   let temporaryValue;
@@ -36,6 +39,19 @@ export function findFdbUsingIp(ip: string, fdbList: AccessFDB[]) {
  * Creates replicas of a given file
  * and will inform the user if it is unable to
  * insert any files
+ *
+ * @param fdbList - List of all FDBs that are available in the system
+ * @param replicasToMake - Number of FDBs to insert this file into
+ * @param docId - Unique identifier for this file given by Firebase
+ * @param fileName - Name of the file
+ * @param fileContents - File binary
+ * @param fileHash - SHA-256 hash
+ * @param fileType - Content type of file
+ * @param ownerId - Id of the user who is creating this file
+ * @param timeStamp - Epoch time for when this file was created
+ * @param fdbsToAvoid - If there are any FDBs that this file should not be inserted to, add them here
+ *
+ * @returns AccessFDB[] - A list of FDBs where this file was successfully inserted into
  */
 export async function createReplicas(
   fdbList: AccessFDB[],
@@ -92,7 +108,7 @@ export async function createReplicas(
  * Returns a list of FDB locations for a given document ID
  * from the MCDB
  *
- * return example: [34.70.206.197, 35.184.8.156] or []
+ * @returns [34.70.206.197, 35.184.8.156] or []
  */
 export async function retrieveFdbLocations(docId: string): Promise<any[]> {
   let docData = null;
@@ -116,7 +132,7 @@ export async function retrieveFdbLocations(docId: string): Promise<any[]> {
  * ensure the system will have the required amount of
  * fault tolerance.
  *
- * return example: [34.70.206.197, 35.184.8.156] or false
+ * @returns [34.70.206.197, 35.184.8.156] or false
  */
 export function replicasNeeded(fdbList: AccessFDB[]): number {
   return Math.ceil(fdbList.length / 3) + 1;
