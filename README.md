@@ -1,5 +1,7 @@
 # Collab Learn
 
+---
+
 ## Dependencies
 
 ### Pre-reqs
@@ -30,40 +32,44 @@
     6. You can now access the complete system
 ```
 
+---
+
 ## Locations of interesting code
 
-#### Retrieving files from workers (TODO: Dan or Garland)
+### Retrieving files from workers (TODO: Dan or Garland)
 
 The files are retrieved in the [GlobalContext](./client/src/GlobalContext.tsx) (line 164) using sockets.
 Then passed down to the children components using React Context.
 In files [ContentBank](./client/src/ContentBank.jsx), [CoursePage](./client/src/CoursePage.jsx) and [MyFiles](./client/src/MyFiles.jsx), all files are retrieved then filtered if needed.
 
-#### Retrieving files from FDBs, and Client to Worker socket communication
+### Retrieving files from FDBs, and Client to Worker socket communication
 
 View the code in [app.ts](./worker/src/app.ts)
 
-#### Communication with the Google Cloud DNS
+### Communication with the Google Cloud DNS
 
 View the code in [GCloud.ts](./master/src/GCloud.ts)
 
-#### Communication with the Firebase Database (Metadata Cloud Database)
+### Communication with the Firebase Database (Metadata Cloud Database)
 
 View the code in [Firebase.ts](./master/src/Firebase.ts)
 
 And, in [MCDB.ts](./master/src/MCDB.ts)
 
-#### Round Robin Worker selection by the Master Responder
+### Round Robin Worker selection by the Master Responder
 
 View the code in [WorkerTracker.ts](./master/src/WorkerTracker.ts)
 
-#### Handling failures/heartbeat mechanism for Workers and FileDatabases
+### Handling failures/heartbeat mechanism for Workers and FileDatabases
 
 View the code in [InstanceChecker.ts](./master/src/InstanceChecker.ts)
 
 And, in [GCloud.ts](./master/src/GCloud.ts)
 
-#### Creating replicas of data (TODO: James)
+### Creating replicas of data
 
-#### Consistency and Synchronization algorithm for files stored in the FileDatabases
+View the code in the createReplicas() function in [WorkerUtilities.ts](./worker/src/HelperFunctions/WorkerUtilities.ts)
+
+### Consistency and Synchronization algorithm for files stored in the FileDatabases
 
 View the code in [masterCoordinator.js](./master/src/masterCoordinator.js)
