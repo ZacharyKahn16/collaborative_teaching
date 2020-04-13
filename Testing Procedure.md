@@ -25,8 +25,8 @@ cd build/
 
    Only one of these should run at a time.
 
-3. Enter the VM IP addresses at the command line that are running instances of MongoDb.
-   \nEx. `$ node testMastercoordinator.js 1.1.1.1 1.2.3.4 1.2.3.5 1.3.4.5`\n
+3. Enter the VM IP addresses at the command line that are running instances of MongoDb.  
+   Ex. `$ node testMastercoordinator.js 1.1.1.1 1.2.3.4 1.2.3.5 1.3.4.5`
 
    A minimum of 2 VMs should be used for these tests, and ideally 4 VMs will be used.
 
@@ -45,7 +45,7 @@ The `autoFillEmptyFdbsTest(fdbIps, mc, mockDataCreater)` function handles the ca
 3. Reruns to ensure FDBs are all populated.
 4. Does nothing if there are no empty FDBs.
 
-**Note**\n
+**Note**  
 There is also the option to manually run each of the commands being run by the
 integration tests. Please refer to [testMasterCoordinator.js](https://github.com/ZacharyKahn16/collaborative_teaching/blob/master/master/src/testMasterCoordinator.js) for the full list of available tests that can be run.
 
