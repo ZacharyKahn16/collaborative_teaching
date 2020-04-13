@@ -72,7 +72,7 @@ export class MasterCoordinator {
    * @param {String}  docId ID of document.
    * @param {String} fdbIp IP of FDB.
    * @param {String} fileName name of file.
-   * @param {String} fileContents TODO (zacharykahn): Do we want to store file in binary?
+   * @param {String} fileContents Binary file contents.
    * @param {String} fileHash Hash of the file.
    * @param {String} fileType Type of file.
    * @param {number} ts Timestamp.
@@ -865,7 +865,6 @@ export class MasterCoordinator {
           Object.entries(organizedDocData).length === 0 &&
           organizedDocData.constructor === Object
         ) {
-          // TODO: Could delete collection if anything there.
           LOGGER.info(
             'No data in any FDBs yet. Clearing MCDB File collection, but this should already be empty.',
           );

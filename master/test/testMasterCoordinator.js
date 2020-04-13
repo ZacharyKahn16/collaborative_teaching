@@ -1,11 +1,29 @@
-// TEST CLASS FOR MC.
+/**
+ * Test class for the Master Coordinator.
+ *
+ * Integration tests for various scenarios are provided. One can also manually
+ * Run each of the individual functions in the MC as well.
+ *
+ * *** IMPORTANT ***
+ * To run test:
+ * 1. Ensure import statements are referring to the correct directories for the
+ *    given build.
+ * 2. Manually copy past VM IPs that are running instances of MongoDb. Put the
+ *    IPs into the curFdbIpList array. (Search curFdbIpList in file).
+ * 3. Uncomment either of the following:
+ *    - entireAutoMcTest(fdbIps, mc, mockDataCreater);
+ *    - autoFillEmptyFdbsTest(fdbIps, mc, mockDataCreater);
+ *    Only one of these should run at a time.
+ * 4. For futher debugging, uncomment any of the individual test cases, which
+ *    test specific functions in the MC.
+ *
+ **/
 
-// TODO: Update this to correct directory.
+// Note: Update this to correct directory for given build.
 import * as mcdb from '../src/MCDB';
 const MasterCoordinator = require('../src/masterCoordinator.js');
 
 const MongoClient = require('mongodb').MongoClient;
-// TODO: MAKE A TEST COLLECTION FOR INSERTING FAKE FILES.
 const { LOGGER } = require('../src/Logger');
 
 class CreateMockDataForMC {
@@ -280,8 +298,13 @@ class CreateMockDataForMC {
     })();
   }
 
-  // TODO: Check why this causes:
-  // Error: Value for argument "documentPath" is not a valid resource path. Path must be a non-empty string.
+  /**
+   * Insert fake data into the MCDB that is inconsistent with what is in the
+   * FDBs.
+   *
+   * @param {Array} fbdIps List of fdbIps, eg. ['1.1.1.1']
+   * @returns {Integer} 0 on success, error otherwise.
+   **/
   insertFakeInconsistentMcdbData() {
     // Insert some entries that the FDBs have.
     (async () => {
@@ -337,11 +360,10 @@ class CreateMockDataForMC {
   }
 }
 
-// let myArgs = process.argv.slice(2);
-// const fdbIps = myArgs[0];
 // Manually copy past in from gcloud console.
 // const fdbIps = ['35.202.117.244', '34.71.103.160', '35.223.11.177'];
-const fdbIps = ['35.202.117.244', '34.71.103.160', '35.223.11.177', '34.70.126.34'];
+const curFdbIpList = ['35.202.117.244', '34.71.103.160', '35.223.11.177', '34.70.126.34'];
+const fdbIps = curFdbIpList;
 // const fdbIps = ['34.70.126.34'];
 let mc = new MasterCoordinator.MasterCoordinator();
 let mockDataCreater = new CreateMockDataForMC(mc);
@@ -395,9 +417,10 @@ async function entireAutoMcTest(fdbIps, mc, mockDataCreater) {
   }
 }
 
+// UNCOMMENT TO RUN
 // entireAutoMcTest(fdbIps, mc, mockDataCreater);
 
-// Checks that auto rebalancing feature works.
+// Checks that the auto rebalancing feature works.
 async function autoFillEmptyFdbsTest(fdbIps, mc, mockDataCreater) {
   try {
     // Delete all data from FDBs.
@@ -448,6 +471,7 @@ async function autoFillEmptyFdbsTest(fdbIps, mc, mockDataCreater) {
   }
 }
 
+// UNCOMMENT TO RUN
 autoFillEmptyFdbsTest(fdbIps, mc, mockDataCreater);
 
 // *** MANUAL SET UP *** //

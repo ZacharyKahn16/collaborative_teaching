@@ -1,3 +1,9 @@
+/**
+ * Meta Cloud Database schema blueprint and helper functions for Workers.
+ *
+ * An interface for accessing, updating, and deleting data from the MCDB is
+ * provided.
+ **/
 import * as fs from './Firebase';
 import admin from 'firebase-admin';
 import { getDb } from './Firebase';
