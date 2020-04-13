@@ -455,11 +455,7 @@ export class GCloud {
     LOGGER.debug(`${this.thisInstance.id.toUpperCase()} is deleting ${id.toUpperCase()}`);
 
     const command = `yes | gcloud compute --project=${PROJECT_ID} instances delete ${id} --zone=${ZONE}`;
-    exec(command, { silent: true }, (code, stdout, stderr) => {
-      if (code !== 0 || stderr) {
-        LOGGER.error(`Deleting instance ${id} failed.`, code, stderr);
-      }
-    });
+    exec(command, { silent: true }, (code, stdout, stderr) => {});
   }
 
   /**
