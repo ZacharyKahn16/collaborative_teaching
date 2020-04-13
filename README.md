@@ -42,7 +42,7 @@ The files are retrieved in the [GlobalContext](./client/src/GlobalContext.tsx) (
 Then passed down to the children components using React Context.
 In files [ContentBank](./client/src/ContentBank.jsx), [CoursePage](./client/src/CoursePage.jsx) and [MyFiles](./client/src/MyFiles.jsx), all files are retrieved then filtered if needed.
 
-### Retrieving files from FDBs, and Client to Worker socket communication
+### Client to Worker socket communication
 
 View the code in [app.ts](./worker/src/app.ts)
 
@@ -70,6 +70,6 @@ And, in [GCloud.ts](./master/src/GCloud.ts)
 
 View the code in the createReplicas() function in [WorkerUtilities.ts](./worker/src/HelperFunctions/WorkerUtilities.ts)
 
-### Consistency and Synchronization algorithm for files stored in the FileDatabases
+### Consistency and Synchronization algorithm
 
 View the code in [masterCoordinator.js](./master/src/masterCoordinator.js)
