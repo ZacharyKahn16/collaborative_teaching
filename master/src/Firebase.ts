@@ -1,8 +1,7 @@
 import admin from 'firebase-admin';
-import { LOGGER } from './Logger';
 
 /**
- * Initializes Firebase instance
+ * Initializes a Firebase instance
  */
 const firebase: admin.app.App = admin.initializeApp({
   credential: admin.credential.cert({

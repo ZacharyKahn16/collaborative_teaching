@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# Installs all the dependencies required to build a FileDatabase using MongoDB
+# Starts up the MongoDB instance
+
 
 PROJECT_ID=$(curl -s "http://metadata.google.internal/computeMetadata/v1/project/project-id" -H "Metadata-Flavor: Google")
 NAME=$(curl -s "http://metadata.google.internal/computeMetadata/v1/instance/name" -H "Metadata-Flavor: Google")

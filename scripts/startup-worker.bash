@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+# Installs all the dependencies required to build a Worker
+# Copies the code for Worker from our file storage
+# Builds the code using Node.js
+# Starts up a Node.js server and attaches it to the Worker process
 
 PROJECT_ID=$(curl -s "http://metadata.google.internal/computeMetadata/v1/project/project-id" -H "Metadata-Flavor: Google")
 NAME=$(curl -s "http://metadata.google.internal/computeMetadata/v1/instance/name" -H "Metadata-Flavor: Google")

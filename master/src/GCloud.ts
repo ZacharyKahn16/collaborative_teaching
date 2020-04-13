@@ -16,15 +16,17 @@ const REFRESH_DATA_INTERVAL = 30 * 1000; // 30 secs
 const CONSISTENT_INTERVAL = 45 * 1000; // 45 secs
 const TIME_TILL_ACTIVE = 2.75 * 60; // 2.75 min (s)
 
-export const NUM_MASTERS = 3;
-export const NUM_WORKERS = 3;
-export const NUM_DATABASES = 4;
+export const NUM_MASTERS = 3; // Number of masters in the system
+export const NUM_WORKERS = 3; // Number of workers in the system
+export const NUM_DATABASES = 4; // Number of FileDatabases in the system
 const MASTER_IDS: number[] = [];
 const WORKER_IDS: number[] = [];
 const DATABASE_IDS: number[] = [];
 
+// List of Static IPs available to be used by the Masters
 const STATIC_IPS = ['35.224.26.195', '35.226.186.203', '35.226.103.161'];
 
+// Defines an interface for a VM instance in GCP, lists all the metadata available for it
 export interface ComputeEngineInstance {
   id: string;
   instanceType: string;
@@ -44,9 +46,10 @@ export interface ComputeEngineInstance {
  * Class to interact with GCloud and keep track of its resources
  * Creates new master, worker and database instances if required
  * Deletes instances if they are not in a good state
+ * Follows a Object Oriented singleton design pattern
  */
 export class GCloud {
-  private static gCloud: GCloud;
+  private static gCloud: GCloud; // singleton instance
   private masterCoordinator: MasterCoordinator = new MasterCoordinator();
 
   readonly id = process.env.NAME;
@@ -73,15 +76,20 @@ export class GCloud {
 
     this.getInstances();
 
+    // Update all the data available from GCP DNS, at the interval defined
     setInterval(() => {
       this.getInstances();
     }, REFRESH_DATA_INTERVAL);
 
+    // Check the FileDatabase replication and consistency, at the interval defined
     setInterval(() => {
       this.replicationCheck();
     }, CONSISTENT_INTERVAL);
   }
 
+  /**
+   * Get a list of VMs in the GCP DNS
+   */
   getInstances() {
     exec('gcloud compute instances list', { silent: true }, async (code, stdout, stderr) => {
       if (code === 0) {
@@ -137,6 +145,11 @@ export class GCloud {
     });
   }
 
+  /**
+   * Get metadata about a specific VM instance
+   * @param {string} id
+   * @returns {Promise<any>}
+   */
   getMetadata(id: string): Promise<any> {
     return new Promise((resolve, reject) => {
       exec(
@@ -180,6 +193,10 @@ export class GCloud {
     });
   }
 
+  /**
+   * Returns whether this Master process is the Responder or not
+   * @returns {boolean}
+   */
   amIResponder(): boolean {
     if (this.masterInstances.length < 1) {
       return false;
@@ -196,6 +213,10 @@ export class GCloud {
     return this.thisInstance !== undefined && this.thisInstance.number < Math.max(...ids);
   }
 
+  /**
+   * Returns whether this Master process is the Coordinator or not
+   * @returns {boolean}
+   */
   amICoordinator(): boolean {
     if (this.masterInstances.length < 2) {
       return false;
@@ -208,6 +229,9 @@ export class GCloud {
     return this.thisInstance !== undefined && this.thisInstance.number === Math.max(...ids);
   }
 
+  /**
+   * Takes a list of all the GCP VM instances and classifies them into their type
+   */
   filterInstances(): void {
     this.masterInstances = this.allInstances.filter((instance) => {
       return instance.instanceType.includes(INSTANCE_TYPE.MASTER);
@@ -235,6 +259,9 @@ export class GCloud {
     }
   }
 
+  /**
+   * Checks the health and status of all the instances in the DNS
+   */
   healthCheck(): void {
     this.checkMasters();
     this.checkWorkers();
@@ -245,6 +272,10 @@ export class GCloud {
     this.checkReplication();
   }
 
+  /**
+   * Checks the health for all the other Masters in the DNS
+   * Checks whether the network has the correct number of Masters
+   */
   checkMasters(): void {
     if (this.thisInstance !== undefined) {
       const mastersAvailNums = this.masterInstances.map((instance) => {
@@ -273,6 +304,11 @@ export class GCloud {
     }
   }
 
+  /**
+   * Checks the health for all the other Workers in the DNS
+   * Checks whether the network has the correct number of Workers
+   * Can only be executed by the Coordinator
+   */
   checkWorkers(): void {
     if (this.amICoordinator()) {
       const workersAvailNums = this.workerInstances.map((instance) => {
@@ -295,6 +331,11 @@ export class GCloud {
     }
   }
 
+  /**
+   * Checks the health for all the other FileDatabases in the DNS
+   * Checks whether the network has the correct number of FileDatabases
+   * Can only be executed by the Coordinator
+   */
   checkDatabases(): void {
     if (this.amICoordinator()) {
       const databasesAvailNums = this.databaseInstances.map((instance) => {
@@ -317,6 +358,10 @@ export class GCloud {
     }
   }
 
+  /**
+   * Checks the file replication and consistency for all the files in all the FileDatabases
+   * Can only be executed by the Coordinator
+   */
   async checkReplication(): Promise<void> {
     if (this.amICoordinator()) {
       const ips = this.databaseInstances
@@ -349,6 +394,10 @@ export class GCloud {
     }
   }
 
+  /**
+   * Creates a Master with the given number/id
+   * @param {number} num
+   */
   createMaster(num: number): void {
     const name = `${INSTANCE_TYPE.MASTER}-${num}`;
     const ip = STATIC_IPS[num - 1];
@@ -363,6 +412,10 @@ export class GCloud {
     });
   }
 
+  /**
+   * Creates a Worker with the given number/id
+   * @param {number} num
+   */
   createWorker(num: number): void {
     const name = `${INSTANCE_TYPE.WORKER}-${num}`;
     // @ts-ignore
@@ -376,6 +429,10 @@ export class GCloud {
     });
   }
 
+  /**
+   * Creates a FileDatabase with the given number/id
+   * @param {number} num
+   */
   createDatabase(num: number): void {
     const name = `${INSTANCE_TYPE.DATABASE}-${num}`;
     // @ts-ignore
@@ -389,11 +446,15 @@ export class GCloud {
     });
   }
 
+  /**
+   * Kills the VM in the network with the given id
+   * @param {string} id
+   */
   deleteInstance(id: string): void {
     // @ts-ignore
     LOGGER.debug(`${this.thisInstance.id.toUpperCase()} is deleting ${id.toUpperCase()}`);
 
-    const command = `gcloud compute --project=${PROJECT_ID} instances delete ${id} --zone=${ZONE}`;
+    const command = `yes | gcloud compute --project=${PROJECT_ID} instances delete ${id} --zone=${ZONE}`;
     exec(command, { silent: true }, (code, stdout, stderr) => {
       if (code !== 0 || stderr) {
         LOGGER.error(`Deleting instance ${id} failed.`, code, stderr);
@@ -401,6 +462,12 @@ export class GCloud {
     });
   }
 
+  /**
+   * Does a quick health check on a VM instance using the GCP DNS
+   * @param {ComputeEngineInstance} instance
+   * @param {boolean} log
+   * @returns {boolean}
+   */
   isInstanceHealthGood(instance: ComputeEngineInstance, log: boolean = true): boolean {
     let val = false;
     let message = '';
@@ -434,12 +501,19 @@ export class GCloud {
     return val;
   }
 
+  /**
+   * Instantiates the singleton
+   */
   static makeGCloud() {
     if (GCloud.gCloud === undefined) {
       GCloud.gCloud = new GCloud();
     }
   }
 
+  /**
+   * Returns a reference to the singleton GCloud instance
+   * @returns {GCloud}
+   */
   static getGCloud(): GCloud {
     if (GCloud.gCloud === undefined) {
       GCloud.makeGCloud();

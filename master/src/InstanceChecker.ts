@@ -1,35 +1,45 @@
 import io from 'socket.io-client';
 import moment from 'moment';
 import { MongoClient } from 'mongodb';
-import { ComputeEngineInstance, GCloud, NUM_MASTERS } from './GCloud';
+import { ComputeEngineInstance, GCloud } from './GCloud';
 import { LOGGER } from './Logger';
 
+/**
+ * Class that handles socket connections to a Worker
+ */
 class SocketClient {
-  private instance: ComputeEngineInstance;
-  private socket: SocketIOClient.Socket;
-  public connected: boolean = false;
-  public lastResp: number = moment().unix();
+  private instance: ComputeEngineInstance; // the GCP VM instance for the Worker
+  private socket: SocketIOClient.Socket; // the socket connection
+  public connected: boolean = false; // whether the socket is connected
+  public lastResp: number = moment().unix(); // when the last response was received from the Worker
 
   private readonly intervalId: NodeJS.Timeout;
   private SEND_DB_LIST_INTERVAL = 30 * 1000; // 30 secs (ms)
   private MAX_WAIT_TIME = 2 * 60; // 2 min (s)
-  private SOCKET_PORT = 4001;
+  private SOCKET_PORT = 4001; // socket port information
 
+  /**
+   * Given a GCP VM instance, setups up a socket connection to it
+   * @param {ComputeEngineInstance} instance
+   */
   constructor(instance: ComputeEngineInstance) {
     this.instance = instance;
     this.socket = io(`http://${this.instance.publicIp}:${this.SOCKET_PORT}`);
 
+    // Event fired when socket is connected
     this.socket.on('connect', () => {
       this.connected = true;
       this.lastResp = moment().unix();
     });
 
+    // Channel that receives data from the Worker
     this.socket.on('health-response', () => {
       LOGGER.debug(`${this.instance.id} communication good.`);
       this.connected = true;
       this.lastResp = moment().unix();
     });
 
+    // Event fired when socket is disconnected
     this.socket.on('disconnect', () => {
       this.connected = false;
     });
@@ -40,10 +50,18 @@ class SocketClient {
     }, this.SEND_DB_LIST_INTERVAL);
   }
 
+  /**
+   * Sends the FileDatabase list to the Worker via the socket
+   */
   updateDatabaseList() {
     this.socket.emit('database-instances', GCloud.getGCloud().databaseInstances);
   }
 
+  /**
+   * Verifies whether the socket connection and the Worker is health and active
+   * If the last response received from the Worker was more than 2 min ago, it is considered crashed
+   * @returns {boolean}
+   */
   isSocketGood(): boolean {
     return this.connected || this.lastResp >= moment().unix() - this.MAX_WAIT_TIME;
   }
@@ -56,22 +74,32 @@ class SocketClient {
     );
   }
 
+  /**
+   * Destroy the socket connection and cleanup
+   */
   destroy() {
     clearInterval(this.intervalId);
     this.socket.close();
   }
 }
 
+/**
+ * Class that handles querying a FileDatabase
+ */
 class DatabaseClient {
-  private instance: ComputeEngineInstance;
-  private url: string;
-  public lastResp: number = moment().unix();
+  private instance: ComputeEngineInstance; // the GCP VM instance for the FileDatabase
+  private url: string; // the MongoDB connection string
+  public lastResp: number = moment().unix(); // when the last response was received from the FileDatabase
 
   private readonly intervalId: NodeJS.Timeout;
   private MAX_WAIT_TIME = 2 * 60; // 2 min (s)
   private CHECK_DB_INTERVAL = 30 * 1000; // 30 secs (ms)
-  private DB_PORT = 80;
+  private DB_PORT = 80; // MongoDb port information
 
+  /**
+   * Given a GCP VM instance, setups up a MongoDB connection to it
+   * @param {ComputeEngineInstance} instance
+   */
   constructor(instance: ComputeEngineInstance) {
     this.instance = instance;
     this.url = `mongodb://${this.instance.publicIp}:${this.DB_PORT}`;
@@ -82,6 +110,9 @@ class DatabaseClient {
     }, this.CHECK_DB_INTERVAL);
   }
 
+  /**
+   * Perform a simple query on the MongoDB instance
+   */
   queryMongo() {
     MongoClient.connect(this.url, {
       useUnifiedTopology: true,
@@ -95,6 +126,11 @@ class DatabaseClient {
       .catch((err) => {});
   }
 
+  /**
+   * Verifies whether the MongoDB connection and the FileDatabase is health and active
+   * If the last response received from the Worker was more than 2 min ago, it is considered crashed
+   * @returns {boolean}
+   */
   isDbGood(): boolean {
     return this.lastResp >= moment().unix() - this.MAX_WAIT_TIME;
   }
@@ -107,41 +143,61 @@ class DatabaseClient {
     );
   }
 
+  /**
+   * Destroy the MongoDB connection and cleanup
+   */
   destroy() {
     clearInterval(this.intervalId);
   }
 }
 
 /**
- * Does a more in depth verification of instances
+ * Class that tracks all the Workers and FileDatabases
+ * Does an in depth verification of of each of these instances
  * Sets up socket connections to workers
  * Sets up queries to databases
+ * Follows a Object Oriented singleton design pattern
  */
 export class InstanceChecker {
-  static instanceChecker: InstanceChecker;
+  static instanceChecker: InstanceChecker; // singleton instance
 
+  // a reference to the the GCloud class, that InstanceChecker depends on
   gCloud: GCloud;
+
+  // Map of all the active Worker socket connections
   workerSockets: Map<string, SocketClient>;
+
+  // Map of all the active File Database query connections
   dbInstances: Map<string, DatabaseClient>;
 
-  private INSTANCE_CHECK_INTERVAL = 30 * 1000; // 30 secs (ms)
+  // How often to check each instance = 30 secs
+  private INSTANCE_CHECK_INTERVAL = 30 * 1000;
 
   constructor() {
+    // get the GCloud reference and store it inside this class
     this.gCloud = GCloud.getGCloud();
+
+    // Create an empty map to store the Worker socket connections
     this.workerSockets = new Map();
+
+    // Create an empty map to store the FileDatabase query connections
     this.dbInstances = new Map();
 
+    // Set up timers to check all the Workers and FileDatabases at the specified interval
     setInterval(() => {
       this.checkWorkerSockets();
       this.checkDbClients();
     }, this.INSTANCE_CHECK_INTERVAL);
   }
 
+  // Check all the active Workers
   checkWorkerSockets() {
+    // If this Master is not the Coordinator, return
     if (!this.gCloud.amICoordinator()) {
       return;
     }
 
+    // Get all the Workers and verify them
     for (const instance of this.gCloud.workerInstances) {
       const instanceGood = this.gCloud.isInstanceHealthGood(instance, false);
       const socketInstance = this.workerSockets.get(instance.id);
@@ -188,11 +244,14 @@ export class InstanceChecker {
     }
   }
 
+  // Check all the active FileDatabases
   checkDbClients() {
+    // If this Master is not the Coordinator, return
     if (!this.gCloud.amICoordinator()) {
       return;
     }
 
+    // Get all the FileDatabases and verify them
     for (const instance of this.gCloud.databaseInstances) {
       const instanceGood = this.gCloud.isInstanceHealthGood(instance, false);
       const dbInstance = this.dbInstances.get(instance.id);
@@ -239,17 +298,12 @@ export class InstanceChecker {
     }
   }
 
+  /**
+   * Instantiates the singleton
+   */
   static makeInstanceChecker() {
     if (InstanceChecker.instanceChecker === undefined) {
       InstanceChecker.instanceChecker = new InstanceChecker();
     }
-  }
-
-  static getInstanceChecker() {
-    if (InstanceChecker.instanceChecker === undefined) {
-      InstanceChecker.makeInstanceChecker();
-    }
-
-    return InstanceChecker.instanceChecker;
   }
 }

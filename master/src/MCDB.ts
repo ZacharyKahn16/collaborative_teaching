@@ -1,7 +1,6 @@
 import * as fs from './Firebase';
 import admin from 'firebase-admin';
 import { getDb } from './Firebase';
-import { LOGGER } from './Logger';
 
 // Collection constants
 const FILE_COLLECTION = 'File';

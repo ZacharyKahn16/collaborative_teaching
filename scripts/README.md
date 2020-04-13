@@ -1,13 +1,21 @@
 # Legend
 
+## make-master.bash
+
+Creates a master that will create all other components of our cluster including
+all Workers, and FileDatabases.
+
+## make-worker.bash
+
+Creates one worker instance on Compute Engine
+
 ## make-database.bash
 
 Creates one database instance on Compute Engine
 
-## make-master.bash
+## make-website.bash
 
-Creates a master that will create all other components of our cluster including
-all workers, and FDBs.
+Creates the front end website on Compute Engine
 
 ## viewFDBS.py
 

@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
+# Installs all the dependencies required to build the React Website (Client)
+# Copies the code for Client from our file storage
+# Builds the code using Node.js
+# Starts up an Nginx server and point it to the JavaScript build for the website
+
 PROJECT_ID=$(curl -s "http://metadata.google.internal/computeMetadata/v1/project/project-id" -H "Metadata-Flavor: Google")
 NAME=$(curl -s "http://metadata.google.internal/computeMetadata/v1/instance/name" -H "Metadata-Flavor: Google")
 
