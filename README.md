@@ -1,5 +1,22 @@
 # Collab Learn
 
+## CPSC 559 - Winter 2020 - University of Calgary
+
+## [Project Report](https://docs.google.com/document/d/15WRIsnDSgVsa8hN_qVMm7-i2BiZFfYet_vmvUNrVUc8/edit?usp=sharing)
+
+### Objectives:
+
+The world of teaching is changing. Learning in the classroom is great, but tons are happening
+online. Massive open online courses, online courses, online schools, the list goes on. As more
+education content comes online, more and more people are requesting specific niche subtopics
+to be taught. There are cases where different institutions want customizable courses that teach
+a somewhat generic topic in a particular way. The difficulty is, having one educator provide all
+the possible topics that each institution may want is impractical. However, having multiple
+educators come together makes it possible for each institution to customize to their needs. Our
+goal is to develop a system where educators can come together, publish lectures and content
+about their various areas of expertise and can also use other creators&#39; content to build custom
+courses for their end viewers.
+
 ## Dependencies
 
 ### Pre-reqs
