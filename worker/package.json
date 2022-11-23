@@ -28,7 +28,7 @@
     "morgan": "1.9.1",
     "rfdc": "^1.1.4",
     "shelljs": "0.8.3",
-    "socket.io": "2.3.0",
+    "socket.io": "2.5.0",
     "uuid": "7.0.2"
   },
   "devDependencies": {
